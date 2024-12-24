@@ -1,22 +1,48 @@
-import React from 'react';
-import bgImage from './bg-image.png'; 
-import event1 from './event1.png';
-import event2 from './event2.png';
-import event3 from './event3.png';
-import event4 from './event4.png';
-import { FaCalendarAlt } from 'react-icons/fa';
+import React from "react";
+import bgImage from "./bg-image.png";
+import event1 from "./event1.png";
+import event2 from "./event2.png";
+import event3 from "./event3.png";
+import event4 from "./event4.png";
+import category1 from "./event1.png";
+import category2 from "./event2.png";
+import category3 from "./event3.png";
+import category4 from "./event4.png";
+import category5 from "./event2.png";
+import category6 from "./event4.png";
+import { FaCalendarAlt } from "react-icons/fa";
+import Footer from './Footer';
 
 export const HomePage = () => {
   const today = new Date();
-  const options = { day: 'numeric', month: 'short', year: 'numeric' };
-  const formattedDate = today.toLocaleDateString('en-US', options);
-  const dayOfWeek = today.toLocaleDateString('en-US', { weekday: 'long' });
+  const options = { day: "numeric", month: "short", year: "numeric" };
+  const formattedDate = today.toLocaleDateString("en-US", options);
+  const dayOfWeek = today.toLocaleDateString("en-US", { weekday: "long" });
 
   const events = [
-    { img: event1, time: '7:00 PM', name: 'Concert X', place: 'Hyatt Regency' },
-    { img: event2, time: '8:30 PM', name: 'Live Performance', place: 'Bhrikuti Mandap' },
-    { img: event3, time: '6:00 PM', name: 'Dancing Show', place: 'Pragya Hall' },
-    { img: event4, time: '9:00 PM', name: 'Comedy Show', place: 'Tudikhel' },
+    { img: event1, time: "7:00 PM", name: "Concert X", place: "Hyatt Regency" },
+    {
+      img: event2,
+      time: "8:30 PM",
+      name: "Live Performance",
+      place: "Bhrikuti Mandap",
+    },
+    {
+      img: event3,
+      time: "6:00 PM",
+      name: "Dancing Show",
+      place: "Pragya Hall",
+    },
+    { img: event4, time: "9:00 PM", name: "Comedy Show", place: "Tudikhel" },
+  ];
+  // Define categories for the "Events by Category" section
+  const categories = [
+    { img: category1, name: "Music Concerts" },
+    { img: category2, name: "Theater & Drama" },
+    { img: category3, name: "Comedy Shows" },
+    { img: category4, name: "Dance Performances" },
+    { img: category5, name: "Workshops" },
+    { img: category6, name: "Exhibitions" },
   ];
 
   return (
@@ -36,7 +62,8 @@ export const HomePage = () => {
               Experience the Best Events in Town
             </h1>
             <p className="text-lg sm:text-xl md:text-xl mb-6">
-              Celebrate with top artists, exciting activities, and unforgettable moments.
+              Celebrate with top artists, exciting activities, and unforgettable
+              moments.
             </p>
 
             {/* Search Bar Form */}
@@ -62,11 +89,15 @@ export const HomePage = () => {
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
-            <h1 className="text-2xl font-semibold text-gray-800">Today's Event</h1>
+            <h1 className="text-2xl font-semibold text-gray-800">
+              Today's Event
+            </h1>
             <div className="flex items-center space-x-4">
               <FaCalendarAlt className="text-3xl text-[#ED4A43]" />
               <div className="text-left">
-                <p className="text-lg font-semibold text-gray-800">{formattedDate}</p>
+                <p className="text-lg font-semibold text-gray-800">
+                  {formattedDate}
+                </p>
                 <p className="text-sm text-gray-600">{dayOfWeek}</p>
               </div>
             </div>
@@ -88,9 +119,13 @@ export const HomePage = () => {
                   />
                 </div>
                 {/* Event Time */}
-                <p className="text-lg font-semibold text-gray-800 mb-2">{event.time}</p>
+                <p className="text-lg font-semibold text-gray-800 mb-2">
+                  {event.time}
+                </p>
                 {/* Event Name */}
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">{event.name}</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  {event.name}
+                </h3>
                 {/* Event Place */}
                 <p className="text-md text-gray-600 mb-4">{event.place}</p>
                 {/* Buy Ticket Button */}
@@ -102,6 +137,35 @@ export const HomePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Events by Category Section */}
+      <div className="bg-gray-100 py-12">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl sm:text-2xl font-bold text-left mb-8 text-gray-800">
+            Events by Category
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {categories.map((category, index) => (
+              <div
+                key={index}
+                className="bg-white p-6 rounded-lg shadow-md text-center"
+              >
+                <div className="w-32 h-32 mx-auto mb-4">
+                  <img
+                    src={category.img}
+                    alt={category.name}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800">
+                  {category.name}
+                </h3>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      {/* Footer Section */}
     </div>
   );
 };

@@ -18,11 +18,22 @@ export const NavBar = () => {
 
         {/* Navigation Links */}
         <div className="hidden md:flex space-x-8">
-          <a href="#home" className="text-lg hover:text-[#ED4A43]">
+          <a
+            href="#home"
+            className="text-lg hover:text-[#ED4A43]"
+            onClick={(e) => {
+              e.preventDefault(); 
+              navigate("/HomePage"); // Navigate to home page
+            }}
+          >
             Home
           </a>
-          <a href="#services" className="text-lg hover:text-[#ED4A43]">
-            Services
+          <a href="#events" className="text-lg hover:text-[#ED4A43]"
+          onClick={(e) => {
+            e.preventDefault(); 
+            navigate("/Event"); // Navigate to event page
+          }}>
+            Events
           </a>
           <a href="#about" className="text-lg hover:text-[#ED4A43]">
             About Us

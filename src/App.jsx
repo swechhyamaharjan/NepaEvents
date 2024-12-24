@@ -5,7 +5,8 @@ import { Login } from './Components/login';
 import {Signup} from './Components/Signup';
 import { HomePage } from './Components/HomePage';
 import { NavBar } from './Components/navbar';
-
+import { Footer } from './Components/Footer';
+import { Event } from './Components/Event';
 
 function App() {
   const [count, setCount] =useState(0)
@@ -13,14 +14,17 @@ function App() {
   return (
     <>
     <BrowserRouter>
-     {/* Render NavBar once for all routes */}
+     {/* Render NavBar for all routes */}
     <NavBar /> 
       <Routes>
         <Route path="/login" element={<Login/>}></Route>
         <Route path="/signup" element={<Signup/>}></Route>
         <Route path="/homepage" element={<HomePage/>}></Route>
         <Route path="/navbar" element={<NavBar/>}></Route>
+        <Route path="/event" element={<Event/>}></Route>
       </Routes>
+      {/* Footer will appear on all pages */}
+      <Footer />
     </BrowserRouter>
     </>
   );
