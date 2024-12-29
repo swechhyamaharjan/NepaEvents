@@ -11,7 +11,6 @@ import category4 from "./event4.png";
 import category5 from "./event2.png";
 import category6 from "./event4.png";
 import { FaCalendarAlt } from "react-icons/fa";
-import Footer from './Footer';
 
 export const HomePage = () => {
   const today = new Date();

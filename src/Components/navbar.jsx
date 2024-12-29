@@ -1,9 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "./logo.png";
 
 export const NavBar = () => {
   const navigate = useNavigate();
+  
+  // State to track active link
+  const [activeLink, setActiveLink] = useState('home');
+
+  const handleNavClick = (link) => {
+    setActiveLink(link);
+    if (link === 'home') {
+      navigate("/HomePage"); 
+    } else if (link === 'events') {
+      navigate("/Event"); 
+    }
+    else if (link === 'aboutus') {
+      navigate("/AboutUs"); 
+    }
+    else if (link === 'contactus') {
+      navigate("/ContactUs"); 
+    }
+  };
 
   return (
     <nav className="bg-white text-[#697787]">
@@ -11,34 +29,49 @@ export const NavBar = () => {
         {/* Logo */}
         <div className="flex items-center">
           <img src={logo} alt="Logo" className="w-12 h-12" />
-          <h1 className="ml-3 text-xl font-semibold text-[#ED4A43]">
-            NepaEvents
-          </h1>
+          <h1 className="ml-3 text-xl font-semibold text-[#ED4A43]">NepaEvents</h1>
         </div>
 
         {/* Navigation Links */}
         <div className="hidden md:flex space-x-8">
           <a
             href="#home"
-            className="text-lg hover:text-[#ED4A43]"
+            className={`text-lg ${activeLink === 'home' ? 'text-[#ED4A43] font-semibold' : 'hover:text-[#ED4A43]'}`}
             onClick={(e) => {
-              e.preventDefault(); 
-              navigate("/HomePage"); // Navigate to home page
+              e.preventDefault();
+              handleNavClick('home');
             }}
           >
             Home
           </a>
-          <a href="#events" className="text-lg hover:text-[#ED4A43]"
-          onClick={(e) => {
-            e.preventDefault(); 
-            navigate("/Event"); // Navigate to event page
-          }}>
+          <a
+            href="#events"
+            className={`text-lg ${activeLink === 'events' ? 'text-[#ED4A43] font-semibold' : 'hover:text-[#ED4A43]'}`}
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavClick('events');
+            }}
+          >
             Events
           </a>
-          <a href="#about" className="text-lg hover:text-[#ED4A43]">
+          <a
+            href="#aboutus"
+            className={`text-lg ${activeLink === 'aboutus' ? 'text-[#ED4A43] font-semibold' : 'hover:text-[#ED4A43]'}`}
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavClick('aboutus');
+            }}
+          >
             About Us
           </a>
-          <a href="#contact" className="text-lg hover:text-[#ED4A43]">
+          <a
+            href="#contactus"
+            className={`text-lg ${activeLink === 'contactus' ? 'text-[#ED4A43] font-semibold' : 'hover:text-[#ED4A43]'}`}
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavClick('contactus');
+            }}
+          >
             Contact Us
           </a>
         </div>

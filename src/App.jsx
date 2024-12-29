@@ -7,6 +7,8 @@ import { HomePage } from './Components/HomePage';
 import { NavBar } from './Components/navbar';
 import { Footer } from './Components/Footer';
 import { Event } from './Components/Event';
+import { AboutUs } from './Components/AboutUs';
+import { ContactUs } from './Components/ContactUs';
 
 function App() {
   const [count, setCount] =useState(0)
@@ -22,6 +24,8 @@ function App() {
         <Route path="/homepage" element={<HomePage/>}></Route>
         <Route path="/navbar" element={<NavBar/>}></Route>
         <Route path="/event" element={<Event/>}></Route>
+        <Route path="/aboutus" element={<AboutUs/>}></Route>
+        <Route path="/contactus" element={<ContactUs/>}></Route>
       </Routes>
       {/* Footer will appear on all pages */}
       <Footer />
