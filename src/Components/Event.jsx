@@ -184,6 +184,9 @@ export const Event = () => {
 
   return (
     <div className="py-8 px-4 md:px-8">
+      <h2 className="text-4xl font-extrabold text-[#ED4A43] mb-8 text-center">
+          Events
+        </h2>
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {events.map((event) => {

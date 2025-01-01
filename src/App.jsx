@@ -9,6 +9,7 @@ import { Footer } from './Components/Footer';
 import { Event } from './Components/Event';
 import { AboutUs } from './Components/AboutUs';
 import { ContactUs } from './Components/ContactUs';
+import { CreateEvent } from './Components/CreateEvent';
 
 function App() {
   const [count, setCount] =useState(0)
@@ -19,13 +20,14 @@ function App() {
      {/* Render NavBar for all routes */}
     <NavBar /> 
       <Routes>
-        <Route path="/login" element={<Login/>}></Route>
+        <Route path="/" element={<Login />} />
         <Route path="/signup" element={<Signup/>}></Route>
         <Route path="/homepage" element={<HomePage/>}></Route>
         <Route path="/navbar" element={<NavBar/>}></Route>
         <Route path="/event" element={<Event/>}></Route>
         <Route path="/aboutus" element={<AboutUs/>}></Route>
         <Route path="/contactus" element={<ContactUs/>}></Route>
+        <Route path="/createevent" element={<CreateEvent/>}></Route>
       </Routes>
       {/* Footer will appear on all pages */}
       <Footer />

@@ -79,13 +79,13 @@ export const NavBar = () => {
         {/* Action Buttons */}
         <div className="space-x-4">
           <button
-            onClick={() => navigate("/create-event")}
+            onClick={() => navigate("/CreateEvent")}
             className="bg-[#ED4A43] text-white px-6 py-2 rounded-md hover:bg-[#D43C35]"
           >
             Create Event
           </button>
           <button
-            onClick={() => navigate("/book")}
+            onClick={() => navigate("/")}
             className="bg-[#FFF5F4] text-[#697787] px-6 py-2 rounded-md border border-[#ED4A43] hover:bg-white"
           >
             Book a venue
