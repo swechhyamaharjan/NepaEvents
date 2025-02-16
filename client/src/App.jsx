@@ -1,41 +1,139 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
-import { Login } from './Components/login';
-import {Signup} from './Components/Signup';
-import { HomePage } from './Components/HomePage';
-import { NavBar } from './Components/navbar';
-import { Footer } from './Components/Footer';
-import { Event } from './Components/Event';
-import { AboutUs } from './Components/AboutUs';
-import { ContactUs } from './Components/ContactUs';
-import { CreateEvent } from './Components/CreateEvent';
-import { BookVenue } from './Components/BookVenue';
+
+import { Signup } from './Components/Users/Signup';
+import { HomePage } from './Components/Users/HomePage';
+import { NavBar } from './Components/Users/NavBar';
+import { Footer } from './Components/Users/Footer';
+import { Event } from './Components/Users/Event';
+import { AboutUs } from './Components/Users/AboutUs';
+import { ContactUs } from './Components/Users/ContactUs';
+import { CreateEvent } from './Components/Users/CreateEvent';
+import { BookVenue } from './Components/Users/BookVenue';
+import { Login } from './Components/Users/Login';
+
+import { AdminEventPage } from './Components/Admin/AdminEventPage';
+import { AdminHome } from './Components/Admin/AdminHome';
+import { AdminSidebar } from "./Components/Admin/AdminSidebar";
+import { AdminVenuePage } from './Components/Admin/AdminVenuePage';
+
+// Layout for Users (Includes Navbar & Footer)
+const UserLayout = ({ children }) => (
+  <>
+    <NavBar />
+    {children}
+    <Footer />
+  </>
+);
+
+// Layout for Admin (No Navbar, No Footer)
+const AdminLayout = ({ children }) => (
+  <div className="flex">
+    <AdminSidebar />
+    <div className="ml-64 p-8 w-full">{children}</div> {/* Adjusting layout for sidebar */}
+  </div>
+);
 
 function App() {
-  const [count, setCount] =useState(0)
-
   return (
-    <>
     <BrowserRouter>
-     {/* Render NavBar for all routes */}
-    <NavBar /> 
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/signup" element={<Signup/>}></Route>
-        <Route path="/homepage" element={<HomePage/>}></Route>
-        <Route path="/navbar" element={<NavBar/>}></Route>
-        <Route path="/event" element={<Event/>}></Route>
-        <Route path="/aboutus" element={<AboutUs/>}></Route>
-        <Route path="/contactus" element={<ContactUs/>}></Route>
-        <Route path="/createevent" element={<CreateEvent/>}></Route>
-        <Route path="/bookvenue" element={<BookVenue/>}></Route>
+        {/* User Routes with Navbar and Footer */}
+        <Route
+          path="/"
+          element={
+            <UserLayout>
+              <Login />
+            </UserLayout>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <UserLayout>
+              <Signup />
+            </UserLayout>
+          }
+        />
+        <Route
+          path="/homepage"
+          element={
+            <UserLayout>
+              <HomePage />
+            </UserLayout>
+          }
+        />
+        <Route
+          path="/event"
+          element={
+            <UserLayout>
+              <Event />
+            </UserLayout>
+          }
+        />
+        <Route
+          path="/aboutus"
+          element={
+            <UserLayout>
+              <AboutUs />
+            </UserLayout>
+          }
+        />
+        <Route
+          path="/contactus"
+          element={
+            <UserLayout>
+              <ContactUs />
+            </UserLayout>
+          }
+        />
+        <Route
+          path="/createevent"
+          element={
+            <UserLayout>
+              <CreateEvent />
+            </UserLayout>
+          }
+        />
+        <Route
+          path="/bookvenue"
+          element={
+            <UserLayout>
+              <BookVenue />
+            </UserLayout>
+          }
+        />
+
+        {/* Admin Routes  */}
+        <Route
+          path="/admin/home"
+          element={
+            <AdminLayout>
+              <AdminHome />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/admin/events"
+          element={
+            <AdminLayout>
+              <AdminEventPage />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/admin/venues"
+          element={
+            <AdminLayout>
+              <AdminVenuePage />
+            </AdminLayout>
+          }
+        />
       </Routes>
-      {/* Footer will appear on all pages */}
-      <Footer />
     </BrowserRouter>
-    </>
   );
 }
+
 
 export default App;

@@ -1,5 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from "react-hot-toast"; 
 
 export const Login = () => {
   const navigate = useNavigate(); 
@@ -7,7 +9,17 @@ export const Login = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const values = Object.fromEntries(formData.entries());
-    console.log(values);
+    try {
+      const { data } = await axios.post('http://localhost:3000/login', values);
+      if (data) {
+        toast.success(data.message);
+        navigate('/homepage')
+      }
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || "An unexpected error occurred.";
+      toast.error(errorMessage);
+      console.error("Error posting data:", error);
+    }
   }
   
   const handleGuestLogin = () => {
