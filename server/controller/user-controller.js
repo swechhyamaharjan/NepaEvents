@@ -21,25 +21,46 @@ const registerUser = async (req, res) => {
       })
     }
   } catch (error) {
-    console.log(error)
     return res.status(500).json({
       success: false,
-      message: "Something went wrong"
+      message: error.message
     })
   }
 };
 
-const loginUser = (req, res) => {
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+  
+  try {
+    const checkUserExists = await User.findOne({email});
+    if(!checkUserExists) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Email"
+      })
+    }
+    const checkPassword = await bcrypt.compare(password, checkUserExists.password);
+    if(!checkPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Password"
+      })
+    }
+    res.json({
+      success: true,
+      message: "Login Successful!"
+    })
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
 
 }
 
 module.exports = { registerUser, loginUser }
 
 
-//For registraition
-//1. Check if user exists in database or not
-
-//2.if user doesn't exits we need to hash the password 
-
-//3. when all the criteria meets then save the user to database
 
