@@ -17,6 +17,7 @@ import { AdminEventPage } from './Components/Admin/AdminEventPage';
 import { AdminHome } from './Components/Admin/AdminHome';
 import { AdminSidebar } from "./Components/Admin/AdminSidebar";
 import { AdminVenuePage } from './Components/Admin/AdminVenuePage';
+import { AuthProvider } from './Context/AuthContext';
 
 // Layout for Users (Includes Navbar & Footer)
 const UserLayout = ({ children }) => (
@@ -37,17 +38,18 @@ const AdminLayout = ({ children }) => (
 
 function App() {
   return (
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
         {/* User Routes with Navbar and Footer */}
         <Route
-          path="/"
+          path="/login"
           element={
             <UserLayout>
               <Login />
             </UserLayout>
           }
-        />
+          />
         <Route
           path="/signup"
           element={
@@ -55,7 +57,7 @@ function App() {
               <Signup />
             </UserLayout>
           }
-        />
+          />
         <Route
           path="/homepage"
           element={
@@ -63,7 +65,7 @@ function App() {
               <HomePage />
             </UserLayout>
           }
-        />
+          />
         <Route
           path="/event"
           element={
@@ -71,7 +73,7 @@ function App() {
               <Event />
             </UserLayout>
           }
-        />
+          />
         <Route
           path="/aboutus"
           element={
@@ -79,7 +81,7 @@ function App() {
               <AboutUs />
             </UserLayout>
           }
-        />
+          />
         <Route
           path="/contactus"
           element={
@@ -87,7 +89,7 @@ function App() {
               <ContactUs />
             </UserLayout>
           }
-        />
+          />
         <Route
           path="/createevent"
           element={
@@ -95,7 +97,7 @@ function App() {
               <CreateEvent />
             </UserLayout>
           }
-        />
+          />
         <Route
           path="/bookvenue"
           element={
@@ -103,7 +105,7 @@ function App() {
               <BookVenue />
             </UserLayout>
           }
-        />
+          />
 
         {/* Admin Routes  */}
         <Route
@@ -113,7 +115,7 @@ function App() {
               <AdminHome />
             </AdminLayout>
           }
-        />
+          />
         <Route
           path="/admin/events"
           element={
@@ -121,7 +123,7 @@ function App() {
               <AdminEventPage />
             </AdminLayout>
           }
-        />
+          />
         <Route
           path="/admin/venues"
           element={
@@ -129,9 +131,11 @@ function App() {
               <AdminVenuePage />
             </AdminLayout>
           }
-        />
+          />
       </Routes>
+
     </BrowserRouter>
+          </AuthProvider>
   );
 }
 

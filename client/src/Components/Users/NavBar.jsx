@@ -1,31 +1,25 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaBell, FaUserCircle, FaSignOutAlt, FaCog, FaEdit } from "react-icons/fa";
 import logo from "./logo.png";
 
 export const NavBar = () => {
   const navigate = useNavigate();
-  
-  // State to track active link
-  const [activeLink, setActiveLink] = useState('home');
+  const [activeLink, setActiveLink] = useState("home");
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const handleNavClick = (link) => {
     setActiveLink(link);
-    if (link === 'home') {
-      navigate("/HomePage"); 
-    } else if (link === 'events') {
-      navigate("/Event"); 
-    }
-    else if (link === 'aboutus') {
-      navigate("/AboutUs"); 
-    }
-    else if (link === 'contactus') {
-      navigate("/ContactUs"); 
-    }
+    navigate(`/${link}`);
+  };
+
+  const toggleProfileMenu = () => {
+    setProfileOpen(!profileOpen);
   };
 
   return (
-    <nav className="bg-white text-[#697787]">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    <nav className="bg-white text-[#697787] shadow-md p-4">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center">
           <img src={logo} alt="Logo" className="w-12 h-12" />
@@ -34,62 +28,47 @@ export const NavBar = () => {
 
         {/* Navigation Links */}
         <div className="hidden md:flex space-x-8">
-          <a
-            href="#home"
-            className={`text-lg ${activeLink === 'home' ? 'text-[#ED4A43] font-semibold' : 'hover:text-[#ED4A43]'}`}
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavClick('home');
-            }}
-          >
-            Home
-          </a>
-          <a
-            href="#events"
-            className={`text-lg ${activeLink === 'events' ? 'text-[#ED4A43] font-semibold' : 'hover:text-[#ED4A43]'}`}
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavClick('events');
-            }}
-          >
-            Events
-          </a>
-          <a
-            href="#aboutus"
-            className={`text-lg ${activeLink === 'aboutus' ? 'text-[#ED4A43] font-semibold' : 'hover:text-[#ED4A43]'}`}
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavClick('aboutus');
-            }}
-          >
-            About Us
-          </a>
-          <a
-            href="#contactus"
-            className={`text-lg ${activeLink === 'contactus' ? 'text-[#ED4A43] font-semibold' : 'hover:text-[#ED4A43]'}`}
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavClick('contactus');
-            }}
-          >
-            Contact Us
-          </a>
+          {["Home", "Event", "AboutUs", "ContactUs"].map((link) => (
+            <button
+              key={link}
+              className={`text-lg capitalize ${
+                activeLink === link ? "text-[#ED4A43] font-semibold" : "hover:text-[#ED4A43]"
+              }`}
+              onClick={() => handleNavClick(link)}
+            >
+              {link.replace(/([A-Z])/g, " $1").trim()}
+            </button>
+          ))}
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-x-4">
-          <button
-            onClick={() => navigate("/CreateEvent")}
-            className="bg-[#ED4A43] text-white px-6 py-2 rounded-md hover:bg-[#D43C35]"
-          >
-            Create Event
+        {/* Action Buttons & Profile */}
+        <div className="flex items-center space-x-6">
+          {/* Notifications */}
+          <button className="relative p-2 text-[#697787] hover:text-[#ED4A43]">
+            <FaBell size={22} />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">3</span>
           </button>
-          <button
-            onClick={() => navigate("/BookVenue")}
-            className="bg-[#FFF5F4] text-[#697787] px-6 py-2 rounded-md border border-[#ED4A43] hover:bg-white"
-          >
-            Book a venue
-          </button>
+          
+          {/* Profile Dropdown */}
+          <div className="relative">
+            <button onClick={toggleProfileMenu} className="p-2 text-[#697787] hover:text-[#ED4A43]">
+              <FaUserCircle size={24} />
+            </button>
+            {profileOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                <button className="w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-gray-100" onClick={() => navigate("/profile")}> 
+                  <FaEdit /> Edit Profile
+                </button>
+                <button className="w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-gray-100" onClick={() => navigate("/settings")}> 
+                  <FaCog /> Settings
+                </button>
+                <hr />
+                <button className="w-full flex items-center gap-2 px-4 py-2 text-left text-red-500 hover:bg-gray-100" onClick={() => navigate("/logout")}> 
+                  <FaSignOutAlt /> Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </nav>
