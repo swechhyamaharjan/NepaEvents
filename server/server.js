@@ -6,14 +6,19 @@ const cors = require("cors");
 const eventRouter = require('./routes/event-route');
 const venueRouter = require('./routes/venue-route');
 const app = express();
+const cookieParser = require("cookie-parser");
 
 const PORT = 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', 
+  credentials: true,
+}));
 app.use(express.json());
 app.use(userRoute);
-app.use(eventRouter);
-app.use(venueRouter);
+app.use("/api/event",eventRouter);
+app.use("/api/venue",venueRouter);
+app.use(cookieParser());
 
 connectToDB();
 

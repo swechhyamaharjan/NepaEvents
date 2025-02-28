@@ -1,40 +1,15 @@
 const mongoose = require("mongoose");
 
 const eventSchema = new mongoose.Schema({
-  eventTitle: {
-    type: String,
-    required: [true, 'Event title is required'],
-    minLength: 20,
-    maxLength: 100,
-  },
-  eventDescription: {
-    type: String,
-    required: [true, 'Event description is required'],
-    minLength: 50,
-    maxLength: 500,
-  },
-  eventDate: {
-    type: Date,
-    required: [true, 'Event date is required'],
-  },
-  eventTime: {
-    type: Date,
-    required: [true, 'Event time is required'],
-  },
-  eventLocation: {
-    type: String,
-    required: [true, 'Event Location is required'],
-  },
-  eventTicketPrice: {
-    type: Number,
-    required: [true, 'Event ticket price is required'],
-  },
-  eventCategory: {
-    type: String,
-    required: [true, 'Event Category is required'],
-  },
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  date: { type: Date, required: true },
+  venue: { type: mongoose.Schema.Types.ObjectId, ref: "Venue", required: true },
+  artist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Artist" }],
+  ticketPrice: { type: Number, required: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+  createdAt: { type: Date, default: Date.now }
 });
 
-const Event = mongoose.model("Event", eventSchema);
-
-module.exports = Event;
+module.exports = mongoose.model("Event", eventSchema);

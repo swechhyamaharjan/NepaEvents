@@ -22,4 +22,49 @@ const getAllVenues = async (req, res) => {
   }
 };
 
-module.exports = { bookVenue, getAllVenues }
+const updateVenue = async (req, res) => {
+    try {
+        const newVenueData = req.body;
+        const updatedVenue = await Venue.findByIdAndUpdate(
+            req.params.venueId,
+            newVenueData,
+        );
+
+        if (!updatedVenue) {
+            return res.status(404).json({ message: "Venue not found" });
+        };
+
+        res.status(200).json({success: true, message: "Venue updated successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Server error" });
+    }
+}
+
+const deleteVenue = async (req, res) => {
+    try {
+        const venueToDelete = await Venue.findByIdAndDelete(req.params.venueId)
+        if (!venueToDelete) {
+            return res.status(404).json({ msg: "Venue not found" });
+        }
+        res.status(204).send();
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Server error" });
+    }
+
+}
+
+const getVenueById = async (req, res) => {
+    try {
+        const id = req.params.id
+                const venue = await Venue.findById(id);
+                res.status(200).json({ success: true, data: venue });
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Server error" });
+    }
+}
+
+module.exports = { bookVenue, getAllVenues, updateVenue, deleteVenue, getVenueById}

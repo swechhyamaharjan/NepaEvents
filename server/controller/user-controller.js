@@ -1,5 +1,6 @@
 const User = require('../models/user-model');
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const registerUser = async (req, res) => {
   try {
@@ -45,9 +46,15 @@ const loginUser = async (req, res) => {
         success: false,
         message: "Invalid Password"
       })
-    }
-    res.json({
+    } 
+    const token = jwt.sign({user: checkUserExists}, process.env.JWT_SECRET, {expiresIn: "1d"})
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      maxAge: "60000000"
+    }).json({
       success: true,
+      data: checkUserExists,
       message: "Login Successful!"
     })
 
@@ -57,10 +64,25 @@ const loginUser = async (req, res) => {
       message: error.message
     })
   }
-
+}
+const logoutUser = async (req, res) => {
+  try {
+    res.clearCookie("token").json({message: "Logout Successful!"})
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({message: "Internal Server Error!"})
+  }
+}
+const getUser = async (req, res) => {
+  try {
+    res.status(200).json[{user: req.user}]  
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({message: "Internal Server Error!"})
+  }
 }
 
-module.exports = { registerUser, loginUser }
+module.exports = { registerUser, loginUser, logoutUser, getUser }
 
 
 
