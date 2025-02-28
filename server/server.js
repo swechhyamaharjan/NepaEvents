@@ -7,6 +7,8 @@ const eventRouter = require('./routes/event-route');
 const venueRouter = require('./routes/venue-route');
 const app = express();
 const cookieParser = require("cookie-parser");
+const artistRouter = require('./routes/artist-route');
+const ticketRouter = require('./routes/ticket-route');
 
 const PORT = 3000;
 
@@ -18,6 +20,8 @@ app.use(express.json());
 app.use(userRoute);
 app.use("/api/event",eventRouter);
 app.use("/api/venue",venueRouter);
+app.use("/api/artist",artistRouter);
+app.use("/api/ticket",ticketRouter);
 app.use(cookieParser());
 
 connectToDB();
