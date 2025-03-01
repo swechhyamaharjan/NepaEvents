@@ -68,7 +68,11 @@ export const NavBar = () => {
                 </button>
               </div>
             )}
+            
+      
           </div>
+      <button className='logoutbtn bg-[#ED4A43] text-white py-4 px-6 rounded-lg'>Create Event</button>
+      <button className='logoutbtn text-[#ED4A43] bg-white py-4 px-6 rounded-lg border border-[#ED4A43]'>Book Venue</button>
         </div>
       </div>
     </nav>

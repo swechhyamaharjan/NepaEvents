@@ -10,6 +10,8 @@ export const CreateEvent = () => {
     location: "",
     price: "",
     category: "", 
+    venue: "",
+      artist: "",
   });
 
   const [formStatus, setFormStatus] = useState("");
@@ -24,6 +26,17 @@ export const CreateEvent = () => {
       ...prevData,
       [name]: value,
     }));
+  };
+  // Handle Image Change
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewEvent((prev) => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -117,38 +130,6 @@ export const CreateEvent = () => {
               />
             </div>
 
-            {/* Event Time */}
-            <div>
-              <label htmlFor="time" className="block text-lg text-gray-700">
-                Event Time
-              </label>
-              <input
-                type="time"
-                id="time"
-                name="time"
-                value={formData.time}
-                onChange={handleChange}
-                required
-                className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ED4A43]"
-              />
-            </div>
-
-            {/* Event Location */}
-            <div>
-              <label htmlFor="location" className="block text-lg text-gray-700">
-                Event Location
-              </label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                required
-                className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ED4A43]"
-              />
-            </div>
-
             {/* Ticket Price */}
             <div>
               <label htmlFor="price" className="block text-lg text-gray-700">
@@ -159,6 +140,22 @@ export const CreateEvent = () => {
                 id="price"
                 name="price"
                 value={formData.price}
+                onChange={handleChange}
+                required
+                className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ED4A43]"
+              />
+            </div>
+
+            {/* Artist */}
+            <div>
+              <label htmlFor="artist" className="block text-lg text-gray-700">
+                Artist
+              </label>
+              <input
+                type="text"
+                id="artist"
+                name="artist"
+                value={formData.artist}
                 onChange={handleChange}
                 required
                 className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ED4A43]"
@@ -209,27 +206,11 @@ export const CreateEvent = () => {
                 <option value="">Select Venue</option>
               </select>
             </div>
- 
-            {/* Artist */}
-            <div>
-              <label
-                htmlFor="artist"
-                className="block text-lg text-gray-700"
-              >
-                Artist
-              </label>
-              <select
-                id="artist"
-                name="artist"
-                value={formData.artist}
-                onChange={handleChange}
-                required
-                className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ED4A43]"
-              >
-                <option value="">Select Artist</option>
-              </select>
+            <div className="mb-4">
+              <label className="block text-lg font-medium text-gray-700">Event Image</label>
+              <input type="file" onChange={handleImageChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
-
+ 
             {/* Submit Button */}
             <div className="text-center">
               <button

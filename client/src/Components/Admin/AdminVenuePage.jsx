@@ -23,15 +23,6 @@ export const AdminVenuePage = () => {
 
   // Add or Edit Venue
   const handleSaveVenue = () => {
-    if (!newVenue.name || !newVenue.location || !newVenue.capacity) {
-      alert("All fields are required!");
-      return;
-    }
-    if (selectedVenue) {
-      setVenues(venues.map(venue => (venue.id === selectedVenue.id ? { ...newVenue, id: venue.id } : venue)));
-    } else {
-      setVenues([...venues, { id: venues.length + 1, ...newVenue, isApproved: null }]);
-    }
     setShowModal(false);
     setSelectedVenue(null);
     setNewVenue({ name: "", location: "", capacity: "", image: venueImage });
@@ -152,7 +143,7 @@ export const AdminVenuePage = () => {
       {/* Modal for Adding/Editing Venue */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[600px]">
             <h3 className="text-3xl font-semibold text-center text-[#ED4A43] mb-4">
               {selectedVenue ? "Edit Venue" : "Add New Venue"}
             </h3>

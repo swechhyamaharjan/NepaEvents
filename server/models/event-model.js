@@ -6,10 +6,11 @@ const eventSchema = new mongoose.Schema({
   date: { type: Date, required: true },
   venue: { type: mongoose.Schema.Types.ObjectId, ref: "Venue", required: true },
   artist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Artist" }],
-  ticketPrice: { type: Number, required: true },
+  price: { type: Number, required: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  image: {type: String, required: true}
 });
 
 module.exports = mongoose.model("Event", eventSchema);

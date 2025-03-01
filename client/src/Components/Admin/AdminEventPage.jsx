@@ -15,8 +15,11 @@ export const AdminEventPage = () => {
   const [newEvent, setNewEvent] = useState({
     name: "",
     date: "",
-    location: "",
+    description: "",
+    venue: "",
     price: "",
+    artist: "",
+    category: "",
     image: eventImage,
   });
 
@@ -153,8 +156,8 @@ export const AdminEventPage = () => {
 
       {/* Modal for Adding/Editing Event */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 w-full">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[800px]">
             <h3 className="text-3xl font-semibold text-center text-[#ED4A43] mb-4">
               {selectedEvent ? "Edit Event" : "Add New Event"}
             </h3>
@@ -163,16 +166,40 @@ export const AdminEventPage = () => {
               <input type="text" name="name" value={newEvent.name} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
+              <label className="block text-lg font-medium text-gray-700">Event Description</label>
+              <textarea
+                id="description"
+                name="description"
+                value={newEvent.description}
+                onChange={handleChange}
+                required
+                rows="4"
+                className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ED4A43]"
+              ></textarea>
+            </div>
+            <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Date</label>
               <input type="date" name="date" value={newEvent.date} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
-              <label className="block text-lg font-medium text-gray-700">Location</label>
-              <input type="text" name="location" value={newEvent.location} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
+              <label className="block text-lg font-medium text-gray-700">Venue</label>
+              <select name="venue" id="venue">
+                <option value=""></option>
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-lg font-medium text-gray-700">Category</label>
+              <select name="category" id="category">
+                <option value=""></option>
+              </select>
             </div>
             <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Price</label>
               <input type="number" name="price" value={newEvent.price} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
+            </div>
+            <div className="mb-4">
+              <label className="block text-lg font-medium text-gray-700">Artist</label>
+              <input type="number" name="artist" value={newEvent.artist} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Event Image</label>

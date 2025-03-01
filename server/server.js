@@ -17,6 +17,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(userRoute);
 app.use("/api/event",eventRouter);
 app.use("/api/venue",venueRouter);

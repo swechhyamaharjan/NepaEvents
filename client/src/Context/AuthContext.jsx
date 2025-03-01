@@ -6,24 +6,29 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Added loading state
 
   useEffect(() => {
-    async function getUser() {
+    const getUser = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/getProfile`,
-          { withCredentials: true } // FIX: Ensures cookies are sent
-        );
+        const response = await axios.get(`http://localhost:3000/getProfile`, {
+          withCredentials: true, // Required for cookies-based auth
+        });
         console.log("User Data:", response.data);
-        setUser(response.data);
-        setRole(response.data.role); // FIX: Set role
+       
+        if (response.data) {
+          setUser(response.data);
+          setRole(response.data.role); // Set role correctly
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
+        setUser(null);
+        setRole(null);
       } finally {
-        setLoading(false);
+        setLoading(false); // Ensure loading is set to false
       }
-    }
+    };
+
     getUser();
   }, []);
 

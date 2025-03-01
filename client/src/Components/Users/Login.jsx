@@ -8,7 +8,6 @@ import { useAuth } from '../../Context/AuthContext.jsx';
 
 export const Login = () => {
   const navigate = useNavigate(); 
-  const { user, setUser, setRole } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,9 +18,6 @@ export const Login = () => {
         withCredentials: true,
       });
       if (data) {
-        setUser(data.data);
-        setRole(data.data.role);
-        console.log(data);
         toast.success(data.message);
         if(data.data.role==="user"){
           navigate('/homepage')
