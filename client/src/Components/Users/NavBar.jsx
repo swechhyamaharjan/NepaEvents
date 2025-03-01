@@ -28,7 +28,7 @@ export const NavBar = () => {
 
         {/* Navigation Links */}
         <div className="hidden md:flex space-x-8">
-          {["Home", "Event", "AboutUs", "ContactUs"].map((link) => (
+          {["HomePage", "Event", "AboutUs", "ContactUs"].map((link) => (
             <button
               key={link}
               className={`text-lg capitalize ${

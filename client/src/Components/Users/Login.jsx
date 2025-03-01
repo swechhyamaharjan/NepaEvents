@@ -21,8 +21,13 @@ export const Login = () => {
       if (data) {
         setUser(data.data);
         setRole(data.data.role);
+        console.log(data);
         toast.success(data.message);
-        navigate('/homepage');
+        if(data.data.role==="user"){
+          navigate('/homepage')
+        }else{
+          navigate('/admin/home')
+        }
       }
     } catch (error) {
       const errorMessage = error?.response?.data?.message || "An unexpected error occurred.";

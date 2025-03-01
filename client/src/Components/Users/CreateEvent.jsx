@@ -190,6 +190,46 @@ export const CreateEvent = () => {
               </select>
             </div>
 
+            {/* Venue */}
+            <div>
+              <label
+                htmlFor="venue"
+                className="block text-lg text-gray-700"
+              >
+                Venue
+              </label>
+              <select
+                id="venue"
+                name="venue"
+                value={formData.venue}
+                onChange={handleChange}
+                required
+                className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ED4A43]"
+              >
+                <option value="">Select Venue</option>
+              </select>
+            </div>
+ 
+            {/* Artist */}
+            <div>
+              <label
+                htmlFor="artist"
+                className="block text-lg text-gray-700"
+              >
+                Artist
+              </label>
+              <select
+                id="artist"
+                name="artist"
+                value={formData.artist}
+                onChange={handleChange}
+                required
+                className="w-full p-3 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ED4A43]"
+              >
+                <option value="">Select Artist</option>
+              </select>
+            </div>
+
             {/* Submit Button */}
             <div className="text-center">
               <button
