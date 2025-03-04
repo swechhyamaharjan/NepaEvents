@@ -17,6 +17,8 @@ export const AuthProvider = ({ children }) => {
         if (response.data) {
           setUser(response.data.user);
           setRole(response.data.user.role); // Set role correctly
+          setUser(response.data.user);
+          setRole(response.data.user.role); // Set role correctly
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
