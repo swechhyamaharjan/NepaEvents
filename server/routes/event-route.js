@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 eventRouter.post('/', verifyToken, upload.single('image'), createEvent)
-eventRouter.get('/', verifyToken, getAllEvents)
+eventRouter.get('/', getAllEvents)
 eventRouter.patch('/:eventId', updateEvent)
 eventRouter.get('/:id', findEventsById)
 eventRouter.delete('/:id', deleteEvent)

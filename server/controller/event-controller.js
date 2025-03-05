@@ -21,8 +21,8 @@ const getAllEvents = async (req, res) => {
     try {
         const events = await Event.find()
             .populate("venue")
-        // .populate("artist")
-        // .populate("createdBy", "name email");
+            // .populate("artist")
+            .populate("createdBy");
         res.status(200).json(events);
     } catch (error) {
         console.error("Error getting events:", error);

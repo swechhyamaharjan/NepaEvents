@@ -51,7 +51,7 @@ const deleteVenue = async (req, res) => {
     try {
         const venueToDelete = await Venue.findByIdAndDelete(req.params.venueId)
         if (!venueToDelete) {
-            return res.status(404).json({ msg: "Venue not found" });
+            return res.status(404).json({ message: "Venue deleted successfully" });
         }
         res.status(204).send();
     } catch (error) {

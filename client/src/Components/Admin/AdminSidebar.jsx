@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { FaTachometerAlt, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave, FaUsers } from "react-icons/fa";
+import { FaTachometerAlt, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave, FaUsers, FaTags } from "react-icons/fa";
 const logo = "/images/logo.png"; 
 
 export const AdminSidebar = () => {
@@ -13,24 +13,70 @@ export const AdminSidebar = () => {
 
       {/* Navigation Links */}
       <nav className="flex-1 p-4 space-y-2">
-        <NavLink to="/admin/home" className="flex items-center space-x-2 px-4 py-3 rounded-md hover:bg-gray-800 transition">
-          <FaTachometerAlt className="text-[#ED4A43]" />
+        <NavLink
+          to="/admin/home"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 px-4 py-3 rounded-md transition ${
+              isActive ? "bg-gray-800 text-[#ED4A43]" : "hover:bg-gray-800"
+            }`
+          }
+        >
+          <FaTachometerAlt />
           <span>Dashboard</span>
         </NavLink>
-        <NavLink to="/admin/events" className="flex items-center space-x-2 px-4 py-3 rounded-md hover:bg-gray-800 transition">
-          <FaCalendarAlt className="text-[#ED4A43]" />
+        <NavLink
+          to="/admin/events"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 px-4 py-3 rounded-md transition ${
+              isActive ? "bg-gray-800 text-[#ED4A43]" : "hover:bg-gray-800"
+            }`
+          }
+        >
+          <FaCalendarAlt />
           <span>Events</span>
         </NavLink>
-        <NavLink to="/admin/venues" className="flex items-center space-x-2 px-4 py-3 rounded-md hover:bg-gray-800 transition">
-          <FaMapMarkerAlt className="text-[#ED4A43]" />
+        <NavLink
+          to="/admin/venues"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 px-4 py-3 rounded-md transition ${
+              isActive ? "bg-gray-800 text-[#ED4A43]" : "hover:bg-gray-800"
+            }`
+          }
+        >
+          <FaMapMarkerAlt />
           <span>Venues</span>
         </NavLink>
-        <NavLink to="/admin/payments" className="flex items-center space-x-2 px-4 py-3 rounded-md hover:bg-gray-800 transition">
-          <FaMoneyBillWave className="text-[#ED4A43]" />
+        <NavLink
+          to="/admin/category"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 px-4 py-3 rounded-md transition ${
+              isActive ? "bg-gray-800 text-[#ED4A43]" : "hover:bg-gray-800"
+            }`
+          }
+        >
+          <FaTags />
+          <span>Category</span>
+        </NavLink>
+        <NavLink
+          to="/admin/payments"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 px-4 py-3 rounded-md transition ${
+              isActive ? "bg-gray-800 text-[#ED4A43]" : "hover:bg-gray-800"
+            }`
+          }
+        >
+          <FaMoneyBillWave />
           <span>Payments</span>
         </NavLink>
-        <NavLink to="/admin/users" className="flex items-center space-x-2 px-4 py-3 rounded-md hover:bg-gray-800 transition">
-          <FaUsers className="text-[#ED4A43]" />
+        <NavLink
+          to="/admin/users"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 px-4 py-3 rounded-md transition ${
+              isActive ? "bg-gray-800 text-[#ED4A43]" : "hover:bg-gray-800"
+            }`
+          }
+        >
+          <FaUsers />
           <span>Users</span>
         </NavLink>
       </nav>

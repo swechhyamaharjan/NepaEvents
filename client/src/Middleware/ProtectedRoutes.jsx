@@ -5,6 +5,7 @@ export const ProtectedRoute = ({ adminOnly = false }) => {
   const { user, role } = useAuth();
 
 
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }

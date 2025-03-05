@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrashAlt, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import venueImage from "/public/images/event1.png"; 
+import axios from "axios";
 
 export const AdminVenuePage = () => {
   const [venues, setVenues] = useState([
@@ -22,10 +23,17 @@ export const AdminVenuePage = () => {
   });
 
   // Add or Edit Venue
-  const handleSaveVenue = () => {
+  const handleSaveVenue = async () => {
     setShowModal(false);
     setSelectedVenue(null);
-    setNewVenue({ name: "", location: "", capacity: "", image: venueImage });
+    console.log(newVenue)
+    try {
+      const response = await axios.post("http://localhost:3000/api/venue", newVenue)
+      console.log(response);
+    } catch (error) {
+      console.log("Error: ", error);
+      
+    }
   };
 
   // Open Edit Modal
@@ -50,12 +58,6 @@ export const AdminVenuePage = () => {
   // Reject Venue
   const handleRejectVenue = (venueId) => {
     setVenues(venues.map((venue) => (venue.id === venueId ? { ...venue, isApproved: false } : venue)));
-  };
-
-  // Handle Input Change
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewVenue((prev) => ({ ...prev, [name]: value }));
   };
 
   // Handle Image Change
@@ -149,15 +151,15 @@ export const AdminVenuePage = () => {
             </h3>
             <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Venue Name</label>
-              <input type="text" name="name" value={newVenue.name} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
+              <input onChange={(e) => setNewVenue({name: e.target.value})} type="text" name="name" value={newVenue.name} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Location</label>
-              <input type="text" name="location" value={newVenue.location} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
+              <input onChange={(e) => setNewVenue({location: e.target.value})} type="text" name="location" value={newVenue.location} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Capacity</label>
-              <input type="number" name="capacity" value={newVenue.capacity} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
+              <input onChange={(e) => setNewVenue({capacity: e.target.value})} type="number" name="capacity" value={newVenue.capacity} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Venue Image</label>
