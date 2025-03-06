@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const connectToDB = async () => {
-const connectToDB = async () => {
   try {
     const response = await mongoose.connect("mongodb://localhost:27017/Nepa-Event")
     if (response) {
