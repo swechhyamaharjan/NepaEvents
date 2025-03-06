@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrashAlt, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import eventImage from "/public/images/event1.png";
+import axios from "axios";
 
 export const AdminEventPage = () => {
   const [events, setEvents] = useState([
@@ -20,23 +21,33 @@ export const AdminEventPage = () => {
     price: "",
     artist: "",
     category: "",
-    image: eventImage,
+    image: "",
   });
 
   // Add or Edit Event
-  const handleSaveEvent = () => {
-    if (!newEvent.name || !newEvent.date || !newEvent.location || !newEvent.price) {
-      alert("All fields are required!");
-      return;
+  const handleSaveEvent = async() => {
+    const formData = new FormData();
+    formData.append("name", newEvent.name);
+    formData.append("date", newEvent.date);
+    formData.append("description", newEvent.description);
+    formData.append("venue", newEvent.venue);
+    formData.append("price", newEvent.price);
+    formData.append("artist", newEvent.artist);
+    formData.append("category", newEvent.category);
+    if (newEvent.image){
+      formData.append("image", newEvent.image);
     }
-    if (selectedEvent) {
-      setEvents(events.map(event => (event.id === selectedEvent.id ? { ...newEvent, id: event.id } : event)));
-    } else {
-      setEvents([...events, { id: events.length + 1, ...newEvent, isApproved: null }]);
+    console.log(formData);
+    try {
+      const response = await axios.post("http://localhost:3000/api/event", formData, {
+          headers: { "Content-Type": "multipart/form-data"},
+          withCredentials: true
+      });
+      console.log(response);
+    } catch (error) {
+      console.log(error);
     }
     setShowModal(false);
-    setSelectedEvent(null);
-    setNewEvent({ name: "", date: "", location: "", price: "", image: eventImage });
   };
 
   // Open Edit Modal
@@ -73,11 +84,7 @@ export const AdminEventPage = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewEvent((prev) => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
+        setNewEvent((prev) => ({ ...prev, image:file }));
     }
   };
 
@@ -182,13 +189,13 @@ export const AdminEventPage = () => {
               <input type="date" name="date" value={newEvent.date} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
-              <label className="block text-lg font-medium text-gray-700">Venue</label>
+              <label className="block text-lg font-medium text-gray-700" onChange={handleChange}>Venue</label>
               <select name="venue" id="venue">
                 <option value=""></option>
               </select>
             </div>
             <div className="mb-4">
-              <label className="block text-lg font-medium text-gray-700">Category</label>
+              <label className="block text-lg font-medium text-gray-700" onChange={handleChange}>Category</label>
               <select name="category" id="category">
                 <option value=""></option>
               </select>
