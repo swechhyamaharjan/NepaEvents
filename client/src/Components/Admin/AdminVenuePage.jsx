@@ -19,20 +19,27 @@ export const AdminVenuePage = () => {
     name: "",
     location: "",
     capacity: "",
-    image: venueImage,
+    image: "",
   });
 
   // Add or Edit Venue
   const handleSaveVenue = async () => {
-    setShowModal(false);
-    setSelectedVenue(null);
-    console.log(newVenue)
+    const formData = new FormData();
+    formData.append("name", newVenue.name);
+    formData.append("location", newVenue.location);
+    formData.append("capacity", newVenue.capacity);
+    if(newVenue.image){
+      formData.append("image", newVenue.image)
+    }
     try {
-      const response = await axios.post("http://localhost:3000/api/venue", newVenue)
+      const response = await axios.post("http://localhost:3000/api/venue", formData, {
+        headers: { "Content-Type": "multipart/form-data"},
+        withCredentials: true
+      })
+      setShowModal(false);
       console.log(response);
     } catch (error) {
-      console.log("Error: ", error);
-      
+      console.log(error);
     }
   };
 
@@ -60,16 +67,18 @@ export const AdminVenuePage = () => {
     setVenues(venues.map((venue) => (venue.id === venueId ? { ...venue, isApproved: false } : venue)));
   };
 
+  // Handle Input Change
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewVenue((prev) => ({ ...prev, [name]: value }));
+  };
+
   // Handle Image Change
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewVenue((prev) => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
+        setNewVenue((prev) => ({ ...prev, image: file }));
+      }
   };
 
   return (
@@ -145,21 +154,21 @@ export const AdminVenuePage = () => {
       {/* Modal for Adding/Editing Venue */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-[600px]">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
             <h3 className="text-3xl font-semibold text-center text-[#ED4A43] mb-4">
               {selectedVenue ? "Edit Venue" : "Add New Venue"}
             </h3>
             <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Venue Name</label>
-              <input onChange={(e) => setNewVenue({name: e.target.value})} type="text" name="name" value={newVenue.name} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
+              <input type="text" name="name" value={newVenue.name} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Location</label>
-              <input onChange={(e) => setNewVenue({location: e.target.value})} type="text" name="location" value={newVenue.location} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
+              <input type="text" name="location" value={newVenue.location} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Capacity</label>
-              <input onChange={(e) => setNewVenue({capacity: e.target.value})} type="number" name="capacity" value={newVenue.capacity} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
+              <input type="number" name="capacity" value={newVenue.capacity} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
               <label className="block text-lg font-medium text-gray-700">Venue Image</label>
