@@ -19,7 +19,7 @@ export const Login = () => {
       });
       if (res) {
         setUser(res.data);
-        toast.success(res.message);
+        toast.success("Logged in successfully");
         if (res.data.user.role === "user") {
           navigate('/')
         } else {

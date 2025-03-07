@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaEdit, FaTrashAlt, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import eventImage from "/public/images/event1.png";
 import axios from "axios";
@@ -13,6 +13,8 @@ export const AdminEventPage = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [venues, setVenues] = useState(null);
+  const [categories, setCategories] = useState(null);
   const [newEvent, setNewEvent] = useState({
     name: "",
     date: "",
@@ -24,10 +26,36 @@ export const AdminEventPage = () => {
     image: "",
   });
 
+  useEffect(()=>{
+    async function fetchData(){
+    try {
+      const response = await axios.get("http://localhost:3000/api/venue");
+      setVenues(response.data);
+    } catch (error) {
+       console.log(error);
+    }
+  }
+  fetchData();
+  },[])
+
+  useEffect(()=>{
+    async function fetchData(){
+    try {
+      const response = await axios.get("http://localhost:3000/api/category");
+      setCategories(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+    fetchData();
+  }, [])
+
+
   // Add or Edit Event
   const handleSaveEvent = async() => {
+    console.log(newEvent);
     const formData = new FormData();
-    formData.append("name", newEvent.name);
+    formData.append("title", newEvent.name);
     formData.append("date", newEvent.date);
     formData.append("description", newEvent.description);
     formData.append("venue", newEvent.venue);
@@ -189,15 +217,19 @@ export const AdminEventPage = () => {
               <input type="date" name="date" value={newEvent.date} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md" />
             </div>
             <div className="mb-4">
-              <label className="block text-lg font-medium text-gray-700" onChange={handleChange}>Venue</label>
-              <select name="venue" id="venue">
-                <option value=""></option>
+              <label className="block text-lg font-medium text-gray-700">Venue</label>
+              <select name="venue" id="venue" onChange={handleChange} value={newEvent.venue}>
+                {venues.map((venue, index)=>(
+                  <option value={venue._id} key={index}>{venue.name}</option>
+                ))}
               </select>
             </div>
             <div className="mb-4">
-              <label className="block text-lg font-medium text-gray-700" onChange={handleChange}>Category</label>
-              <select name="category" id="category">
-                <option value=""></option>
+              <label className="block text-lg font-medium text-gray-700">Category</label>
+              <select name="category" id="category" onChange={handleChange} value={newEvent.category}>
+                {categories.map((category, index)=>(
+                  <option value={category._id} key={index}>{category.name}</option>
+                ))}
               </select>
             </div>
             <div className="mb-4">

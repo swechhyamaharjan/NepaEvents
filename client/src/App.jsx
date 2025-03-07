@@ -18,6 +18,7 @@ import { AdminSidebar } from "./Components/Admin/AdminSidebar";
 import { AdminVenuePage } from "./Components/Admin/AdminVenuePage";
 import { AuthProvider } from "./Context/AuthContext";
 import { ProtectedRoute } from "./Middleware/ProtectedRoutes"; // Import ProtectedRoute
+import AdminCategory from "./Components/Admin/AdminCategory";
 
 // Layout for Users
 const UserLayout = ({ children }) => (
@@ -56,6 +57,7 @@ function App() {
             <Route path="/admin/home" element={<AdminLayout><AdminHome /></AdminLayout>} />
             <Route path="/admin/events" element={<AdminLayout><AdminEventPage /></AdminLayout>} />
             <Route path="/admin/venues" element={<AdminLayout><AdminVenuePage /></AdminLayout>} />
+            <Route path="/admin/category" element={<AdminLayout><AdminCategory /></AdminLayout>} />
           </Route>
         </Routes>
       </BrowserRouter>

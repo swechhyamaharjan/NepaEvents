@@ -6,7 +6,7 @@ import { FaTrashAlt } from "react-icons/fa";
 const AdminCategory = () => {
   const [showModal, setShowModal] = useState(false);
   const [category, setCategory] = useState("");
-  const [categories, setCategories] = useState([]); // Stores added categories
+  const [categories, setCategories] = useState([]); 
 
   // Handle form submission
   async function handleSubmit(e) {

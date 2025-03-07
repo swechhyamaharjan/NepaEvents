@@ -12,7 +12,7 @@ export const AdminHome = () => {
         <div className='mr-10'>
           <h2>Welcome, Swekchya</h2>
         </div>
-      <button className='logoutbtn bg-[#ED4A43] text-white py-4 px-6 rounded-lg'>Logout</button>
+      <button className='logoutbtn bg-[#ED4A43] text-white py-4 px-6 rounded-lg ' onClick={() => navigate("/login")} >Logout</button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
         {/* Total Events */}

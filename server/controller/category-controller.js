@@ -17,8 +17,8 @@ const createCategory = async (req, res) => {
 };
 const getAllCategory = async (req, res) => {
   try {
-    const Category = await Category.find();
-    res.status(200).json(Category);
+    const category = await Category.find();
+    res.status(200).json(category);
   } catch (error) {
     console.error("Error getting Categorys:", error);
     res.status(500).json({ message: "Error getting Categorys", error: error.message });

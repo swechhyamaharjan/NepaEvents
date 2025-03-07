@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaEdit, FaTrashAlt, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import venueImage from "/public/images/event1.png"; 
 import axios from "axios";
+import { toast } from "react-hot-toast";
 
 export const AdminVenuePage = () => {
   const [venues, setVenues] = useState([
@@ -36,10 +37,12 @@ export const AdminVenuePage = () => {
         headers: { "Content-Type": "multipart/form-data"},
         withCredentials: true
       })
+      toast.success("Venue added successfully!");
       setShowModal(false);
       console.log(response);
     } catch (error) {
       console.log(error);
+      toast.error("Failed to add venue. Please try again!");
     }
   };
 
