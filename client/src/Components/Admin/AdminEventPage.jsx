@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaEdit, FaTrashAlt, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave } from "react-icons/fa";
 import eventImage from "/public/images/event1.png";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 export const AdminEventPage = () => {
   const [events, setEvents] = useState([
@@ -52,7 +53,8 @@ export const AdminEventPage = () => {
 
 
   // Add or Edit Event
-  const handleSaveEvent = async() => {
+  const handleSaveEvent = async(e) => {
+    e.preventDefault();
     console.log(newEvent);
     const formData = new FormData();
     formData.append("title", newEvent.name);
@@ -71,9 +73,11 @@ export const AdminEventPage = () => {
           headers: { "Content-Type": "multipart/form-data"},
           withCredentials: true
       });
+      toast.success("Event created successfully!");
       console.log(response);
     } catch (error) {
       console.log(error);
+      toast.error("Event failed to create!");
     }
     setShowModal(false);
   };
@@ -243,7 +247,7 @@ export const AdminEventPage = () => {
               </p>
             </div>
             
-            <form className="p-8">
+            <form onSubmit={handleSaveEvent} className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column */}
                 <div className="space-y-6">
@@ -434,8 +438,7 @@ export const AdminEventPage = () => {
                 >
                   Cancel
                 </button>
-                <button 
-                  onClick={handleSaveEvent} 
+                <button
                   className="px-10 py-4 bg-[#ED4A43] text-white font-semibold rounded-xl shadow-lg hover:bg-[#D43C35] transform hover:-translate-y-1 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:ring-offset-2"
                 >
                   <div className="flex items-center justify-center">
