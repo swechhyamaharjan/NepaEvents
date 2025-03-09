@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 export const CreateEvent = () => {
   const [formData, setFormData] = useState({
@@ -12,20 +14,38 @@ export const CreateEvent = () => {
     category: "",
     venue: "",
     artist: "",
+    image: null
   });
 
   const [formStatus, setFormStatus] = useState("");
+  const [venues, setVenues] = useState(null);
+  const [categories, setCategories] = useState(null);
   const navigate = useNavigate();
 
-  // Category options
-  const categories = [
-    "Music",
-    "Sports",
-    "Theater",
-    "Conference",
-    "Festival",
-    "Other",
-  ];
+  // Fetch venues and categories from API
+  useEffect(() => {
+    async function fetchVenues() {
+      try {
+        const response = await axios.get("http://localhost:3000/api/venue");
+        setVenues(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchVenues();
+  }, []);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await axios.get("http://localhost:3000/api/category");
+        setCategories(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchCategories();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,61 +59,43 @@ export const CreateEvent = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewEvent((prev) => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      setFormData((prev) => ({ ...prev, image: file }));
     }
   };
   
-  //confirm the event creation
-  const handleConfirmEvent = async() => {
-    console.log(formData);
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("date", date);
-    formData.append("price", price);
-    formData.append("category", category);
-    formData.append("venue", venue);
-    formData.append("artist", artist);
-    if (formData.image){
-      formData.append("image", newEvent.image);
+  // Form submission handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    const submitData = new FormData();
+    submitData.append("title", formData.title);
+    submitData.append("description", formData.description);
+    submitData.append("date", formData.date);
+    submitData.append("price", formData.price);
+    submitData.append("category", formData.category);
+    submitData.append("venue", formData.venue);
+    submitData.append("artist", formData.artist);
+    if (formData.image) {
+      submitData.append("image", formData.image);
     }
-    console.log(formData);
+
     try {
-      const response = await axios.post("http://localhost:3000/api/event", formData, {
-        headers: { "Content-Type": "multipart/form-data"},
+      const response = await axios.post("http://localhost:3000/api/event", submitData, {
+        headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true
       });
-      console.log(response);
+      
+      toast.success("Event submitted for approval!");
+      setFormStatus("Event submitted successfully! It has been sent for admin approval and might be rejected or approved.");
     } catch (error) {
-  }
-    console.log(error); 
-  }
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // this will send the form data to a backend later
-
-    setFormStatus("Event created successfully!");
-    setFormData({
-      title: "",
-      description: "",
-      date: "",
-      time: "",
-      location: "",
-      price: "",
-      category: "",
-    });
-    //redirect after submission to event page
-    setTimeout(() => {
-      navigate("/events");
-    }, 2000); // 2-second delay for user to see the success message
+      console.log(error);
+      toast.error("Failed to create event!");
+      setFormStatus("Failed to create event. Please try again.");
+    }
   };
 
   return (
-    <div className="min-h-screen  py-12 px-4">
+    <div className="min-h-screen py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header with decorative elements */}
         <div className="relative mb-12 text-center">
@@ -232,7 +234,7 @@ export const CreateEvent = () => {
                     {/* Ticket Price */}
                     <div>
                       <label htmlFor="price" className="block text-gray-700 font-medium mb-1 text-sm">
-                        Price ($)
+                        Price (Rs.)
                       </label>
                       <input
                         type="number"
@@ -263,9 +265,9 @@ export const CreateEvent = () => {
                       className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl appearance-none focus:outline-none focus:border-[#ED4A43] transition-colors"
                     >
                       <option value="">Select Category</option>
-                      {categories.map((category, index) => (
-                        <option key={index} value={category}>
-                          {category}
+                      {categories && categories.map((category, index) => (
+                        <option key={index} value={category._id}>
+                          {category.name}
                         </option>
                       ))}
                     </select>
@@ -309,6 +311,11 @@ export const CreateEvent = () => {
                       className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl appearance-none focus:outline-none focus:border-[#ED4A43] transition-colors"
                     >
                       <option value="">Select Venue</option>
+                      {venues && venues.map((venue, index) => (
+                        <option key={index} value={venue._id}>
+                          {venue.name}
+                        </option>
+                      ))}
                     </select>
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <svg className="h-5 w-5 text-[#ED4A43]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,7 +330,6 @@ export const CreateEvent = () => {
             {/* Submit Button */}
             <div className="mt-10 text-center">
               <button
-                onClick={handleConfirmEvent}
                 type="submit"
                 className="px-10 py-4 bg-[#ED4A43] text-white font-semibold rounded-xl shadow-lg hover:bg-[#D43C35] transform hover:-translate-y-1 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:ring-offset-2"
               >
