@@ -1,15 +1,22 @@
 const express = require("express");
+const { bookVenue, getAllVenues, updateVenue, deleteVenue, getVenueById } = require('../controller/venue-controller');
 const multer = require("multer");
 const path = require("path");
-const {bookVenue, getAllVenues, updateVenue, deleteVenue, getVenueById} = require('../controller/venue-controller');
+const fs = require("fs");
 
 
+const uploadPath = "uploads/";
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
+// Multer storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Directory where files will be stored
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique file name
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 

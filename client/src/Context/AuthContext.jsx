@@ -14,11 +14,9 @@ export const AuthProvider = ({ children }) => {
         const response = await axios.get(`http://localhost:3000/getProfile`, {
           withCredentials: true, // Required for cookies-based auth
         });
-        console.log("User Data:", response.data);
-       
         if (response.data) {
-          setUser(response.data);
-          setRole(response.data.role); // Set role correctly
+          setUser(response.data.user);
+          setRole(response.data.user.role); // Set role correctly
         }
       } catch (error) {
         console.error("Error fetching user data:", error);

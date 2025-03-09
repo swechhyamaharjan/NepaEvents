@@ -2,10 +2,14 @@ const Event = require('../models/event-model');
 
 const createEvent = async (req, res) => {
     try {
-        await Event.create(req.body)
+        const { title, description, date, venue, price } = req.body;
+        const image = req.file ? req.file.path : null;
+        const createdBy = req.user.user._id;
+        const event = await Event.create({ title, description, date, venue, price, image, createdBy })
         res.status(201).json({
             success: true,
-            message: 'Event created successfully'
+            message: 'Event created successfully',
+            newEvent: event
         })
     } catch (error) {
         console.error('Error creating an event:', error);
@@ -16,9 +20,9 @@ const createEvent = async (req, res) => {
 const getAllEvents = async (req, res) => {
     try {
         const events = await Event.find()
-        .populate("venue")
-        .populate("artist")
-        .populate("createdBy", "name email");
+            .populate("venue")
+        // .populate("artist")
+        // .populate("createdBy", "name email");
         res.status(200).json(events);
     } catch (error) {
         console.error("Error getting events:", error);
@@ -50,19 +54,19 @@ const deleteEvent = async (req, res) => {
         const id = req.params.id
         await Event.findByIdAndDelete(id);
         res.status(200).json({ success: true, message: "Event deleted successfully" });
-        
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ msg: "Server error" });  
+        res.status(500).json({ msg: "Server error" });
     }
 }
 const findEventsById = async (req, res) => {
     try {
         const id = req.params.id
         const user = await Event.findById(id)
-        .populate("venue")
-        .populate("artist")
-        .populate("createdBy", "name email");
+            .populate("venue")
+        // .populate("artist")
+        // .populate("createdBy", "name email");
         res.status(200).json({ success: true, data: user });
     } catch (error) {
         console.error(error);

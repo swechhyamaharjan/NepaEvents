@@ -7,21 +7,22 @@ import { FaFacebook } from 'react-icons/fa';
 import { useAuth } from '../../Context/AuthContext.jsx';
 
 export const Login = () => {
-  const navigate = useNavigate(); 
-
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const values = Object.fromEntries(formData.entries());
     try {
-      const { data } = await axios.post('http://localhost:3000/login', values, {
+      const res = await axios.post('http://localhost:3000/login', values, {
         withCredentials: true,
       });
-      if (data) {
-        toast.success(data.message);
-        if(data.data.role==="user"){
-          navigate('/homepage')
-        }else{
+      if (res) {
+        setUser(res.data);
+        toast.success(res.message);
+        if (res.data.user.role === "user") {
+          navigate('/')
+        } else {
           navigate('/admin/home')
         }
       }
@@ -33,7 +34,7 @@ export const Login = () => {
   };
 
   const handleGuestLogin = () => {
-    navigate('/homepage');
+    navigate('/');
   };
 
   return (
@@ -84,7 +85,7 @@ export const Login = () => {
         <button
           type="button"
           className="w-full py-2 bg-[#FFF5F4] text-gray-600 font-medium rounded-md border border-[#ED4A43] hover:bg-white mt-4"
-          onClick={() => navigate('/signup')} 
+          onClick={() => navigate('/signup')}
         >
           Create Account
         </button>
