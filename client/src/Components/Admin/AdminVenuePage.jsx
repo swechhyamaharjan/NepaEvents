@@ -1,18 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrashAlt, FaCheckCircle, FaTimesCircle, FaMapMarkerAlt, FaUsers, FaBuilding } from "react-icons/fa";
 import venueImage from "/public/images/event1.png"; 
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
 export const AdminVenuePage = () => {
-  const [venues, setVenues] = useState([
-    { id: 1, name: "Hyatt Regency", location: "Kathmandu", capacity: 500, isApproved: null, image: venueImage },
-    { id: 2, name: "Bhrikuti Mandap", location: "Kathmandu", capacity: 1000, isApproved: null, image: venueImage },
-    { id: 3, name: "Pragya Hall", location: "Pokhara", capacity: 200, isApproved: null, image: venueImage },
-    { id: 4, name: "Tudikhel", location: "Kathmandu", capacity: 1500, isApproved: null, image: venueImage },
-    // Simulating user-requested venues
-    { id: 5, name: "Requested Venue", location: "City Hall", capacity: 300, isApproved: null, image: venueImage },
-  ]);
+  const [venues, setVenues] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState(null);
@@ -45,6 +38,18 @@ export const AdminVenuePage = () => {
       toast.error("Failed to add venue. Please try again!");
     }
   };
+  useEffect(()=>{
+    async function fetchVenues(){
+      try {
+        const response = await axios.get("http://localhost:3000/api/venue");
+        setVenues(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+fetchVenues();
+  },[])
 
   // Open Edit Modal
   const handleEditVenue = (venue) => {
@@ -113,86 +118,86 @@ export const AdminVenuePage = () => {
 
         {/* Venue List */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-          {venues.map((venue) => (
+          {venues.map((venue)=>(
             <div 
-              key={venue.id} 
-              className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-            >
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                  <div className="p-6 w-full">
-                    <div className="flex justify-between">
-                      <button
-                        onClick={() => handleEditVenue(venue)}
-                        className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
-                      >
-                        <FaEdit size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteVenue(venue.id)}
-                        className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
-                      >
-                        <FaTrashAlt size={18} />
-                      </button>
-                    </div>
+            key={venue.id} 
+            className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+          >
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                <div className="p-6 w-full">
+                  <div className="flex justify-between">
+                    <button
+                      onClick={() => handleEditVenue(venue)}
+                      className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
+                    >
+                      <FaEdit size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteVenue(venue.id)}
+                      className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
+                    >
+                      <FaTrashAlt size={18} />
+                    </button>
                   </div>
-                </div>
-                <img 
-                  src={venue.image} 
-                  alt={venue.name} 
-                  className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
-                />
-                <div 
-                  className={`absolute top-4 right-4 px-3 py-1 rounded-full border ${getStatusColor(venue.isApproved)} text-xs font-bold`}
-                >
-                  {getStatusText(venue.isApproved)}
                 </div>
               </div>
-
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-3 text-gray-800">{venue.name}</h3>
-                
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center text-gray-600">
-                    <FaMapMarkerAlt className="mr-2 text-[#ED4A43]" />
-                    <span>{venue.location}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <FaUsers className="mr-2 text-[#ED4A43]" />
-                    <span>Capacity: {venue.capacity}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <FaBuilding className="mr-2 text-[#ED4A43]" />
-                    <span className="font-semibold">Venue</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                  <button
-                    onClick={() => handleApproveVenue(venue.id)}
-                    className={`px-4 py-3 rounded-lg flex items-center justify-center ${
-                      venue.isApproved === true 
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-                        : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
-                    }`}
-                    disabled={venue.isApproved === true}
-                  >
-                    <FaCheckCircle className="mr-2" /> Approve
-                  </button>
-                  <button
-                    onClick={() => handleRejectVenue(venue.id)}
-                    className={`px-4 py-3 rounded-lg flex items-center justify-center ${
-                      venue.isApproved === false 
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-                        : "bg-[#ED4A43] text-white hover:shadow-md"
-                    }`}
-                    disabled={venue.isApproved === false}
-                  >
-                    <FaTimesCircle className="mr-2" /> Reject
-                  </button>
-                </div>
+              <img 
+                src={`http://localhost:3000/${venue.image}`} 
+                alt={venue.name} 
+                className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
+              />
+              <div 
+                className={`absolute top-4 right-4 px-3 py-1 rounded-full border ${getStatusColor(venue.isApproved)} text-xs font-bold`}
+              >
+                {getStatusText(venue.isApproved)}
               </div>
             </div>
+
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-3 text-gray-800">{venue.name}</h3>
+              
+              <div className="space-y-2 mb-6">
+                <div className="flex items-center text-gray-600">
+                  <FaMapMarkerAlt className="mr-2 text-[#ED4A43]" />
+                  <span>{venue.location}</span>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <FaUsers className="mr-2 text-[#ED4A43]" />
+                  <span>Capacity: {venue.capacity}</span>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <FaBuilding className="mr-2 text-[#ED4A43]" />
+                  <span className="font-semibold">{venue.name}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <button
+                  onClick={() => handleApproveVenue(venue.id)}
+                  className={`px-4 py-3 rounded-lg flex items-center justify-center ${
+                    venue.isApproved === true 
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                      : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
+                  }`}
+                  disabled={venue.isApproved === true}
+                >
+                  <FaCheckCircle className="mr-2" /> Approve
+                </button>
+                <button
+                  onClick={() => handleRejectVenue(venue.id)}
+                  className={`px-4 py-3 rounded-lg flex items-center justify-center ${
+                    venue.isApproved === false 
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                      : "bg-[#ED4A43] text-white hover:shadow-md"
+                  }`}
+                  disabled={venue.isApproved === false}
+                >
+                  <FaTimesCircle className="mr-2" /> Reject
+                </button>
+              </div>
+            </div>
+          </div>
           ))}
         </div>
       </div>
