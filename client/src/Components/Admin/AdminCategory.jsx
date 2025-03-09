@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { FaTrashAlt } from "react-icons/fa";
 
@@ -17,7 +17,7 @@ const AdminCategory = () => {
       });
 
       // Add new category to local state
-      setCategories([...categories, { id: categories.length + 1, name: category }]);
+      // setCategories([...categories, { id: categories.length + 1, name: category }]);
 
       toast.success(response.data.message);
       setShowModal(false);
@@ -27,12 +27,25 @@ const AdminCategory = () => {
       toast.error("Failed to add category");
     }
   }
+  useEffect(()=>{
+      async function fetchCategories() {
+        try {
+          const response = await axios.get("http://localhost:3000/api/category");
+          setCategories(response.data);
+          console.log(response.data);
+      }
+      catch(error){
+        console.log(error);
+      }   
+    }
+  fetchCategories();
+  }, [])
 
-  // Handle category deletion
-  const handleDeleteCategory = (categoryId) => {
-    setCategories(categories.filter((cat) => cat.id !== categoryId));
-    toast.success("Category deleted successfully");
-  };
+  // // Handle category deletion
+  // const handleDeleteCategory = (categoryId) => {
+  //   setCategories(categories.filter((cat) => cat.id !== categoryId));
+  //   toast.success("Category deleted successfully");
+  // };
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -57,11 +70,8 @@ const AdminCategory = () => {
             <h3 className="text-xl font-semibold text-gray-800 mb-1">
               {cat.name}
             </h3>
-
-            {/* Delete Button */}
             <div className="absolute top-4 right-4 flex space-x-4">
               <button
-                onClick={() => handleDeleteCategory(cat.id)}
                 className="bg-[#ED4A43] text-white p-2 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center justify-center"
               >
                 <FaTrashAlt size={20} />
