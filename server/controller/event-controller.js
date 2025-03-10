@@ -21,7 +21,6 @@ const getAllEvents = async (req, res) => {
     try {
         const events = await Event.find()
             .populate("venue")
-            // .populate("artist")
             .populate("createdBy");
         res.status(200).json(events);
     } catch (error) {
@@ -65,8 +64,6 @@ const findEventsById = async (req, res) => {
         const id = req.params.id
         const user = await Event.findById(id)
             .populate("venue")
-        // .populate("artist")
-        // .populate("createdBy", "name email");
         res.status(200).json({ success: true, data: user });
     } catch (error) {
         console.error(error);
