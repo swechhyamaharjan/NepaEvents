@@ -6,10 +6,6 @@ import toast from "react-hot-toast";
 
 export const AdminEventPage = () => {
   const [events, setEvents] = useState([
-    { id: 1, name: "Concert X", date: "December 31, 2024", location: "Hyatt Regency", price: 1000, isApproved: null, image: eventImage },
-    { id: 2, name: "Live Performance", date: "January 5, 2025", location: "Bhrikuti Mandap", price: 800, isApproved: null, image: eventImage },
-    { id: 3, name: "Dancing Show", date: "January 10, 2025", location: "Pragya Hall", price: 500, isApproved: null, image: eventImage },
-    { id: 4, name: "Comedy Show", date: "January 15, 2025", location: "Tudikhel", price: 700, isApproved: null, image: eventImage },
   ]);
 
   const [showModal, setShowModal] = useState(false);
@@ -81,6 +77,18 @@ export const AdminEventPage = () => {
     }
     setShowModal(false);
   };
+  useEffect(()=>{
+    async function fetchEvents(){
+      try {
+        const response = await axios.get("http://localhost:3000/api/event");
+        setEvents(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+fetchEvents();
+  },[])
 
   // Open Edit Modal
   const handleEditEvent = (event) => {
@@ -174,7 +182,7 @@ export const AdminEventPage = () => {
                   </div>
                 </div>
                 <img 
-                  src={event.image} 
+                  src={`http://localhost:3000/${event.image}`} 
                   alt={event.name} 
                   className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
