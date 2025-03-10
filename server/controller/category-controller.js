@@ -4,7 +4,11 @@ const Category = require("../models/category-model");
 const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
-    const newCategory = await Category.create({ name });
+    const image = req.file ? req.file.path : null; 
+    if (!image) {
+      return res.status(400).json({ message: 'Image is required' });
+  }
+    const newCategory = await Category.create({ name, image });
     res.status(201).json({
       success: true,
       message: 'Category created successfully',
