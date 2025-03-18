@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { FaEdit, FaTrashAlt, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave } from "react-icons/fa";
-import eventImage from "/public/images/event1.png";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -33,7 +32,7 @@ export const AdminEventPage = () => {
     }
   }
   fetchData();
-  },[])
+  },[venues])
 
   useEffect(()=>{
     async function fetchData(){
@@ -45,13 +44,12 @@ export const AdminEventPage = () => {
     }
   }
     fetchData();
-  }, [])
+  }, [categories])
 
 
   // Add or Edit Event
   const handleSaveEvent = async(e) => {
     e.preventDefault();
-    console.log(newEvent);
     const formData = new FormData();
     formData.append("title", newEvent.name);
     formData.append("date", newEvent.date);
@@ -63,7 +61,6 @@ export const AdminEventPage = () => {
     if (newEvent.image){
       formData.append("image", newEvent.image);
     }
-    console.log(formData);
     try {
       const response = await axios.post("http://localhost:3000/api/event", formData, {
           headers: { "Content-Type": "multipart/form-data"},
@@ -82,13 +79,12 @@ export const AdminEventPage = () => {
       try {
         const response = await axios.get("http://localhost:3000/api/event");
         setEvents(response.data);
-        console.log(response.data);
       } catch (error) {
         console.log(error);
       }
     }
 fetchEvents();
-  },[])
+  },[events])
 
   // Open Edit Modal
   const handleEditEvent = (event) => {
