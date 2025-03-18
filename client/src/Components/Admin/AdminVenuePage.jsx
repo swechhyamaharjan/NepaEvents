@@ -32,7 +32,6 @@ export const AdminVenuePage = () => {
       })
       toast.success("Venue added successfully!");
       setShowModal(false);
-      console.log(response);
     } catch (error) {
       console.log(error);
       toast.error("Failed to add venue. Please try again!");
@@ -43,13 +42,12 @@ export const AdminVenuePage = () => {
       try {
         const response = await axios.get("http://localhost:3000/api/venue");
         setVenues(response.data);
-        console.log(response.data);
       } catch (error) {
         console.log(error);
       }
     }
 fetchVenues();
-  },[])
+  },[venues])
 
   // Open Edit Modal
   const handleEditVenue = (venue) => {
