@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true); // Added loading state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -17,15 +18,14 @@ export const AuthProvider = ({ children }) => {
         if (response.data) {
           setUser(response.data.user);
           setRole(response.data.user.role); 
-          setUser(response.data.user);
-          setRole(response.data.user.role); 
+          setIsLoggedIn(true);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
         setUser(null);
         setRole(null);
       } finally {
-        setLoading(false); // Ensure loading is set to false
+        setLoading(false); 
       }
     };
 
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, role, setUser, setRole, loading }}>
+    <AuthContext.Provider value={{ user, role, setUser, setRole, loading , isLoggedIn}}>
       {children}
     </AuthContext.Provider>
   );
