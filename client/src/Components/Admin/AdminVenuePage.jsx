@@ -7,6 +7,7 @@ export const AdminVenuePage = () => {
   const [venues, setVenues] = useState([]);
   const [activeTab, setActiveTab] = useState("adminVenues"); // "adminVenues" or "requestedVenues"
   const [refreshTrigger, setRefreshTrigger] = useState(0); // Used to trigger venue refresh
+  const [imagePreview, setImagePreview] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState(null);
@@ -23,40 +24,40 @@ export const AdminVenuePage = () => {
     formData.append("name", newVenue.name);
     formData.append("location", newVenue.location);
     formData.append("capacity", newVenue.capacity);
-    formData.append("isAdminAdded", true); 
-    if(newVenue.image){
+    formData.append("isAdminAdded", true);
+    if (newVenue.image) {
       formData.append("image", newVenue.image);
     }
-    
+
     try {
       if (selectedVenue) {
         // Edit existing venue
         await axios.put(`http://localhost:3000/api/venue/${selectedVenue.id}`, formData, {
-          headers: { "Content-Type": "multipart/form-data"},
+          headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true
         });
         toast.success("Venue updated successfully!");
       } else {
         // Create new venue
         await axios.post("http://localhost:3000/api/venue", formData, {
-          headers: { "Content-Type": "multipart/form-data"},
+          headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true
         });
         toast.success("Venue added successfully!");
       }
       setShowModal(false);
       setRefreshTrigger(prev => prev + 1); // Trigger a refresh
+      setImagePreview(null);
     } catch (error) {
       console.error("Error saving venue:", error);
       toast.error("Failed to save venue. Please try again!");
     }
   };
-  
+
   useEffect(() => {
-    async function fetchVenues(){
+    async function fetchVenues() {
       try {
         const response = await axios.get("http://localhost:3000/api/venue");
-        console.log("Fetched venues:", response.data);
         setVenues(response.data);
       } catch (error) {
         console.error("Error fetching venues:", error);
@@ -71,12 +72,14 @@ export const AdminVenuePage = () => {
     setSelectedVenue(venue);
     setNewVenue(venue);
     setShowModal(true);
+    console.log(newVenue);
   };
 
   // Delete Venue
   const handleDeleteVenue = async (venueId) => {
     if (window.confirm("Are you sure you want to delete this venue?")) {
       try {
+        console.log(venueId);
         await axios.delete(`http://localhost:3000/api/venue/${venueId}`, {
           withCredentials: true
         });
@@ -131,6 +134,7 @@ export const AdminVenuePage = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setImagePreview(true);
       setNewVenue((prev) => ({ ...prev, image: file }));
     }
   };
@@ -148,7 +152,7 @@ export const AdminVenuePage = () => {
   };
 
   // Filter venues based on whether they were added by admin or requested by users
-  const adminAddedVenues = venues.filter(venue => venue.isAdminAdded === true);
+  const adminAddedVenues = venues.filter(venue => venue);
   const requestedVenues = venues.filter(venue => venue.isAdminAdded !== true);
 
   return (
@@ -162,21 +166,19 @@ export const AdminVenuePage = () => {
           <div className="bg-white rounded-full shadow-md inline-flex p-1">
             <button
               onClick={() => setActiveTab("adminVenues")}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${
-                activeTab === "adminVenues" 
-                  ? "bg-[#ED4A43] text-white shadow-lg" 
+              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "adminVenues"
+                  ? "bg-[#ED4A43] text-white shadow-lg"
                   : "text-gray-600 hover:bg-gray-100"
-              }`}
+                }`}
             >
               Venues Added by Admin
             </button>
             <button
               onClick={() => setActiveTab("requestedVenues")}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${
-                activeTab === "requestedVenues" 
-                  ? "bg-[#ED4A43] text-white shadow-lg" 
+              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "requestedVenues"
+                  ? "bg-[#ED4A43] text-white shadow-lg"
                   : "text-gray-600 hover:bg-gray-100"
-              }`}
+                }`}
             >
               Requested Venues by User
             </button>
@@ -207,9 +209,9 @@ export const AdminVenuePage = () => {
         {/* Admin Added Venues */}
         {activeTab === "adminVenues" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-            {adminAddedVenues.length > 0 ? adminAddedVenues.map((venue) => (
-              <div 
-                key={venue.id} 
+            {venues.length > 0 ? venues.map((venue) => (
+              <div
+                key={venue.id}
                 className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
               >
                 <div className="relative">
@@ -223,7 +225,7 @@ export const AdminVenuePage = () => {
                           <FaEdit size={18} />
                         </button>
                         <button
-                          onClick={() => handleDeleteVenue(venue.id)}
+                          onClick={() => handleDeleteVenue(venue._id)}
                           className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
                         >
                           <FaTrashAlt size={18} />
@@ -231,16 +233,16 @@ export const AdminVenuePage = () => {
                       </div>
                     </div>
                   </div>
-                  <img 
-                    src={`http://localhost:3000/${venue.image}`} 
-                    alt={venue.name} 
+                  <img
+                    src={`http://localhost:3000/${venue.image}`}
+                    alt={venue.name}
                     className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
                   />
                 </div>
 
                 <div className="p-6">
                   <h3 className="text-xl font-bold mb-3 text-gray-800">{venue.name}</h3>
-                  
+
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center text-gray-600">
                       <FaMapMarkerAlt className="mr-2 text-[#ED4A43]" />
@@ -265,7 +267,7 @@ export const AdminVenuePage = () => {
                       <FaEdit className="mr-2" /> Edit
                     </button>
                     <button
-                      onClick={() => handleDeleteVenue(venue.id)}
+                      onClick={() => handleDeleteVenue(venue._id)}
                       className="px-4 py-3 rounded-lg flex items-center justify-center bg-[#ED4A43] text-white hover:shadow-md"
                     >
                       <FaTrashAlt className="mr-2" /> Delete
@@ -287,8 +289,8 @@ export const AdminVenuePage = () => {
         {activeTab === "requestedVenues" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
             {requestedVenues.length > 0 ? requestedVenues.map((venue) => (
-              <div 
-                key={venue.id} 
+              <div
+                key={venue.id}
                 className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
               >
                 <div className="relative">
@@ -310,12 +312,12 @@ export const AdminVenuePage = () => {
                       </div>
                     </div>
                   </div>
-                  <img 
-                    src={`http://localhost:3000/${venue.image}`} 
-                    alt={venue.name} 
+                  <img
+                    src={`http://localhost:3000/${venue.image}`}
+                    alt={venue.name}
                     className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
                   />
-                  <div 
+                  <div
                     className={`absolute top-4 right-4 px-3 py-1 rounded-full border ${getStatusColor(venue.isApproved)} text-xs font-bold`}
                   >
                     {getStatusText(venue.isApproved)}
@@ -324,7 +326,7 @@ export const AdminVenuePage = () => {
 
                 <div className="p-6">
                   <h3 className="text-xl font-bold mb-3 text-gray-800">{venue.name}</h3>
-                  
+
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center text-gray-600">
                       <FaMapMarkerAlt className="mr-2 text-[#ED4A43]" />
@@ -344,22 +346,20 @@ export const AdminVenuePage = () => {
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     <button
                       onClick={() => handleApproveVenue(venue.id)}
-                      className={`px-4 py-3 rounded-lg flex items-center justify-center ${
-                        venue.isApproved === true 
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                      className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === true
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
-                      }`}
+                        }`}
                       disabled={venue.isApproved === true}
                     >
                       <FaCheckCircle className="mr-2" /> Approve
                     </button>
                     <button
                       onClick={() => handleRejectVenue(venue.id)}
-                      className={`px-4 py-3 rounded-lg flex items-center justify-center ${
-                        venue.isApproved === false 
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                      className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === false
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-[#ED4A43] text-white hover:shadow-md"
-                      }`}
+                        }`}
                       disabled={venue.isApproved === false}
                     >
                       <FaTimesCircle className="mr-2" /> Reject
@@ -391,7 +391,7 @@ export const AdminVenuePage = () => {
                 All fields marked are required to create your venue
               </p>
             </div>
-            
+
             <form className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column */}
@@ -401,17 +401,17 @@ export const AdminVenuePage = () => {
                     <label htmlFor="name" className="block text-gray-700 font-medium mb-1">
                       Venue Name
                     </label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       id="name"
-                      name="name" 
-                      value={newVenue.name} 
-                      onChange={handleChange} 
+                      name="name"
+                      value={newVenue.name}
+                      onChange={handleChange}
                       placeholder="Enter venue name"
-                      className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors" 
+                      className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
                     />
                   </div>
-                  
+
                   {/* Venue Location */}
                   <div>
                     <label htmlFor="location" className="block text-gray-700 font-medium mb-1">
@@ -427,13 +427,30 @@ export const AdminVenuePage = () => {
                       className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
                     />
                   </div>
-                  
+
                   {/* Venue Image */}
                   <div>
                     <label className="block text-gray-700 font-medium mb-1">
                       Venue Image
                     </label>
-                    <div className="relative">
+                    {imagePreview ? (<div className="mb-3">
+                      <div className="relative w-full h-40 rounded-lg overflow-hidden border border-gray-200">
+                        <img
+                          src={`http://localhost:3000/${newVenue.image}`}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImagePreview(null);
+                          }}
+                          className="absolute top-2 right-2 bg-white p-1 rounded-full shadow-md"
+                        >
+                          <FaTrashAlt size={14} className="text-[#ED4A43]" />
+                        </button>
+                      </div>
+                    </div>) : (<div className="relative">
                       <input
                         type="file"
                         onChange={handleImageChange}
@@ -451,7 +468,8 @@ export const AdminVenuePage = () => {
                           <p className="mt-1 text-sm text-[#ED4A43]">Click to upload image</p>
                         </div>
                       </label>
-                    </div>
+                    </div>)}
+
                   </div>
                 </div>
 
@@ -492,7 +510,7 @@ export const AdminVenuePage = () => {
                       Important Information
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Venues must be approved by an administrator before they can be used for events. 
+                      Venues must be approved by an administrator before they can be used for events.
                       Make sure all information is accurate and the image clearly shows the venue.
                     </p>
                   </div>
@@ -501,16 +519,16 @@ export const AdminVenuePage = () => {
 
               {/* Submit Button Area */}
               <div className="mt-10 text-center flex justify-center space-x-4">
-                <button 
+                <button
                   type="button"
-                  onClick={() => setShowModal(false)} 
+                  onClick={() => setShowModal(false)}
                   className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="button"
-                  onClick={handleSaveVenue} 
+                  onClick={handleSaveVenue}
                   className="px-10 py-4 bg-[#ED4A43] text-white font-semibold rounded-xl shadow-lg hover:bg-[#D43C35] transform hover:-translate-y-1 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:ring-offset-2"
                 >
                   <div className="flex items-center justify-center">

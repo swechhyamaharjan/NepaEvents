@@ -8,7 +8,7 @@ import { useAuth } from "../../Context/AuthContext";
 export const NavBar = () => {
   const navigate = useNavigate();
   const [activeLink, setActiveLink] = useState("Home");
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
 
   const handleNavClick = (link) => {
     setActiveLink(link);
@@ -42,11 +42,10 @@ export const NavBar = () => {
             {["Home", "Event", "Venue", "AboutUs", "ContactUs"].map((link) => (
               <button
                 key={link}
-                className={`text-sm font-medium transition-all duration-200 pb-1 ${
-                  activeLink === link 
-                    ? "text-[#ED4A43] border-b-2 border-[#ED4A43]" 
-                    : "text-gray-600 hover:text-[#ED4A43] hover:border-b-2 hover:border-[#ED4A43]/30"
-                }`}
+                className={`text-sm font-medium transition-all duration-200 pb-1 ${activeLink === link
+                  ? "text-[#ED4A43] border-b-2 border-[#ED4A43]"
+                  : "text-gray-600 hover:text-[#ED4A43] hover:border-b-2 hover:border-[#ED4A43]/30"
+                  }`}
                 onClick={() => handleNavClick(link)}
               >
                 {link.replace(/([A-Z])/g, " $1").trim()}
@@ -56,7 +55,7 @@ export const NavBar = () => {
 
           {/* Action Buttons & Profile */}
           <div className="flex items-center">
-            
+
             {/* Icons and Buttons Group */}
             <div className="flex items-center space-x-5">
               {/* Favorite Icon */}
@@ -75,28 +74,32 @@ export const NavBar = () => {
               </button>
 
               {/* Create Event Button */}
-              <button
-                className="bg-white text-[#ED4A43] border border-[#ED4A43] px-4 py-1.5 text-sm font-medium rounded-md hover:bg-[#FFF5F4] transition-colors"
-                onClick={() => navigate("/createEvent")} 
-              >
-                CREATE EVENT
-              </button>
-
+              {user && (
+                <button
+                  className="bg-white text-[#ED4A43] border border-[#ED4A43] px-4 py-1.5 text-sm font-medium rounded-md hover:bg-[#FFF5F4] transition-colors"
+                  onClick={() => navigate("/createEvent")}
+                >
+                  CREATE EVENT
+                </button>
+              )}
+              {!user && (
                 <button
                   className="bg-[#ED4A43] text-white px-5 py-1.5 text-sm font-medium rounded-md hover:bg-[#D43C35] transition-colors"
-                  onClick={() => navigate("/login")} 
+                  onClick={() => navigate("/login")}
                 >
                   LOG IN
                 </button>
+              )}
 
-                {/* Welcome Message - Only shown when user is logged in */}
-            {user && (
-              <div className="mr-5 hidden md:block">
-                <span className="text-gray-700 font-medium text-md">
-                  Welcome, <span className="text-[#ED4A43]">{user.fullName || user.username || "User"}</span>
-                </span>
-              </div>
-            )}
+
+              {/* Welcome Message - Only shown when user is logged in */}
+              {user && (
+                <div className="mr-5 hidden md:block">
+                  <span className="text-gray-700 font-medium text-md">
+                    Welcome, <span className="text-[#ED4A43]">{user.fullName || user.username || "User"}</span>
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
