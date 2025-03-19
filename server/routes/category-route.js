@@ -25,7 +25,7 @@ const upload = multer({ storage: storage });
 
 CategoryRouter.post('/', upload.single('image'), createCategory)
 CategoryRouter.get('/', getAllCategory)
-CategoryRouter.patch('/:id', updateCategory)
+CategoryRouter.patch('/:id', upload.single('image'), updateCategory)
 CategoryRouter.delete('/:id', deleteCategory)
 CategoryRouter.get('/:id', getCategoryById)
 

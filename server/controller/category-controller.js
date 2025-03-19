@@ -32,6 +32,7 @@ const getAllCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     const newCategoryData = req.body;
+    console.log(req.body);
     const updatedCategory = await Category.findByIdAndUpdate(
       req.params.id,
       newCategoryData,
@@ -65,8 +66,8 @@ const deleteCategory = async (req, res) => {
 const getCategoryById = async (req, res) => {
   try {
     const id = req.params.id
-    const Category = await Category.findById(id);
-    res.status(200).json({ success: true, data: Category });
+    const category = await Category.findById(id);
+    res.status(200).json({ success: true, data: category });
 
   } catch (error) {
     console.error(error);
