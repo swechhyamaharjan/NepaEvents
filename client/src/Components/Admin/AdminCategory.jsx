@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { FaTrashAlt, FaPlus, FaUpload } from "react-icons/fa";
+import { FaTrashAlt, FaPlus, FaUpload, FaEdit } from "react-icons/fa";
 
 const AdminCategory = () => {
   const [showModal, setShowModal] = useState(false);
@@ -10,7 +10,9 @@ const AdminCategory = () => {
   const [categories, setCategories] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [categoryDetail, setCategoryDetail] = useState(null);
+  const [categoryDetail, setCategoryDetail] = useState({});
+  const [editImagePreview, setEditImagePreview] = useState(null);
+  const [updateTrigger, setUpdateTrigger] = useState(false);
 
   // Handle form submission
   async function handleSubmit(e) {
@@ -38,6 +40,7 @@ const AdminCategory = () => {
       setCategory("");
       setImageFile(null);
       setImagePreview(null);
+      setUpdateTrigger((prev) => !prev);
     } catch (error) {
       console.log("Error: ", error);
       toast.error("Failed to add category");
@@ -45,17 +48,23 @@ const AdminCategory = () => {
   }
 
   // Handle image selection
-  const handleImageChange = (e) => {
+  const handleImageChange = (e, isEdit = false) => {
     const file = e.target.files[0];
     if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      const fileURL = URL.createObjectURL(file); // Create a URL for preview
+  
+      if (isEdit) {
+        // If editing, update the edit image state
+        setImageFile(file);
+        setEditImagePreview(fileURL);
+      } else {
+        // If adding a new category, update the normal image state
+        setImageFile(file);
+        setImagePreview(fileURL);
+      }
     }
   };
+  
 
   useEffect(() => {
     async function fetchCategories() {
@@ -67,30 +76,75 @@ const AdminCategory = () => {
       }
     }
     fetchCategories();
-  }, [categories]);
+  }, [updateTrigger]);
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete (
+      const response = await axios.delete(
         `http://localhost:3000/api/category/${id}`)
-        toast.success("Category deleted successfully!")
+      toast.success("Category deleted successfully!")
+      setUpdateTrigger((prev) => !prev);
     } catch (error) {
       console.log(error);
       toast.error("Failed to delete category");
     }
   }
-  const getCategoryById = async(id) => {
+  const getCategoryById = async (id) => {
     setEditModal(true);
     try {
-      const response = await axios.get (
-        `http://localhost:3000/api/category/${id}`)
-        setCategoryDetail(response.data);
-        console.log(response.data);
+      const response = await axios.get(`http://localhost:3000/api/category/${id}`)
+      console.log(response.data);
+      setCategoryDetail(response.data.data);
+      setEditImagePreview(response.data.data.image ? `http://localhost:3000/${response.data.data.image}` : null);
     } catch (error) {
       console.log(error);
       toast.error("Failed to get category");
     }
   }
+
+  const handleEditCategory = async (e) => {
+    e.preventDefault();
+  
+    // Ensure categoryDetail is updated before appending to formData
+    if (!categoryDetail.name) {
+      toast.error("Category name is required.");
+      return;
+    }
+  
+    try {
+      const formData = new FormData();
+      
+      // Append category name to form data
+      formData.append("name", categoryDetail.name);
+      
+      // If a new image is selected, append it to form data
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+  
+      // Send the form data in the PATCH request to update the category
+      const response = await axios.patch(
+        `http://localhost:3000/api/category/${categoryDetail._id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+  
+      toast.success(response.data.message);
+      setEditModal(false);  // Close the modal
+      setCategoryDetail({});  // Reset the category details after submission
+      setImageFile(null);
+      setEditImagePreview(null);
+      setUpdateTrigger((prev) => !prev);  // Trigger re-fetch of categories
+    } catch (error) {
+      console.log("Error: ", error);
+      toast.error("Failed to edit category");
+    }
+  };
+  
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -116,9 +170,9 @@ const AdminCategory = () => {
             {/* Image Container */}
             <div className="h-40 bg-gray-200 overflow-hidden">
               {cat.image ? (
-                <img 
-                  src={`http://localhost:3000/${cat.image}`} 
-                  alt={cat.name} 
+                <img
+                  src={`http://localhost:3000/${cat.image}`}
+                  alt={cat.name}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -127,23 +181,23 @@ const AdminCategory = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Category Info */}
             <div className="p-4 flex justify-between items-center">
               <h3 className="text-lg font-medium text-gray-800">
                 {cat.name}
               </h3>
-              <button 
-              onClick={() => handleDelete(cat._id)}
+              <button
+                onClick={() => handleDelete(cat._id)}
                 className="text-[#ED4A43] hover:bg-[#ED4A43] hover:text-white p-2 rounded-md transition-colors"
               >
                 <FaTrashAlt size={16} />
               </button>
-              <button 
-              onClick={() => getCategoryById(cat._id)}
+              <button
+                onClick={() => getCategoryById(cat._id)}
                 className="text-[#ED4A43] hover:bg-[#ED4A43] hover:text-white p-2 rounded-md transition-colors"
               >
-                <FaTrashAlt size={16} />
+                <FaEdit size={16} />
               </button>
             </div>
           </div>
@@ -160,7 +214,7 @@ const AdminCategory = () => {
               </h3>
               <p className="text-gray-500 text-sm mt-1">Create a new category for your products</p>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label className="block text-gray-700 font-medium mb-2">
@@ -178,23 +232,23 @@ const AdminCategory = () => {
                 </div>
                 <p className="text-xs text-gray-500 mt-1 ml-1">Choose a short, descriptive name</p>
               </div>
-              
+
               {/* Image Upload Section */}
               <div>
                 <label className="block text-gray-700 font-medium mb-2">
                   Category Image
                 </label>
-                
+
                 {/* Image Preview */}
                 {imagePreview ? (
                   <div className="mb-3">
                     <div className="relative w-full h-40 rounded-lg overflow-hidden border border-gray-200">
-                      <img 
+                      <img
                         src={imagePreview}
-                        alt="Preview" 
+                        alt="Preview"
                         className="w-full h-full object-cover"
                       />
-                      <button 
+                      <button
                         type="button"
                         onClick={() => {
                           setImagePreview(null);
@@ -212,9 +266,9 @@ const AdminCategory = () => {
                       <FaUpload size={24} className="text-gray-400 mb-2" />
                       <span className="text-gray-500">Click to upload image</span>
                       <span className="text-xs text-gray-400 mt-1">PNG, JPG up to 2MB</span>
-                      <input 
-                        type="file" 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        className="hidden"
                         accept="image/*"
                         onChange={handleImageChange}
                       />
@@ -222,7 +276,7 @@ const AdminCategory = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="pt-2">
                 <div className="bg-gray-50 -mx-6 px-6 py-4 mt-6 flex justify-end space-x-3 border-t border-gray-100">
                   <button
@@ -252,8 +306,8 @@ const AdminCategory = () => {
                 Edit Category
               </h3>
             </div>
-            
-            <form className="space-y-5">
+
+            <form className="space-y-5" onSubmit={handleEditCategory}>
               <div>
                 <label className="block text-gray-700 font-medium mb-2">
                   Category Name
@@ -261,8 +315,8 @@ const AdminCategory = () => {
                 <div className="relative">
                   <input
                     type="text"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                    value={categoryDetail.name}
+                    onChange={(e) => setCategoryDetail((prev) => ({ ...prev, name: e.target.value }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:border-[#ED4A43] transition-all"
                     placeholder="Enter category name"
                     required
@@ -270,26 +324,22 @@ const AdminCategory = () => {
                 </div>
                 <p className="text-xs text-gray-500 mt-1 ml-1">Choose a short, descriptive name</p>
               </div>
-              
+
               {/* Image Upload Section */}
               <div>
                 <label className="block text-gray-700 font-medium mb-2">
                   Category Image
                 </label>
-                
+
                 {/* Image Preview */}
-                {imagePreview ? (
+                {editImagePreview ? (
                   <div className="mb-3">
                     <div className="relative w-full h-40 rounded-lg overflow-hidden border border-gray-200">
-                      <img 
-                        src={imagePreview}
-                        alt="Preview" 
-                        className="w-full h-full object-cover"
-                      />
-                      <button 
+                      <img src={editImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <button
                         type="button"
                         onClick={() => {
-                          setImagePreview(null);
+                          setEditImagePreview(null);
                           setImageFile(null);
                         }}
                         className="absolute top-2 right-2 bg-white p-1 rounded-full shadow-md"
@@ -304,22 +354,22 @@ const AdminCategory = () => {
                       <FaUpload size={24} className="text-gray-400 mb-2" />
                       <span className="text-gray-500">Click to upload image</span>
                       <span className="text-xs text-gray-400 mt-1">PNG, JPG up to 2MB</span>
-                      <input 
-                        type="file" 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        className="hidden"
                         accept="image/*"
-                        onChange={handleImageChange}
+                        onChange={(e) => handleImageChange(e, true)}
                       />
                     </label>
                   </div>
                 )}
               </div>
-              
+
               <div className="pt-2">
                 <div className="bg-gray-50 -mx-6 px-6 py-4 mt-6 flex justify-end space-x-3 border-t border-gray-100">
                   <button
                     type="button"
-                    onClick={() => setShowModal(false)}
+                    onClick={() => setEditModal(false)}
                     className="px-5 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 font-medium"
                   >
                     Cancel
@@ -328,7 +378,7 @@ const AdminCategory = () => {
                     type="submit"
                     className="px-5 py-2.5 bg-[#ED4A43] text-white rounded-md hover:bg-[#D43C35] font-medium shadow-sm"
                   >
-                    Add Category
+                    Edit Category
                   </button>
                 </div>
               </div>

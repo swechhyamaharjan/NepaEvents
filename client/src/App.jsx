@@ -49,7 +49,9 @@ function App() {
           <Route path="/event" element={<UserLayout><Event /></UserLayout>} />
           <Route path="/aboutus" element={<UserLayout><AboutUs /></UserLayout>} />
           <Route path="/contactus" element={<UserLayout><ContactUs /></UserLayout>} />
+          <Route element={<ProtectedRoute adminOnly={false} />}>
           <Route path="/createevent" element={<UserLayout><CreateEvent /></UserLayout>} />
+          </Route>
           <Route path="/bookvenue" element={<UserLayout><BookVenue /></UserLayout>} />
 
           {/* Protected Admin Routes */}
