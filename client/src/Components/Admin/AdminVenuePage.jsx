@@ -8,7 +8,6 @@ export const AdminVenuePage = () => {
   const [activeTab, setActiveTab] = useState("adminVenues"); // "adminVenues" or "requestedVenues"
   const [refreshTrigger, setRefreshTrigger] = useState(0); // Used to trigger venue refresh
   const [imagePreview, setImagePreview] = useState(null);
-
   const [showModal, setShowModal] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [newVenue, setNewVenue] = useState({
@@ -28,11 +27,10 @@ export const AdminVenuePage = () => {
     if (newVenue.image) {
       formData.append("image", newVenue.image);
     }
-
     try {
       if (selectedVenue) {
         // Edit existing venue
-        await axios.put(`http://localhost:3000/api/venue/${selectedVenue.id}`, formData, {
+        await axios.patch(`http://localhost:3000/api/venue/${selectedVenue._id}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true
         });
@@ -43,11 +41,11 @@ export const AdminVenuePage = () => {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true
         });
+        setImagePreview(null);
         toast.success("Venue added successfully!");
       }
       setShowModal(false);
-      setRefreshTrigger(prev => prev + 1); // Trigger a refresh
-      setImagePreview(null);
+      setRefreshTrigger(prev => prev + 1); 
     } catch (error) {
       console.error("Error saving venue:", error);
       toast.error("Failed to save venue. Please try again!");
@@ -58,6 +56,7 @@ export const AdminVenuePage = () => {
     async function fetchVenues() {
       try {
         const response = await axios.get("http://localhost:3000/api/venue");
+        console.log("Fetched venues:", response.data);
         setVenues(response.data);
       } catch (error) {
         console.error("Error fetching venues:", error);
@@ -72,14 +71,12 @@ export const AdminVenuePage = () => {
     setSelectedVenue(venue);
     setNewVenue(venue);
     setShowModal(true);
-    console.log(newVenue);
   };
 
   // Delete Venue
   const handleDeleteVenue = async (venueId) => {
     if (window.confirm("Are you sure you want to delete this venue?")) {
       try {
-        console.log(venueId);
         await axios.delete(`http://localhost:3000/api/venue/${venueId}`, {
           withCredentials: true
         });
@@ -134,10 +131,21 @@ export const AdminVenuePage = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImagePreview(true);
       setNewVenue((prev) => ({ ...prev, image: file }));
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setSelectedVenue((prev) => ({ ...prev, image: reader.result }))
     }
   };
+
+  const handleImageRemove = () => {
+    setImagePreview(null);
+    setNewVenue((prev) => ({ ...prev, image: null }));
+    setSelectedVenue((prev) => ({ ...prev, image: null }))
+  }
 
   const getStatusColor = (status) => {
     if (status === true) return "bg-green-100 text-green-800 border-green-300";
@@ -152,7 +160,6 @@ export const AdminVenuePage = () => {
   };
 
   // Filter venues based on whether they were added by admin or requested by users
-  const adminAddedVenues = venues.filter(venue => venue);
   const requestedVenues = venues.filter(venue => venue.isAdminAdded !== true);
 
   return (
@@ -167,8 +174,8 @@ export const AdminVenuePage = () => {
             <button
               onClick={() => setActiveTab("adminVenues")}
               className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "adminVenues"
-                  ? "bg-[#ED4A43] text-white shadow-lg"
-                  : "text-gray-600 hover:bg-gray-100"
+                ? "bg-[#ED4A43] text-white shadow-lg"
+                : "text-gray-600 hover:bg-gray-100"
                 }`}
             >
               Venues Added by Admin
@@ -176,8 +183,8 @@ export const AdminVenuePage = () => {
             <button
               onClick={() => setActiveTab("requestedVenues")}
               className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "requestedVenues"
-                  ? "bg-[#ED4A43] text-white shadow-lg"
-                  : "text-gray-600 hover:bg-gray-100"
+                ? "bg-[#ED4A43] text-white shadow-lg"
+                : "text-gray-600 hover:bg-gray-100"
                 }`}
             >
               Requested Venues by User
@@ -225,7 +232,7 @@ export const AdminVenuePage = () => {
                           <FaEdit size={18} />
                         </button>
                         <button
-                          onClick={() => handleDeleteVenue(venue._id)}
+                          onClick={() => handleDeleteVenue(venue.id)}
                           className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
                         >
                           <FaTrashAlt size={18} />
@@ -347,8 +354,8 @@ export const AdminVenuePage = () => {
                     <button
                       onClick={() => handleApproveVenue(venue.id)}
                       className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === true
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
                         }`}
                       disabled={venue.isApproved === true}
                     >
@@ -357,8 +364,8 @@ export const AdminVenuePage = () => {
                     <button
                       onClick={() => handleRejectVenue(venue.id)}
                       className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === false
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-[#ED4A43] text-white hover:shadow-md"
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-[#ED4A43] text-white hover:shadow-md"
                         }`}
                       disabled={venue.isApproved === false}
                     >
@@ -429,50 +436,52 @@ export const AdminVenuePage = () => {
                   </div>
 
                   {/* Venue Image */}
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Venue Image
-                    </label>
-                    {imagePreview ? (<div className="mb-3">
+                  {imagePreview || selectedVenue.image ? (
+                    <div className="mb-3">
                       <div className="relative w-full h-40 rounded-lg overflow-hidden border border-gray-200">
                         <img
-                          src={`http://localhost:3000/${newVenue.image}`}
+                          src={selectedVenue && selectedVenue.image ? `http://localhost:3000/${selectedVenue.image}` : imagePreview}
                           alt="Preview"
                           className="w-full h-full object-cover"
                         />
                         <button
                           type="button"
-                          onClick={() => {
-                            setImagePreview(null);
-                          }}
+                          onClick={handleImageRemove}
                           className="absolute top-2 right-2 bg-white p-1 rounded-full shadow-md"
                         >
                           <FaTrashAlt size={14} className="text-[#ED4A43]" />
                         </button>
                       </div>
-                    </div>) : (<div className="relative">
-                      <input
-                        type="file"
-                        onChange={handleImageChange}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <label
-                        htmlFor="image-upload"
-                        className="w-full flex items-center justify-center p-3 border-2 border-dashed border-red-300 bg-red-50 rounded-xl cursor-pointer hover:bg-red-100 transition-colors"
-                      >
-                        <div className="text-center">
-                          <svg className="mx-auto h-10 w-10 text-[#ED4A43]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <p className="mt-1 text-sm text-[#ED4A43]">Click to upload image</p>
+                    </div>
+                  ) :
+                    (
+                      <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                          Venue Image
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="file"
+                            onChange={handleImageChange}
+                            className="hidden"
+                            id="image-upload"
+                          />
+                          <label
+                            htmlFor="image-upload"
+                            className="w-full flex items-center justify-center p-3 border-2 border-dashed border-red-300 bg-red-50 rounded-xl cursor-pointer hover:bg-red-100 transition-colors"
+                          >
+                            <div className="text-center">
+                              <svg className="mx-auto h-10 w-10 text-[#ED4A43]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              <p className="mt-1 text-sm text-[#ED4A43]">Click to upload image</p>
+                            </div>
+                          </label>
                         </div>
-                      </label>
-                    </div>)}
-
-                  </div>
+                      </div>
+                    )
+                  }
                 </div>
-
                 {/* Right Column */}
                 <div className="space-y-6">
                   {/* Venue Details Section */}
