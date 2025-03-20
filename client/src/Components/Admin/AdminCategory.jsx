@@ -163,46 +163,48 @@ const AdminCategory = () => {
         </button>
       </div>
 
-      {/* Category List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((cat) => (
-          <div key={cat._id} className="bg-white rounded-md shadow-md overflow-hidden">
-            {/* Image Container */}
-            <div className="h-40 bg-gray-200 overflow-hidden">
-              {cat.image ? (
-                <img
-                  src={`http://localhost:3000/${cat.image}`}
-                  alt={cat.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                  <span className="text-gray-400">No image</span>
-                </div>
-              )}
-            </div>
-
-            {/* Category Info */}
-            <div className="p-4 flex justify-between items-center">
-              <h3 className="text-lg font-medium text-gray-800">
-                {cat.name}
-              </h3>
-              <button
-                onClick={() => handleDelete(cat._id)}
-                className="text-[#ED4A43] hover:bg-[#ED4A43] hover:text-white p-2 rounded-md transition-colors"
-              >
-                <FaTrashAlt size={16} />
-              </button>
-              <button
-                onClick={() => getCategoryById(cat._id)}
-                className="text-[#ED4A43] hover:bg-[#ED4A43] hover:text-white p-2 rounded-md transition-colors"
-              >
-                <FaEdit size={16} />
-              </button>
-            </div>
+{/* Category List */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {categories.map((cat) => (
+    <div key={cat._id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100">
+      {/* Image Container - Made taller */}
+      <div className="h-56 bg-gray-100 overflow-hidden">
+        {cat.image ? (
+          <img
+            src={`http://localhost:3000/${cat.image}`}
+            alt={cat.name}
+            className="w-full h-full object-cover transform hover:scale-105 transition-all duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-50">
+            <span className="text-gray-400 font-medium">No image</span>
           </div>
-        ))}
+        )}
       </div>
+    
+      {/* Category Info - Name and buttons on same line */}
+      <div className="p-5">
+        <div className="flex justify-between items-center">
+          <h3 className="text-xl font-semibold text-gray-800">{cat.name}</h3>
+          <div className="flex space-x-2"> 
+            <button
+              onClick={() => getCategoryById(cat._id)}
+              className="bg-gray-50 text-[#ED4A43] hover:bg-[#ED4A43] hover:text-white p-2 rounded-lg transition-colors duration-300 flex items-center"
+            >
+              <FaEdit size={16} />
+            </button>
+            <button
+              onClick={() => handleDelete(cat._id)}
+              className="bg-gray-50 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-lg transition-colors duration-300 flex items-center"
+            >
+              <FaTrashAlt size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
 
       {/* Enhanced Modal for Adding Category */}
       {showModal && (
