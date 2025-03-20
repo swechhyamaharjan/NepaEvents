@@ -30,22 +30,30 @@ const getAllVenues = async (req, res) => {
 
 const updateVenue = async (req, res) => {
     try {
-        const newVenueData = req.body;
+        const { name, location, capacity } = req.body;
+        const image = req.file ? req.file.path : null; 
+        const newVenueData = {
+            name,
+            location,
+            capacity,
+            image, 
+        };
         const updatedVenue = await Venue.findByIdAndUpdate(
             req.params.venueId,
             newVenueData,
+            { new: true } 
         );
 
         if (!updatedVenue) {
             return res.status(404).json({ message: "Venue not found" });
-        };
+        }
 
-        res.status(200).json({ success: true, message: "Venue updated successfully" });
+        res.status(200).json({ success: true, message: "Venue updated successfully", updatedVenue });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Server error" });
     }
-}
+};
 
 const deleteVenue = async (req, res) => {
     try {
