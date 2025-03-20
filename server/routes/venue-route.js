@@ -25,7 +25,7 @@ const venueRouter = express.Router();
 
 venueRouter.post('/', upload.single("image"), bookVenue)
 venueRouter.get('/', getAllVenues)
-venueRouter.patch('/:venueId', updateVenue)
+venueRouter.patch('/:venueId', upload.single("image"), updateVenue)
 venueRouter.delete('/:id', deleteVenue)
 venueRouter.get('/:id', getVenueById)
 module.exports = venueRouter;
