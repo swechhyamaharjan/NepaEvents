@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaEdit, FaTrashAlt, FaCheckCircle, FaTimesCircle, FaMapMarkerAlt, FaUsers, FaBuilding } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaCheckCircle, FaTimesCircle, FaMapMarkerAlt, FaUsers, FaBuilding, FaInfoCircle } from "react-icons/fa";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
@@ -16,6 +16,9 @@ export const AdminVenuePage = () => {
     capacity: "",
     image: "",
   });
+  const [showDetailModal, setShowDetailModal] = useState(false); // State for detail view modal
+  const [detailVenue, setDetailVenue] = useState(null); // State to store the venue for detail view
+  const [requestedVenueFilter, setRequestedVenueFilter] = useState("all"); // New state for filter
 
   // Add or Edit Venue
   const handleSaveVenue = async () => {
@@ -137,7 +140,7 @@ export const AdminVenuePage = () => {
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
-      setSelectedVenue((prev) => ({ ...prev, image: reader.result }))
+      // setSelectedVenue((prev) => ({ ...prev, image: reader.result }))
     }
   };
 
@@ -159,8 +162,23 @@ export const AdminVenuePage = () => {
     return "Pending";
   };
 
+  // Open Detail View Modal
+  const handleViewDetails = (venue) => {
+    setDetailVenue(venue);
+    setShowDetailModal(true);
+  };
+
   // Filter venues based on whether they were added by admin or requested by users
   const requestedVenues = venues.filter(venue => venue.isAdminAdded !== true);
+
+  // Filter requested venues based on the selected filter
+  const filteredRequestedVenues = requestedVenues.filter((venue) => {
+    if (requestedVenueFilter === "all") return true;
+    if (requestedVenueFilter === "approved") return venue.isApproved === true;
+    if (requestedVenueFilter === "rejected") return venue.isApproved === false;
+    if (requestedVenueFilter === "pending") return venue.isApproved === null || venue.isApproved === undefined;
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-8">
@@ -173,19 +191,21 @@ export const AdminVenuePage = () => {
           <div className="bg-white rounded-full shadow-md inline-flex p-1">
             <button
               onClick={() => setActiveTab("adminVenues")}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "adminVenues"
-                ? "bg-[#ED4A43] text-white shadow-lg"
-                : "text-gray-600 hover:bg-gray-100"
-                }`}
+              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${
+                activeTab === "adminVenues"
+                  ? "bg-[#ED4A43] text-white shadow-lg"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
             >
               Venues Added by Admin
             </button>
             <button
               onClick={() => setActiveTab("requestedVenues")}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "requestedVenues"
-                ? "bg-[#ED4A43] text-white shadow-lg"
-                : "text-gray-600 hover:bg-gray-100"
-                }`}
+              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${
+                activeTab === "requestedVenues"
+                  ? "bg-[#ED4A43] text-white shadow-lg"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
             >
               Requested Venues by User
             </button>
@@ -219,20 +239,27 @@ export const AdminVenuePage = () => {
             {venues.length > 0 ? venues.map((venue) => (
               <div
                 key={venue.id}
-                className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+                className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative cursor-pointer"
+                onClick={() => handleViewDetails(venue)}
               >
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
                     <div className="p-6 w-full">
                       <div className="flex justify-between">
                         <button
-                          onClick={() => handleEditVenue(venue)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditVenue(venue);
+                          }}
                           className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
                         >
                           <FaEdit size={18} />
                         </button>
                         <button
-                          onClick={() => handleDeleteVenue(venue.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteVenue(venue.id);
+                          }}
                           className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
                         >
                           <FaTrashAlt size={18} />
@@ -268,13 +295,19 @@ export const AdminVenuePage = () => {
                   {/* Admin venues have edit and delete buttons */}
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     <button
-                      onClick={() => handleEditVenue(venue)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditVenue(venue);
+                      }}
                       className="px-4 py-3 rounded-lg flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-md"
                     >
                       <FaEdit className="mr-2" /> Edit
                     </button>
                     <button
-                      onClick={() => handleDeleteVenue(venue._id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteVenue(venue._id);
+                      }}
                       className="px-4 py-3 rounded-lg flex items-center justify-center bg-[#ED4A43] text-white hover:shadow-md"
                     >
                       <FaTrashAlt className="mr-2" /> Delete
@@ -294,96 +327,161 @@ export const AdminVenuePage = () => {
 
         {/* User Requested Venues */}
         {activeTab === "requestedVenues" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-            {requestedVenues.length > 0 ? requestedVenues.map((venue) => (
-              <div
-                key={venue.id}
-                className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-              >
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                    <div className="p-6 w-full">
-                      <div className="flex justify-between">
-                        <button
-                          onClick={() => handleEditVenue(venue)}
-                          className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
-                        >
-                          <FaEdit size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteVenue(venue.id)}
-                          className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
-                        >
-                          <FaTrashAlt size={18} />
-                        </button>
+          <>
+            {/* Filter Buttons - Moved to the right side */}
+            <div className="flex justify-end mb-8">
+              <div className="bg-white rounded-lg shadow-md inline-flex p-2 space-x-2">
+                <button
+                  onClick={() => setRequestedVenueFilter("all")}
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                    requestedVenueFilter === "all"
+                      ? "bg-[#ED4A43] text-white shadow-md"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setRequestedVenueFilter("approved")}
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                    requestedVenueFilter === "approved"
+                      ? "bg-green-500 text-white shadow-md"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  Approved
+                </button>
+                <button
+                  onClick={() => setRequestedVenueFilter("rejected")}
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                    requestedVenueFilter === "rejected"
+                      ? "bg-red-500 text-white shadow-md"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  Rejected
+                </button>
+                <button
+                  onClick={() => setRequestedVenueFilter("pending")}
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                    requestedVenueFilter === "pending"
+                      ? "bg-yellow-500 text-white shadow-md"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  Pending
+                </button>
+              </div>
+            </div>
+
+            {/* Venue Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+              {filteredRequestedVenues.length > 0 ? filteredRequestedVenues.map((venue) => (
+                <div
+                  key={venue.id}
+                  className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative cursor-pointer"
+                  onClick={() => handleViewDetails(venue)}
+                >
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                      <div className="p-6 w-full">
+                        <div className="flex justify-between">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditVenue(venue);
+                            }}
+                            className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
+                          >
+                            <FaEdit size={18} />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteVenue(venue.id);
+                            }}
+                            className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
+                          >
+                            <FaTrashAlt size={18} />
+                          </button>
+                        </div>
                       </div>
                     </div>
+                    <img
+                      src={`http://localhost:3000/${venue.image}`}
+                      alt={venue.name}
+                      className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div
+                      className={`absolute top-4 right-4 px-3 py-1 rounded-full border ${getStatusColor(venue.isApproved)} text-xs font-bold`}
+                    >
+                      {getStatusText(venue.isApproved)}
+                    </div>
                   </div>
-                  <img
-                    src={`http://localhost:3000/${venue.image}`}
-                    alt={venue.name}
-                    className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div
-                    className={`absolute top-4 right-4 px-3 py-1 rounded-full border ${getStatusColor(venue.isApproved)} text-xs font-bold`}
-                  >
-                    {getStatusText(venue.isApproved)}
+
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-3 text-gray-800">{venue.name}</h3>
+
+                    <div className="space-y-2 mb-6">
+                      <div className="flex items-center text-gray-600">
+                        <FaMapMarkerAlt className="mr-2 text-[#ED4A43]" />
+                        <span>{venue.location}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <FaUsers className="mr-2 text-[#ED4A43]" />
+                        <span>Capacity: {venue.capacity}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <FaBuilding className="mr-2 text-[#ED4A43]" />
+                        <span className="font-semibold">{venue.name}</span>
+                      </div>
+                    </div>
+
+                    {/* User requested venues have approve and reject buttons */}
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleApproveVenue(venue.id);
+                        }}
+                        className={`px-4 py-3 rounded-lg flex items-center justify-center ${
+                          venue.isApproved === true
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
+                        }`}
+                        disabled={venue.isApproved === true}
+                      >
+                        <FaCheckCircle className="mr-2" /> Approve
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRejectVenue(venue.id);
+                        }}
+                        className={`px-4 py-3 rounded-lg flex items-center justify-center ${
+                          venue.isApproved === false
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-[#ED4A43] text-white hover:shadow-md"
+                        }`}
+                        disabled={venue.isApproved === false}
+                      >
+                        <FaTimesCircle className="mr-2" /> Reject
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-3 text-gray-800">{venue.name}</h3>
-
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center text-gray-600">
-                      <FaMapMarkerAlt className="mr-2 text-[#ED4A43]" />
-                      <span>{venue.location}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaUsers className="mr-2 text-[#ED4A43]" />
-                      <span>Capacity: {venue.capacity}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaBuilding className="mr-2 text-[#ED4A43]" />
-                      <span className="font-semibold">{venue.name}</span>
-                    </div>
-                  </div>
-
-                  {/* User requested venues have approve and reject buttons */}
-                  <div className="grid grid-cols-2 gap-3 mt-4">
-                    <button
-                      onClick={() => handleApproveVenue(venue.id)}
-                      className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === true
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
-                        }`}
-                      disabled={venue.isApproved === true}
-                    >
-                      <FaCheckCircle className="mr-2" /> Approve
-                    </button>
-                    <button
-                      onClick={() => handleRejectVenue(venue.id)}
-                      className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === false
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-[#ED4A43] text-white hover:shadow-md"
-                        }`}
-                      disabled={venue.isApproved === false}
-                    >
-                      <FaTimesCircle className="mr-2" /> Reject
-                    </button>
-                  </div>
+              )) : (
+                <div className="col-span-3 text-center py-16">
+                  <div className="text-5xl text-gray-300 mb-4">📝</div>
+                  <h3 className="text-xl font-semibold text-gray-500">No venue requests match the selected filter</h3>
+                  <p className="text-gray-400 mt-2">Try changing the filter or check back later</p>
                 </div>
-              </div>
-            )) : (
-              <div className="col-span-3 text-center py-16">
-                <div className="text-5xl text-gray-300 mb-4">📝</div>
-                <h3 className="text-xl font-semibold text-gray-500">No venue requests from users yet</h3>
-                <p className="text-gray-400 mt-2">User requested venues will appear here</p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </>
         )}
       </div>
+
 
       {/* Modal for Adding/Editing Venue */}
       {showModal && (
@@ -436,11 +534,11 @@ export const AdminVenuePage = () => {
                   </div>
 
                   {/* Venue Image */}
-                  {imagePreview || selectedVenue.image ? (
+                  {imagePreview ? (
                     <div className="mb-3">
                       <div className="relative w-full h-40 rounded-lg overflow-hidden border border-gray-200">
                         <img
-                          src={selectedVenue && selectedVenue.image ? `http://localhost:3000/${selectedVenue.image}` : imagePreview}
+                          src={imagePreview}
                           alt="Preview"
                           className="w-full h-full object-cover"
                         />
@@ -549,6 +647,144 @@ export const AdminVenuePage = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Venue Details */}
+      {showDetailModal && detailVenue && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-[#ED4A43] to-[#FF7A6E] p-6 text-white">
+              <h3 className="text-2xl font-bold">
+                Venue Details
+              </h3>
+              <p className="text-red-100 text-sm mt-1">
+                Detailed information about the venue
+              </p>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  {/* Venue Image */}
+                  <div className="relative w-full h-56 rounded-lg overflow-hidden border border-gray-200">
+                    <img
+                      src={`http://localhost:3000/${detailVenue.image}`}
+                      alt={detailVenue.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Venue Name */}
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-1">
+                      Venue Name
+                    </label>
+                    <p className="text-gray-900">{detailVenue.name}</p>
+                  </div>
+
+                  {/* Venue Location */}
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-1">
+                      Location
+                    </label>
+                    <p className="text-gray-900">{detailVenue.location}</p>
+                  </div>
+
+                  {/* Venue Capacity */}
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-1">
+                      Capacity
+                    </label>
+                    <p className="text-gray-900">{detailVenue.capacity}</p>
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                  {/* Additional Fields for "Requested Venues by User" */}
+                  {activeTab === "requestedVenues" && (
+                    <>
+                      {/* Event Title */}
+                      <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                          Event Title
+                        </label>
+                        <p className="text-gray-900">{detailVenue.eventTitle}</p>
+                      </div>
+
+                      {/* Event Description */}
+                      <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                          Description
+                        </label>
+                        <p className="text-gray-900">{detailVenue.description}</p>
+                      </div>
+
+                      {/* Artist*/}
+                      <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                          Artist
+                        </label>
+                        <p className="text-gray-900">{detailVenue.artist}</p>
+                      </div>
+
+                      {/* Event Date */}
+                      <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                          Event Date
+                        </label>
+                        <p className="text-gray-900">
+                          {new Date(detailVenue.date).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      {/* Event Category */}
+                      <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                          Category
+                        </label>
+                        <p className="text-gray-900">{detailVenue.category}</p>
+                      </div>
+
+                      {/* Event Price */}
+                      <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                          Price
+                        </label>
+                        <p className="text-gray-900">Rs.{detailVenue.price}</p>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Additional Information */}
+                  <div className="p-4 bg-red-50 rounded-xl border border-red-100">
+                    <h3 className="text-gray-700 font-semibold mb-4 flex items-center">
+                      <FaInfoCircle className="h-5 w-5 mr-2 text-[#ED4A43]" />
+                      Additional Information
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      This venue is {detailVenue.isApproved ? "approved" : "pending approval"}.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="mt-10 text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowDetailModal(false)}
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

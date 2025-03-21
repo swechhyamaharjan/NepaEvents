@@ -74,7 +74,7 @@ export const BookVenue = () => {
   };
 
   // Filter venues based on search term
-  const filteredVenues = venues.filter(venue => 
+  const filteredVenues = venues.filter(venue =>
     venue.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     venue.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -102,8 +102,8 @@ export const BookVenue = () => {
         {/* Venue List */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {filteredVenues.map((venue) => (
-            <div 
-              key={venue.id} 
+            <div
+              key={venue.id}
               className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
             >
               <div className="relative">
@@ -117,17 +117,17 @@ export const BookVenue = () => {
                     </button>
                   </div>
                 </div>
-                <img 
-                  src={venue.img} 
-                  alt={venue.name} 
+                <img
+                  src={venue.img}
+                  alt={venue.name}
                   className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
-                <button 
+                <button
                   onClick={() => toggleFavorite(venue.id)}
                   className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
                 >
-                  <FaHeart 
-                    size={18} 
+                  <FaHeart
+                    size={18}
                     className={favorites.includes(venue.id) ? "text-[#ED4A43]" : "text-gray-400"}
                   />
                 </button>
@@ -135,7 +135,7 @@ export const BookVenue = () => {
 
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-2 text-gray-800">{venue.name}</h3>
-                
+
                 <div className="space-y-2 mb-6">
                   <div className="flex items-center text-gray-600">
                     <FaMapMarkerAlt className="mr-2 text-[#ED4A43]" />
@@ -188,7 +188,7 @@ export const BookVenue = () => {
                 {isBookingConfirmed ? "Thank you for your booking" : "All fields marked are required to complete your booking"}
               </p>
             </div>
-            
+
             {!isBookingConfirmed ? (
               <form onSubmit={handleBookingConfirmation} className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -199,16 +199,16 @@ export const BookVenue = () => {
                       <label htmlFor="title" className="block text-gray-700 font-medium mb-1">
                         Event Title
                       </label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         id="title"
-                        name="title" 
+                        name="title"
                         placeholder="Enter event title"
-                        className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors" 
+                        className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
                         required
                       />
                     </div>
-                    
+
                     {/* Event Description */}
                     <div>
                       <label htmlFor="description" className="block text-gray-700 font-medium mb-1">
@@ -223,7 +223,7 @@ export const BookVenue = () => {
                         required
                       ></textarea>
                     </div>
-                    
+
                     {/* Event Category */}
                     <div>
                       <label htmlFor="category" className="block text-gray-700 font-medium mb-1">
@@ -266,38 +266,8 @@ export const BookVenue = () => {
                           required
                         />
                       </div>
-                      
-                      {/* Time Input */}
-                      <div className="mb-4">
-                        <label htmlFor="time" className="block text-gray-700 font-medium mb-1 text-sm">
-                          Event Time
-                        </label>
-                        <input
-                          type="time"
-                          id="time"
-                          name="time"
-                          className="w-full p-2 bg-white border border-red-200 rounded-lg focus:outline-none focus:border-[#ED4A43]"
-                          required
-                        />
-                      </div>
-                      
-                      {/* Duration Input */}
-                      <div>
-                        <label htmlFor="duration" className="block text-gray-700 font-medium mb-1 text-sm">
-                          Duration (in hours)
-                        </label>
-                        <input
-                          type="number"
-                          id="duration"
-                          name="duration"
-                          min="1"
-                          placeholder="Enter duration"
-                          className="w-full p-2 bg-white border border-red-200 rounded-lg focus:outline-none focus:border-[#ED4A43]"
-                          required
-                        />
-                      </div>
-                    </div>
 
+                    </div>
                     {/* Venue Information */}
                     <div className="p-4 bg-red-50 rounded-xl border border-red-100">
                       <h3 className="text-gray-700 font-semibold mb-4 flex items-center">
@@ -316,14 +286,14 @@ export const BookVenue = () => {
 
                 {/* Submit Button Area */}
                 <div className="mt-10 text-center flex justify-center space-x-4">
-                  <button 
+                  <button
                     type="button"
-                    onClick={closeModal} 
+                    onClick={closeModal}
                     className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
                   >
                     Cancel
                   </button>
-                  <button 
+                  <button
                     type="submit"
                     className="px-10 py-4 bg-[#ED4A43] text-white font-semibold rounded-xl shadow-lg hover:bg-[#D43C35] transform hover:-translate-y-1 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:ring-offset-2"
                   >
