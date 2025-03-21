@@ -8,8 +8,8 @@ import { Footer } from "./Components/Users/Footer";
 import { Event } from "./Components/Users/Event";
 import { AboutUs } from "./Components/Users/AboutUs";
 import { ContactUs } from "./Components/Users/ContactUs";
-import { CreateEvent } from "./Components/Users/CreateEvent";
 import { BookVenue } from "./Components/Users/BookVenue";
+import MyBooking from "./Components/Users/MyBooking"; // Updated import
 import { Login } from "./Components/Users/Login";
 
 import { AdminEventPage } from "./Components/Admin/AdminEventPage";
@@ -49,9 +49,7 @@ function App() {
           <Route path="/event" element={<UserLayout><Event /></UserLayout>} />
           <Route path="/aboutus" element={<UserLayout><AboutUs /></UserLayout>} />
           <Route path="/contactus" element={<UserLayout><ContactUs /></UserLayout>} />
-          <Route element={<ProtectedRoute adminOnly={false} />}>
-          <Route path="/createevent" element={<UserLayout><CreateEvent /></UserLayout>} />
-          </Route>
+          <Route path="/mybookings" element={<UserLayout><MyBooking /></UserLayout>} />
           <Route path="/bookvenue" element={<UserLayout><BookVenue /></UserLayout>} />
 
           {/* Protected Admin Routes */}
