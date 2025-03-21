@@ -31,7 +31,7 @@ const getAllVenues = async (req, res) => {
 const updateVenue = async (req, res) => {
     try {
         const { name, location, capacity } = req.body;
-        const image = req.file ? req.file.path : null; 
+        const image = req.file ? req.file.path : null;
         const newVenueData = {
             name,
             location,
@@ -54,6 +54,7 @@ const updateVenue = async (req, res) => {
         res.status(500).json({ msg: "Server error" });
     }
 };
+
 
 const deleteVenue = async (req, res) => {
     try {
