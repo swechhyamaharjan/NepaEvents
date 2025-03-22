@@ -105,6 +105,7 @@ export const BookVenue = () => {
             <div
               key={venue.id}
               className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
+              onClick={() => navigate(`/venues/${venue.id}`)}
             >
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
