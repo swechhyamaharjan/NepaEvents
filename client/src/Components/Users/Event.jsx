@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaSearch, FaRegCalendarAlt } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import eventImage from "/public/images/event1.png";
 
 export const Event = () => {
@@ -156,8 +157,13 @@ export const Event = () => {
 
               return (
                 <div key={event.id} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 relative group">
+                  {/* Using Link component for reliable navigation */}
+                  <Link to={`/event/${event.id}`} className="absolute inset-0 z-10">
+                    <span className="sr-only">View details for {event.name}</span>
+                  </Link>
+                  
                   {/* Discount Badge */}
-                  <div className="absolute top-3 right-3 bg-[#ED4A43] text-white text-sm font-semibold py-1.5 px-3 rounded-full z-10 shadow-md">
+                  <div className="absolute top-3 right-3 bg-[#ED4A43] text-white text-sm font-semibold py-1.5 px-3 rounded-full z-20 shadow-md">
                     20% OFF for 5+ Tickets
                   </div>
                   
@@ -194,7 +200,8 @@ export const Event = () => {
                           min="1"
                           value={ticketCount}
                           onChange={(e) => handleTicketChange(event.id, parseInt(e.target.value))}
-                          className="w-20 px-3 py-2 border border-gray-200 rounded-md text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:border-transparent"
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-20 px-3 py-2 border border-gray-200 rounded-md text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:border-transparent relative z-20"
                         />
                       </div>
                       
@@ -203,10 +210,13 @@ export const Event = () => {
                         <span className="text-lg font-bold text-[#ED4A43]">${totalPrice.toFixed(2)}</span>
                       </div>
                       
-                      <button className="w-full py-3 bg-[#ED4A43] hover:bg-[#D43C35] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center">
+                      <Link 
+                        to={`/event/${event.id}`} 
+                        className="w-full py-3 bg-[#ED4A43] hover:bg-[#D43C35] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center relative z-20"
+                      >
                         <FaTicketAlt className="mr-2" />
                         Book Now
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
