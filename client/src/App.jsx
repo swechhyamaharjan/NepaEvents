@@ -9,8 +9,12 @@ import { Event } from "./Components/Users/Event";
 import { AboutUs } from "./Components/Users/AboutUs";
 import { ContactUs } from "./Components/Users/ContactUs";
 import { BookVenue } from "./Components/Users/BookVenue";
-import MyBooking from "./Components/Users/MyBooking"; // Updated import
+import MyBooking from "./Components/Users/MyBooking"; 
+import EventDetail from "./Components/Users/EventDetail";
+import VenueDetail from "./Components/Users/VenueDetail";
 import { Login } from "./Components/Users/Login";
+import PaymentSuccess from "./Components/Users/PaymentSuccess";
+import PaymentFailure from "./Components/Users/PaymentFailure";
 
 import { AdminEventPage } from "./Components/Admin/AdminEventPage";
 import { AdminHome } from "./Components/Admin/AdminHome";
@@ -19,6 +23,8 @@ import { AdminVenuePage } from "./Components/Admin/AdminVenuePage";
 import { AuthProvider } from "./Context/AuthContext";
 import { ProtectedRoute } from "./Middleware/ProtectedRoutes"; // Import ProtectedRoute
 import AdminCategory from "./Components/Admin/AdminCategory";
+
+
 
 // Layout for Users
 const UserLayout = ({ children }) => (
@@ -50,7 +56,11 @@ function App() {
           <Route path="/aboutus" element={<UserLayout><AboutUs /></UserLayout>} />
           <Route path="/contactus" element={<UserLayout><ContactUs /></UserLayout>} />
           <Route path="/mybookings" element={<UserLayout><MyBooking /></UserLayout>} />
+          <Route path="/event/:id" element={<UserLayout><EventDetail /></UserLayout>} />
+          <Route path="/venue/:id" element={<UserLayout><VenueDetail /></UserLayout>} />
           <Route path="/bookvenue" element={<UserLayout><BookVenue /></UserLayout>} />
+          <Route path="/payment-success" element={<UserLayout><PaymentSuccess /></UserLayout>} />
+          <Route path="/payment-failure" element={<UserLayout><PaymentFailure/></UserLayout>} />
 
           {/* Protected Admin Routes */}
           <Route element={<ProtectedRoute adminOnly={true} />}>
