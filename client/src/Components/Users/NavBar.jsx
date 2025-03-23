@@ -32,7 +32,7 @@ export const NavBar = () => {
               <button
                 key={link.name}
                 className="text-sm font-medium text-gray-600 hover:text-[#ED4A43] transition-all duration-200"
-                onClick={() => navigate(link.path)} 
+                onClick={() => navigate(link.path)}
               >
                 {link.name}
               </button>
@@ -42,12 +42,16 @@ export const NavBar = () => {
           {/* Icons & Profile */}
           <div className="flex items-center space-x-5">
             {/* Favorite Icon */}
-            <button className="text-gray-500 hover:text-[#ED4A43] transition-colors relative">
+            <button
+              className="text-gray-500 hover:text-[#ED4A43] transition-colors relative"
+              onClick={() => navigate("/favourites")}
+            >
               <FiHeart size={20} />
             </button>
 
             {/* Notifications */}
-            <button className="text-gray-500 hover:text-[#ED4A43] transition-colors relative">
+            <button className="text-gray-500 hover:text-[#ED4A43] transition-colors relative"
+            onClick={() => navigate("/notifications")}>
               <FaBell size={20} />
               <span className="absolute -top-1.5 -right-1.5 bg-[#ED4A43] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                 2
