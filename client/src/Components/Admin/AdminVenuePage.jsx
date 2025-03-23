@@ -15,6 +15,7 @@ export const AdminVenuePage = () => {
     location: "",
     capacity: "",
     image: "",
+    price: "",
   });
   const [showDetailModal, setShowDetailModal] = useState(false); // State for detail view modal
   const [detailVenue, setDetailVenue] = useState(null); // State to store the venue for detail view
@@ -48,7 +49,7 @@ export const AdminVenuePage = () => {
         toast.success("Venue added successfully!");
       }
       setShowModal(false);
-      setRefreshTrigger(prev => prev + 1); 
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error("Error saving venue:", error);
       toast.error("Failed to save venue. Please try again!");
@@ -191,21 +192,19 @@ export const AdminVenuePage = () => {
           <div className="bg-white rounded-full shadow-md inline-flex p-1">
             <button
               onClick={() => setActiveTab("adminVenues")}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${
-                activeTab === "adminVenues"
+              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "adminVenues"
                   ? "bg-[#ED4A43] text-white shadow-lg"
                   : "text-gray-600 hover:bg-gray-100"
-              }`}
+                }`}
             >
               Venues Added by Admin
             </button>
             <button
               onClick={() => setActiveTab("requestedVenues")}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${
-                activeTab === "requestedVenues"
+              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "requestedVenues"
                   ? "bg-[#ED4A43] text-white shadow-lg"
                   : "text-gray-600 hover:bg-gray-100"
-              }`}
+                }`}
             >
               Requested Venues by User
             </button>
@@ -223,6 +222,7 @@ export const AdminVenuePage = () => {
                   location: "",
                   capacity: "",
                   image: "",
+                  price: "",
                 });
                 setShowModal(true);
               }}
@@ -333,41 +333,37 @@ export const AdminVenuePage = () => {
               <div className="bg-white rounded-lg shadow-md inline-flex p-2 space-x-2">
                 <button
                   onClick={() => setRequestedVenueFilter("all")}
-                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                    requestedVenueFilter === "all"
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${requestedVenueFilter === "all"
                       ? "bg-[#ED4A43] text-white shadow-md"
                       : "text-gray-600 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   All
                 </button>
                 <button
                   onClick={() => setRequestedVenueFilter("approved")}
-                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                    requestedVenueFilter === "approved"
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${requestedVenueFilter === "approved"
                       ? "bg-green-500 text-white shadow-md"
                       : "text-gray-600 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   Approved
                 </button>
                 <button
                   onClick={() => setRequestedVenueFilter("rejected")}
-                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                    requestedVenueFilter === "rejected"
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${requestedVenueFilter === "rejected"
                       ? "bg-red-500 text-white shadow-md"
                       : "text-gray-600 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   Rejected
                 </button>
                 <button
                   onClick={() => setRequestedVenueFilter("pending")}
-                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                    requestedVenueFilter === "pending"
+                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${requestedVenueFilter === "pending"
                       ? "bg-yellow-500 text-white shadow-md"
                       : "text-gray-600 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   Pending
                 </button>
@@ -444,11 +440,10 @@ export const AdminVenuePage = () => {
                           e.stopPropagation();
                           handleApproveVenue(venue.id);
                         }}
-                        className={`px-4 py-3 rounded-lg flex items-center justify-center ${
-                          venue.isApproved === true
+                        className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === true
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
-                        }`}
+                          }`}
                         disabled={venue.isApproved === true}
                       >
                         <FaCheckCircle className="mr-2" /> Approve
@@ -458,11 +453,10 @@ export const AdminVenuePage = () => {
                           e.stopPropagation();
                           handleRejectVenue(venue.id);
                         }}
-                        className={`px-4 py-3 rounded-lg flex items-center justify-center ${
-                          venue.isApproved === false
+                        className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === false
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-[#ED4A43] text-white hover:shadow-md"
-                        }`}
+                          }`}
                         disabled={venue.isApproved === false}
                       >
                         <FaTimesCircle className="mr-2" /> Reject
@@ -529,6 +523,22 @@ export const AdminVenuePage = () => {
                       value={newVenue.location}
                       onChange={handleChange}
                       placeholder="Enter venue location"
+                      className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
+                    />
+                  </div>
+
+                  {/* Venue Price */}
+                  <div>
+                    <label htmlFor="price" className="block text-gray-700 font-medium mb-1">
+                      Price
+                    </label>
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      value={newVenue.price}
+                      onChange={handleChange}
+                      placeholder="Enter venue price"
                       className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
                     />
                   </div>
