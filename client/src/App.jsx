@@ -15,6 +15,8 @@ import VenueDetail from "./Components/Users/VenueDetail";
 import { Login } from "./Components/Users/Login";
 import PaymentSuccess from "./Components/Users/PaymentSuccess";
 import PaymentFailure from "./Components/Users/PaymentFailure";
+import Favourites from "./Components/Users/Favourites";
+import Notifications from "./Components/Users/Notifications";
 
 import { AdminEventPage } from "./Components/Admin/AdminEventPage";
 import { AdminHome } from "./Components/Admin/AdminHome";
@@ -23,8 +25,6 @@ import { AdminVenuePage } from "./Components/Admin/AdminVenuePage";
 import { AuthProvider } from "./Context/AuthContext";
 import { ProtectedRoute } from "./Middleware/ProtectedRoutes"; // Import ProtectedRoute
 import AdminCategory from "./Components/Admin/AdminCategory";
-
-
 
 // Layout for Users
 const UserLayout = ({ children }) => (
@@ -59,6 +59,8 @@ function App() {
           <Route path="/event/:id" element={<UserLayout><EventDetail /></UserLayout>} />
           <Route path="/venue/:id" element={<UserLayout><VenueDetail /></UserLayout>} />
           <Route path="/bookvenue" element={<UserLayout><BookVenue /></UserLayout>} />
+          <Route path="/favourites" element={<UserLayout><Favourites /></UserLayout>} />
+          <Route path="/notifications" element={<UserLayout><Notifications /></UserLayout>} />
           <Route path="/payment-success" element={<UserLayout><PaymentSuccess /></UserLayout>} />
           <Route path="/payment-failure" element={<UserLayout><PaymentFailure/></UserLayout>} />
 
