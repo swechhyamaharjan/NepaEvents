@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   FaMapMarkerAlt, 
@@ -12,7 +12,8 @@ import {
   FaParking, 
   FaAccessibleIcon, 
   FaUtensils, 
-  FaMusic 
+  FaMusic,
+  FaMapMarked
 } from "react-icons/fa";
 import venueImage from "/public/images/event1.png";
 
@@ -23,6 +24,7 @@ export const VenueDetail = () => {
   const [isBookingConfirmed, setIsBookingConfirmed] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   // In a real application, you would fetch the venue by ID
   // For now, we'll simulate getting venue data
@@ -32,6 +34,10 @@ export const VenueDetail = () => {
     price: 4000,
     img: venueImage,
     location: "Kamaladi, Kathmandu",
+    coordinates: {
+      lat: 27.7063, 
+      lng: 85.3209
+    },
     capacity: 300,
     rating: 4.8,
     reviewCount: 124,
@@ -70,6 +76,19 @@ export const VenueDetail = () => {
       { id: 3, name: "Bhrikuti Mandap Hall", price: 5000, img: venueImage, location: "Pradarshani Marg, Kathmandu" },
     ]
   };
+
+  // Map initialization
+  useEffect(() => {
+    // This would be replaced with actual map initialization code
+    const loadMap = async () => {
+      // Simulate map loading
+      setTimeout(() => {
+        setMapLoaded(true);
+      }, 1000);
+    };
+
+    loadMap();
+  }, []);
 
   // Open booking modal
   const handleBookNow = () => {
@@ -206,6 +225,73 @@ export const VenueDetail = () => {
                     <span>{amenity.name}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Location Map Section */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-10">
+          <div className="p-8">
+            <div className="flex items-center mb-6">
+              <FaMapMarked className="text-[#ED4A43] mr-2 text-xl" />
+              <h3 className="text-2xl font-bold text-gray-800">Location</h3>
+            </div>
+            
+            <div className="bg-gray-100 rounded-xl overflow-hidden">
+              <div 
+                id="venue-map" 
+                className="w-full h-96 relative"
+                style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: mapLoaded ? '#e5e7eb' : '#f3f4f6' 
+                }}
+              >
+                {!mapLoaded ? (
+                  <div className="text-center">
+                    <div className="inline-block w-8 h-8 border-4 border-[#ED4A43] border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <p className="text-gray-500">Loading map...</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* This is a placeholder for the actual map */}
+                    <div className="absolute inset-0 bg-gray-200">
+                      <img 
+                        src="/api/placeholder/800/400" 
+                        alt="Map placeholder" 
+                        className="w-full h-full object-cover opacity-75"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-[#ED4A43] text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+                          <FaMapMarkerAlt className="mr-2" />
+                          <span>Kamaladi Hall</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            <div className="mt-6">
+              <h4 className="font-semibold text-gray-700 mb-2">Address</h4>
+              <p className="text-gray-600">{venue.location}</p>
+              <p className="text-gray-600 mt-4">
+                Coordinates: {venue.coordinates.lat}, {venue.coordinates.lng}
+              </p>
+              
+              <div className="mt-6">
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${venue.coordinates.lat},${venue.coordinates.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center bg-[#ED4A43] text-white py-2 px-4 rounded-lg hover:bg-[#c93a34] transition-colors shadow-md"
+                >
+                  <FaMapMarkerAlt className="mr-2" />
+                  View on Google Maps
+                </a>
               </div>
             </div>
           </div>
