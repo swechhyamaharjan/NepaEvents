@@ -1,11 +1,23 @@
 const mongoose = require("mongoose");
 
 const ticketSchema = new mongoose.Schema({
-  event: { type: mongoose.Schema.Types.ObjectId, ref: "Event", required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  quantity: { type: Number, required: true },
-  totalAmount: { type: Number, required: true },
-  paymentStatus: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
-  createdAt: { type: Date, default: Date.now }
+  event: { type: mongoose.Schema.Types.ObjectId, ref: "Event", required: true },
+  quantity: { type: Number, required: false, min: 1 },
+  price: { type: Number, required: true },
+  ticketCodes: [{ type: String, unique: true, required: true }],
+  purchaseDate: { type: Date, default: Date.now },
 });
+
+
+const receiptSchema = new mongoose.Schema({
+  organizer: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  venue: { type: mongoose.Schema.Types.ObjectId, ref: "Venue", required: true },
+  amountPaid: { type: Number, required: true },
+  transactionId: { type: String, required: true },
+  paymentDate: { type: Date, default: Date.now },
+});
+
+
+module.exports = mongoose.model("Receipt", receiptSchema);
 module.exports = mongoose.model("Ticket", ticketSchema);

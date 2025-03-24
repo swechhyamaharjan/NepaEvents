@@ -1,5 +1,5 @@
 const express = require("express");
-const { bookVenue, getAllVenues, updateVenue, deleteVenue, getVenueById } = require('../controller/venue-controller');
+const { createVenue, getAllVenues, updateVenue, deleteVenue, getVenueById } = require('../controller/venue-controller');
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -23,9 +23,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 const venueRouter = express.Router();
 
-venueRouter.post('/', upload.single("image"), bookVenue)
+venueRouter.post('/', upload.single("image"), createVenue)
 venueRouter.get('/', getAllVenues)
 venueRouter.patch('/:venueId', upload.single("image"), updateVenue)
 venueRouter.delete('/:id', deleteVenue)
 venueRouter.get('/:id', getVenueById)
+
+venueRouter.post('/bookVenue',)
 module.exports = venueRouter;

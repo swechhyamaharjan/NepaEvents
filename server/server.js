@@ -7,9 +7,12 @@ const eventRouter = require('./routes/event-route');
 const venueRouter = require('./routes/venue-route');
 const app = express();
 const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 const artistRouter = require('./routes/artist-route');
 const ticketRouter = require('./routes/ticket-route');
-const CategoryRouter = require("./routes/category-route");
+const categoryRouter = require("./routes/category-route");
+const venueBookingRouter = require("./routes/venue-booking-route");
+const { stripeWebHook } = require('./controller/venue-booking-controller');
 
 const PORT = 3000;
 
@@ -25,7 +28,9 @@ app.use("/api/event", eventRouter);
 app.use("/api/venue", venueRouter);
 app.use("/api/artist", artistRouter);
 app.use("/api/ticket", ticketRouter);
-app.use("/api/category", CategoryRouter);
+app.use("/api/category", categoryRouter);
+app.use("/api/venue-bookings", venueBookingRouter);
+app.post("/webhook", bodyParser.raw({ type: "application/json" }), stripeWebHook);
 app.use('/uploads', express.static('uploads'));
 connectToDB();
 

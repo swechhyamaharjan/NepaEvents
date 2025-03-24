@@ -1,13 +1,15 @@
 const Venue = require('../models/venue-model')
 
-const bookVenue = async (req, res) => {
+const createVenue = async (req, res) => {
+    console.log(req.body);
     try {
-        const { name, location, capacity } = req.body;
+        const { name, location, capacity, price} = req.body;
+        const priceNumber = parseFloat(price);
         const image = req.file ? req.file.path : null; // Ensure image is stored
         if (!image) {
             return res.status(400).json({ message: 'Image is required' });
         }
-        const newVenue = await Venue.create({ name, location, capacity, image });
+        const newVenue = await Venue.create({ name, location, capacity, image, price: priceNumber });
         res.status(201).json({
             success: true,
             message: 'Venue booked successfully',
@@ -36,12 +38,12 @@ const updateVenue = async (req, res) => {
             name,
             location,
             capacity,
-            image, 
+            image,
         };
         const updatedVenue = await Venue.findByIdAndUpdate(
             req.params.venueId,
             newVenueData,
-            { new: true } 
+            { new: true }
         );
 
         if (!updatedVenue) {
@@ -55,14 +57,13 @@ const updateVenue = async (req, res) => {
     }
 };
 
-
 const deleteVenue = async (req, res) => {
     try {
         const venueToDelete = await Venue.findByIdAndDelete(req.params.id)
         if (!venueToDelete) {
             return res.status(404).json({ success: false, message: "Venue not found" });
         }
-        res.status(200).json({sucess: true, message: "Venue deleted successfully" });
+        res.status(200).json({ sucess: true, message: "Venue deleted successfully" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Server error" });
@@ -82,4 +83,4 @@ const getVenueById = async (req, res) => {
     }
 }
 
-module.exports = { bookVenue, getAllVenues, updateVenue, deleteVenue, getVenueById }
+module.exports = { createVenue, getAllVenues, updateVenue, deleteVenue, getVenueById }
