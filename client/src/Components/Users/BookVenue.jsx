@@ -1,70 +1,154 @@
-import React, { useState } from "react";
-import venueImage from "/public/images/event1.png";
-import { FaMapMarkerAlt, FaUsers, FaBuilding, FaHeart, FaSearch, FaCalendarAlt, FaInfoCircle } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { 
+  FaMapMarkerAlt, 
+  FaUsers, 
+  FaBuilding, 
+  FaHeart, 
+  FaSearch, 
+  FaCalendarAlt, 
+  FaInfoCircle, 
+  FaTrashAlt 
+} from "react-icons/fa";
 
 export const BookVenue = () => {
+  const navigate = useNavigate();
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBookingConfirmed, setIsBookingConfirmed] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [favorites, setFavorites] = useState([]);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState(null);
+  const [venues, setVenues] = useState([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState({
+    title: "",
+    description: "",
+    category: "",
+    date: "",
+    artist: "",
+    image: "",
+    price: 0,
+  });
 
-  // Example venue data
-  const venues = [
-    {
-      id: 1,
-      name: "Kamaladi Hall",
-      price: 4000,
-      img: venueImage,
-      location: "Kamaladi, Kathmandu",
-      capacity: 300,
-    },
-    {
-      id: 2,
-      name: "Baneshwor Hall",
-      price: 4500,
-      img: venueImage,
-      location: "Baneshwor, Kathmandu",
-      capacity: 250,
-    },
-    {
-      id: 3,
-      name: "Bhrikuti Mandap Hall",
-      price: 5000,
-      img: venueImage,
-      location: "Pradarshani Marg, Kathmandu",
-      capacity: 1000,
-    },
-    {
-      id: 4,
-      name: "Tudikhel Grounds",
-      price: 6000,
-      img: venueImage,
-      location: "Tudikhel, Kathmandu",
-      capacity: 1500,
-    },
-  ];
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-  // Open modal with selected venue details
+    if (name === 'price' && value < 0) {
+      return; // Prevent negative value from being set
+    }
+
+    setBookingDetails((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleImageRemove = () => {
+    setImagePreview(null);
+    setBookingDetails((prev) => ({ ...prev, image: null }));
+  }
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setBookingDetails((prev) => ({ ...prev, image: file }));
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedVenue(null);
+    setIsBookingConfirmed(false);
+    setImagePreview(null);
+    setBookingDetails({
+      title: "",
+      description: "",
+      category: "",
+      date: "",
+      artist: "",
+      image: "",
+      price: 0,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const formData = new FormData();
+      
+      formData.append('title', bookingDetails.title);
+      formData.append('description', bookingDetails.description);
+      formData.append('category', bookingDetails.category);
+      formData.append('date', bookingDetails.date);
+      formData.append('artist', bookingDetails.artist);
+      formData.append('price', bookingDetails.price);
+      
+      if (bookingDetails.image) {
+        formData.append('image', bookingDetails.image);
+      }
+      
+      // Send booking request
+      await axios.post("http://localhost:3000/api/venue-bookings", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true
+      });
+      
+      toast.success("Booking request sent successfully!");
+      setIsBookingConfirmed(true);
+    } catch (error) {
+      console.error("Booking error:", error);
+      toast.error("Failed to submit booking. Please try again!");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  //Fetch categories
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await axios.get("http://localhost:3000/api/category");
+        setCategories(response.data);
+      } catch (error) {
+        console.log(error);
+        toast.error("Failed to fetch categories");
+      }
+    }
+    fetchCategories();
+  }, []);
+
+  //fetch venues
+  useEffect(() => {
+    async function fetchVenues() {
+      try {
+        const response = await axios.get("http://localhost:3000/api/venue");
+        console.log("Fetched venues:", response.data);
+        setVenues(response.data);
+      } catch (error) {
+        console.error("Error fetching venues:", error);
+        toast.error("Failed to load venues");
+      }
+    }
+    fetchVenues();
+  }, [refreshTrigger]); // Only refresh when this value changes
+
   const handleBookNow = (venue) => {
     setSelectedVenue(venue);
     setIsModalOpen(true);
   };
 
-  // Close the modal
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedVenue(null);
-    setIsBookingConfirmed(false);
-  };
-
-  // Handle booking confirmation
-  const handleBookingConfirmation = (e) => {
-    e.preventDefault();
-    setIsBookingConfirmed(true);
-  };
-
-  // Toggle favorite status
   const toggleFavorite = (venueId) => {
     if (favorites.includes(venueId)) {
       setFavorites(favorites.filter(id => id !== venueId));
@@ -73,7 +157,6 @@ export const BookVenue = () => {
     }
   };
 
-  // Filter venues based on search term
   const filteredVenues = venues.filter(venue =>
     venue.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     venue.location.toLowerCase().includes(searchTerm.toLowerCase())
@@ -82,10 +165,13 @@ export const BookVenue = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-8 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#ED4A43] to-[#ED4A43] mb-2 text-center">Book a Venue</h2>
-        <p className="text-center text-gray-500 mb-12">Find and book the perfect venue for your event</p>
+        <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#ED4A43] to-[#ED4A43] mb-2 text-center">
+          Book a Venue
+        </h2>
+        <p className="text-center text-gray-500 mb-12">
+          Find and book the perfect venue for your event
+        </p>
 
-        {/* Search and Filter Section */}
         <div className="mb-10 max-w-lg mx-auto">
           <div className="relative">
             <input
@@ -99,13 +185,12 @@ export const BookVenue = () => {
           </div>
         </div>
 
-        {/* Venue List */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {filteredVenues.map((venue) => (
             <div
-              key={venue.id}
+              key={venue._id}
               className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-              onClick={() => navigate(`/venues/${venue.id}`)}
+              onClick={() => navigate(`/venues/${venue._id}`)}
             >
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
@@ -119,7 +204,7 @@ export const BookVenue = () => {
                   </div>
                 </div>
                 <img
-                  src={venue.img}
+                  src={`http://localhost:3000/${venue.image}`}
                   alt={venue.name}
                   className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
@@ -166,7 +251,6 @@ export const BookVenue = () => {
           ))}
         </div>
 
-        {/* Empty State */}
         {filteredVenues.length === 0 && (
           <div className="text-center py-10">
             <FaInfoCircle className="mx-auto text-4xl text-gray-400 mb-4" />
@@ -176,48 +260,49 @@ export const BookVenue = () => {
         )}
       </div>
 
-      {/* Booking Form Modal */}
       {isModalOpen && selectedVenue && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            {/* Form Header */}
             <div className="bg-gradient-to-r from-[#ED4A43] to-[#FF7A6E] p-6 text-white">
               <h3 className="text-2xl font-bold">
                 {isBookingConfirmed ? "Booking Confirmed" : `Book ${selectedVenue.name}`}
               </h3>
               <p className="text-red-100 text-sm mt-1">
-                {isBookingConfirmed ? "Thank you for your booking" : "All fields marked are required to complete your booking"}
+                {isBookingConfirmed 
+                  ? "Thank you for your booking" 
+                  : "All fields marked are required to complete your booking"}
               </p>
             </div>
 
             {!isBookingConfirmed ? (
-              <form onSubmit={handleBookingConfirmation} className="p-8">
+              <form onSubmit={handleSubmit} className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Left Column */}
                   <div className="space-y-6">
-                    {/* Event Title */}
                     <div>
-                      <label htmlFor="title" className="block text-gray-700 font-medium mb-1">
+                      <label htmlFor="title" className="block text-gray-700 font-medium mb-2">
                         Event Title
                       </label>
                       <input
                         type="text"
                         id="title"
                         name="title"
+                        value={bookingDetails.title}
+                        onChange={handleChange}
                         placeholder="Enter event title"
                         className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
                         required
                       />
                     </div>
 
-                    {/* Event Description */}
                     <div>
-                      <label htmlFor="description" className="block text-gray-700 font-medium mb-1">
+                      <label htmlFor="description" className="block text-gray-700 font-medium mb-2">
                         Event Description
                       </label>
                       <textarea
                         id="description"
                         name="description"
+                        value={bookingDetails.description}
+                        onChange={handleChange}
                         placeholder="Enter event description"
                         rows="3"
                         className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
@@ -225,107 +310,191 @@ export const BookVenue = () => {
                       ></textarea>
                     </div>
 
-                    {/* Event Category */}
                     <div>
-                      <label htmlFor="category" className="block text-gray-700 font-medium mb-1">
+                      <label htmlFor="category" className="block text-gray-700 font-medium mb-2">
                         Event Category
                       </label>
                       <select
                         id="category"
                         name="category"
+                        value={bookingDetails.category}
+                        onChange={handleChange}
                         className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
                         required
                       >
-                        <option value="">Select a category</option>
-                        <option value="conference">Conference</option>
-                        <option value="wedding">Wedding</option>
-                        <option value="concert">Concert</option>
-                        <option value="workshop">Workshop</option>
+                        <option value="">Select Category</option>
+                        {categories && categories.map((category) => (
+                          <option key={category._id} value={category._id}>
+                            {category.name}
+                          </option>
+                        ))}
                       </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="price" className="block text-gray-700 font-medium mb-2">
+                        Event Price
+                      </label>
+                      <input
+                        type="number"
+                        id="price"
+                        name="price"
+                        value={bookingDetails.price}
+                        onChange={handleChange}
+                        placeholder="Enter the event price"
+                        className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
+                        min="0"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="artist" className="block text-gray-700 font-medium mb-2">
+                        Artist
+                      </label>
+                      <input
+                        type="text"
+                        id="artist"
+                        name="artist"
+                        value={bookingDetails.artist}
+                        onChange={handleChange}
+                        placeholder="Enter artist name"
+                        className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
+                        required
+                      />
                     </div>
                   </div>
 
-                  {/* Right Column */}
                   <div className="space-y-6">
-                    {/* Event Date and Time Section */}
-                    <div className="p-4 bg-red-50 rounded-xl border border-red-100">
+                    <div className="p-5 bg-red-50 rounded-xl border border-red-100">
                       <h3 className="text-gray-700 font-semibold mb-4 flex items-center">
                         <FaCalendarAlt className="h-5 w-5 mr-2 text-[#ED4A43]" />
                         Event Details
                       </h3>
 
-                      {/* Date Input */}
-                      <div className="mb-4">
-                        <label htmlFor="date" className="block text-gray-700 font-medium mb-1 text-sm">
+                      <div>
+                        <label htmlFor="date" className="block text-gray-700 font-medium mb-2 text-sm">
                           Event Date
                         </label>
                         <input
                           type="date"
                           id="date"
                           name="date"
-                          className="w-full p-2 bg-white border border-red-200 rounded-lg focus:outline-none focus:border-[#ED4A43]"
+                          value={bookingDetails.date}
+                          onChange={handleChange}
+                          className="w-full p-3 bg-white border border-red-200 rounded-lg focus:outline-none focus:border-[#ED4A43]"
                           required
                         />
                       </div>
-
                     </div>
-                    {/* Venue Information */}
-                    <div className="p-4 bg-red-50 rounded-xl border border-red-100">
+
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">
+                        Venue Image
+                      </label>
+                      {imagePreview ? (
+                        <div className="relative w-full h-40 rounded-lg overflow-hidden border border-gray-200">
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleImageRemove}
+                            className="absolute top-2 right-2 bg-white p-1 rounded-full shadow-md"
+                          >
+                            <FaTrashAlt size={14} className="text-[#ED4A43]" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <input
+                            type="file"
+                            className="hidden"
+                            id="image-upload"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                          />
+                          <label
+                            htmlFor="image-upload"
+                            className="w-full flex items-center justify-center p-4 border-2 border-dashed border-red-300 bg-red-50 rounded-xl cursor-pointer hover:bg-red-100 transition-colors"
+                          >
+                            <div className="text-center">
+                              <svg 
+                                className="mx-auto h-10 w-10 text-[#ED4A43]" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round" 
+                                  strokeWidth="2" 
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                                />
+                              </svg>
+                              <p className="mt-1 text-sm text-[#ED4A43]">Click to upload image</p>
+                            </div>
+                          </label>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-5 bg-red-50 rounded-xl border border-red-100">
                       <h3 className="text-gray-700 font-semibold mb-4 flex items-center">
                         <FaInfoCircle className="h-5 w-5 mr-2 text-[#ED4A43]" />
                         Venue Information
                       </h3>
-                      <p className="text-sm text-gray-600">
-                        <strong>Name:</strong> {selectedVenue.name}<br />
-                        <strong>Location:</strong> {selectedVenue.location}<br />
-                        <strong>Capacity:</strong> {selectedVenue.capacity} people<br />
-                        <strong>Price:</strong> Rs. {selectedVenue.price}
-                      </p>
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <p><strong>Name:</strong> {selectedVenue.name}</p>
+                        <p><strong>Location:</strong> {selectedVenue.location}</p>
+                        <p><strong>Capacity:</strong> {selectedVenue.capacity}</p>
+                        <p><strong>Price:</strong> Rs. {selectedVenue.price}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center mt-6">
+                      <button
+                        type="button"
+                        onClick={closeModal}
+                        className="bg-gray-300 py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-400 transition"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="bg-[#ED4A43] text-white py-2 px-6 rounded-lg hover:bg-[#c93a34] transition"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? 'Processing...' : 'Confirm Booking'}
+                      </button>
                     </div>
                   </div>
                 </div>
-
-                {/* Submit Button Area */}
-                <div className="mt-10 text-center flex justify-center space-x-4">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-10 py-4 bg-[#ED4A43] text-white font-semibold rounded-xl shadow-lg hover:bg-[#D43C35] transform hover:-translate-y-1 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:ring-offset-2"
-                  >
-                    Confirm Booking
-                  </button>
-                </div>
               </form>
             ) : (
-              <div className="p-8 text-center">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
-                  <FaCheckCircle className="text-green-500 text-4xl" />
+              <div className="p-8">
+                <h3 className="text-center text-xl font-semibold text-[#ED4A43] mb-4">
+                  Your booking for {selectedVenue.name} has been confirmed!
+                </h3>
+                <p className="text-center text-lg text-gray-600">
+                  We will send you the booking details and confirmation shortly.
+                </p>
+                <div className="text-center mt-8">
+                  <button
+                    onClick={closeModal}
+                    className="bg-[#ED4A43] text-white py-2 px-6 rounded-lg hover:bg-[#c93a34] transition"
+                  >
+                    Close
+                  </button>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-4">Booking Successful!</h3>
-                <p className="text-lg text-gray-700 mb-8">
-                  Thank you for booking! We will notify you once your booking is approved by the admin.
-                </p>
-                <p className="text-gray-600 mb-8">
-                  <strong>Venue:</strong> {selectedVenue.name}<br />
-                  <strong>Location:</strong> {selectedVenue.location}
-                </p>
-                <button
-                  onClick={closeModal}
-                  className="px-10 py-4 bg-[#ED4A43] text-white rounded-xl hover:bg-[#c93a34] transition-all"
-                >
-                  Close
-                </button>
               </div>
             )}
           </div>
         </div>
       )}
     </div>
-  );
-};
+  )
+}
+
+export default BookVenue;
