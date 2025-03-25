@@ -122,7 +122,7 @@ const stripeWebHook = async (req, res) => {
     event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
 
     if (event.type === "checkout.session.completed") {
-      console.log("✅ Checkout session completed event received!");
+      console.log("Checkout session completed event received!");
       
       const session = event.data.object;
       const bookingId = session.metadata.bookingId;
@@ -133,12 +133,12 @@ const stripeWebHook = async (req, res) => {
       booking.paymentStatus = "paid";
       await booking.save();
 
-      console.log("✅ Booking updated successfully!");
+      console.log("Booking updated successfully!");
 
       res.json({ received: true });
     }
   } catch (error) {
-    console.error("❌ Webhook Error:", error.message);
+    console.error(" Webhook Error:", error.message);
     res.status(400).send(`Webhook Error: ${error.message}`);
   }
 };
