@@ -25,6 +25,7 @@ import { AdminVenuePage } from "./Components/Admin/AdminVenuePage";
 import { AuthProvider } from "./Context/AuthContext";
 import { ProtectedRoute } from "./Middleware/ProtectedRoutes"; // Import ProtectedRoute
 import AdminCategory from "./Components/Admin/AdminCategory";
+import Userlist from "./Components/Admin/Userlist";
 
 // Layout for Users
 const UserLayout = ({ children }) => (
@@ -63,6 +64,7 @@ function App() {
           <Route path="/notifications" element={<UserLayout><Notifications /></UserLayout>} />
           <Route path="/payment-success" element={<UserLayout><PaymentSuccess /></UserLayout>} />
           <Route path="/payment-failure" element={<UserLayout><PaymentFailure/></UserLayout>} />
+          <Route path="/admin/userlist" element={<AdminLayout><Userlist /></AdminLayout>} />
 
           {/* Protected Admin Routes */}
           <Route element={<ProtectedRoute adminOnly={true} />}>
@@ -70,6 +72,7 @@ function App() {
             <Route path="/admin/events" element={<AdminLayout><AdminEventPage /></AdminLayout>} />
             <Route path="/admin/venues" element={<AdminLayout><AdminVenuePage /></AdminLayout>} />
             <Route path="/admin/category" element={<AdminLayout><AdminCategory /></AdminLayout>} />
+            
           </Route>
         </Routes>
       </BrowserRouter>
