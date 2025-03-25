@@ -27,11 +27,13 @@ export const AdminVenuePage = () => {
     formData.append("name", newVenue.name);
     formData.append("location", newVenue.location);
     formData.append("capacity", newVenue.capacity);
+    formData.append("price", newVenue.price);
     formData.append("isAdminAdded", true);
     if (newVenue.image) {
       formData.append("image", newVenue.image);
     }
     try {
+      console.log(formData);
       if (selectedVenue) {
         // Edit existing venue
         await axios.patch(`http://localhost:3000/api/venue/${selectedVenue._id}`, formData, {
@@ -41,7 +43,7 @@ export const AdminVenuePage = () => {
         toast.success("Venue updated successfully!");
       } else {
         // Create new venue
-        await axios.post("http://localhost:3000/api/venue", formData, {
+        await axios.post("http://localhost:3000/api/venue", formData,  {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true
         });
