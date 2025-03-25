@@ -29,6 +29,7 @@ app.use("/api/venue", venueRouter);
 app.use("/api/artist", artistRouter);
 app.use("/api/ticket", ticketRouter);
 app.use("/api/category", categoryRouter);
+app.use('/api/users', userRoute);
 app.use("/api/venue-bookings", venueBookingRouter);
 app.post("/webhook", bodyParser.raw({ type: "application/json" }), stripeWebHook);
 app.use('/uploads', express.static('uploads'));
