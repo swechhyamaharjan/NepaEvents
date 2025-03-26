@@ -37,7 +37,7 @@ const AdminUserList = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="container mx-auto">
         <h2 className="text-4xl font-extrabold text-center text-[#ED4A43] mb-10 tracking-tight">
-          User Management
+          User List
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
