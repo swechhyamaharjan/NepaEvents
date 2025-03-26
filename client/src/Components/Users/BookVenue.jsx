@@ -2,15 +2,15 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { 
-  FaMapMarkerAlt, 
-  FaUsers, 
-  FaBuilding, 
-  FaHeart, 
-  FaSearch, 
-  FaCalendarAlt, 
-  FaInfoCircle, 
-  FaTrashAlt 
+import {
+  FaMapMarkerAlt,
+  FaUsers,
+  FaBuilding,
+  FaHeart,
+  FaSearch,
+  FaCalendarAlt,
+  FaInfoCircle,
+  FaTrashAlt
 } from "react-icons/fa";
 
 export const BookVenue = () => {
@@ -84,27 +84,27 @@ export const BookVenue = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const formData = new FormData();
-      
+
       formData.append('title', bookingDetails.title);
       formData.append('description', bookingDetails.description);
       formData.append('category', bookingDetails.category);
       formData.append('date', bookingDetails.date);
       formData.append('artist', bookingDetails.artist);
       formData.append('price', bookingDetails.price);
-      
+
       if (bookingDetails.image) {
         formData.append('image', bookingDetails.image);
       }
-      
+
       // Send booking request
       await axios.post("http://localhost:3000/api/venue-bookings", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true
       });
-      
+
       toast.success("Booking request sent successfully!");
       setIsBookingConfirmed(true);
     } catch (error) {
@@ -209,12 +209,15 @@ export const BookVenue = () => {
                   className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
                 <button
-                  onClick={() => toggleFavorite(venue.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(venue._id);
+                  }}
                   className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
                 >
                   <FaHeart
                     size={18}
-                    className={favorites.includes(venue.id) ? "text-[#ED4A43]" : "text-gray-400"}
+                    className={favorites.includes(venue._id) ? "text-[#ED4A43]" : "text-gray-400"}
                   />
                 </button>
               </div>
@@ -268,8 +271,8 @@ export const BookVenue = () => {
                 {isBookingConfirmed ? "Booking Confirmed" : `Book ${selectedVenue.name}`}
               </h3>
               <p className="text-red-100 text-sm mt-1">
-                {isBookingConfirmed 
-                  ? "Thank you for your booking" 
+                {isBookingConfirmed
+                  ? "Thank you for your booking"
                   : "All fields marked are required to complete your booking"}
               </p>
             </div>
@@ -420,17 +423,17 @@ export const BookVenue = () => {
                             className="w-full flex items-center justify-center p-4 border-2 border-dashed border-red-300 bg-red-50 rounded-xl cursor-pointer hover:bg-red-100 transition-colors"
                           >
                             <div className="text-center">
-                              <svg 
-                                className="mx-auto h-10 w-10 text-[#ED4A43]" 
-                                fill="none" 
-                                stroke="currentColor" 
+                              <svg
+                                className="mx-auto h-10 w-10 text-[#ED4A43]"
+                                fill="none"
+                                stroke="currentColor"
                                 viewBox="0 0 24 24"
                               >
-                                <path 
-                                  strokeLinecap="round" 
-                                  strokeLinejoin="round" 
-                                  strokeWidth="2" 
-                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                                 />
                               </svg>
                               <p className="mt-1 text-sm text-[#ED4A43]">Click to upload image</p>
