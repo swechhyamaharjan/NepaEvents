@@ -51,11 +51,17 @@ export const NavBar = () => {
 
             {/* Notifications */}
             <button className="text-gray-500 hover:text-[#ED4A43] transition-colors relative"
-            onClick={() => navigate("/notifications")}>
+              onClick={() => navigate("/notifications")}>
               <FaBell size={20} />
               <span className="absolute -top-1.5 -right-1.5 bg-[#ED4A43] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                 2
               </span>
+            </button>
+
+            {/* Booking Detail */}
+            <button className="text-gray-500 hover:text-[#ED4A43] transition-colors relative"
+              onClick={() => navigate("/myBookings")}>
+              Bookings
             </button>
 
             {/* Profile Dropdown */}
@@ -119,6 +125,7 @@ export const NavBar = () => {
                 LOG IN
               </button>
             )}
+
           </div>
         </div>
       </div>
