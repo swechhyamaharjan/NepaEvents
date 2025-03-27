@@ -10,9 +10,9 @@ const venueBookingSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String, required: true },
     date: { type: Date, required: true },
-    category: { type: mongoose.Schema.Types.ObjectId, ref: "EventCategory", required: true },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
     ticketPrice: { type: Number, required: true },
-    eventImage: { type: String, required: true },
+    image: { type: String, required: true },
     artist: { type: String, required: true },
   },
 })

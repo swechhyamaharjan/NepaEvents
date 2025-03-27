@@ -1,5 +1,5 @@
 const express = require("express");
-const { bookVenue, getAllVenueBooking, approveVenueBooking, rejectVenueBooking, verifyPayment, makePaymentForVenue, sendReceipt } = require("../controller/venue-booking-controller");
+const { bookVenue, getAllVenueBooking, approveVenueBooking, rejectVenueBooking, verifyPayment, makePaymentForVenue, sendReceipt, getVenueBookingById } = require("../controller/venue-booking-controller");
 const verifyToken = require("../middleware/verify-token");
 const multer = require("multer");
 const path = require("path");
@@ -24,18 +24,19 @@ const upload = multer({ storage: storage });
 
 const router = express.Router();
 
-router.post('/', verifyToken,  upload.single("image"), bookVenue)
-router.get('/', verifyToken, getAllVenueBooking)
-router.put('/:id/approve', verifyToken, approveVenueBooking)
-router.put('/:id/reject', verifyToken, rejectVenueBooking)
+router.post('/', verifyToken, upload.single("image"), bookVenue)
+router.get('/', getAllVenueBooking)
+router.get('/:id', getVenueBookingById)
+router.put('/:id/approve', approveVenueBooking)
+router.put('/:id/reject', rejectVenueBooking)
 
 
 // Stripe Payment
 router.post("/pay", makePaymentForVenue);
-router.get("/verify-payment", verifyPayment);
+router.get("/verify-payment/:id", verifyPayment);
 
-//Send Email
-router.post("/sendReceipt", sendReceipt);
+
+
 
 
 module.exports = router;
