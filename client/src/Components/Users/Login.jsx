@@ -22,6 +22,7 @@ export const Login = () => {
         toast.success("Logged in successfully");
         if (res.data.user.role === "user") {
           navigate('/')
+          window.location.reload();
         } else {
           navigate('/admin/home')
         }
