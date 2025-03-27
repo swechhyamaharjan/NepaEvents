@@ -2,7 +2,7 @@ require('dotenv').config()
 const Event = require("../models/event-model");
 const VenueBooking = require("../models/venue-booking-model");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const Receipt = require("../models/ticket-model");
+const { Receipt } = require("../models/ticket-model");
 const nodemailer = require("nodemailer");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
@@ -10,7 +10,9 @@ const path = require("path");
 
 const bookVenue = async (req, res) => {
   try {
-    const { eventDetails, venue } = req.body;
+    const { title, description, category, date, artist, ticketPrice, venue } = req.body;
+    const image = req.file ? req.file.path : null;
+    const eventDetails = { title, description, category, date, artist, ticketPrice, image };
     const organizer = req.user.user._id;
     const newBooking = await VenueBooking.create({
       organizer,
@@ -28,8 +30,25 @@ const bookVenue = async (req, res) => {
 
 const getAllVenueBooking = async (req, res) => {
   try {
-    const bookings = await VenueBooking.find().populate("venue organizer");
+    const bookings = await VenueBooking.find()
+      .populate("venue")
+      .populate("organizer")
+      .populate("eventDetails.category");
     res.status(200).json({ success: true, bookings });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: "Error Fetching Bookings", error: err.message });
+  }
+}
+
+const getVenueBookingById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const booking = await VenueBooking.findById(id)
+      .populate("venue")
+      .populate("organizer")
+      .populate("eventDetails.category");
+    res.status(200).json({ success: true, booking })
   } catch (err) {
     console.log(err);
     res.status(500).json({ success: false, message: "Error Fetching Bookings", error: err.message });
@@ -51,8 +70,8 @@ const approveVenueBooking = async (req, res) => {
       message: "Booking approved. You Can Make Payment Now",
     });
   } catch (error) {
-    console.log(err);
-    res.status(500).json({ success: false, message: "Error Approving Bookings", error: err.message });
+    console.log(error);
+    res.status(500).json({ success: false, message: "Error Approving Bookings", error: error.message });
   }
 }
 
@@ -67,8 +86,8 @@ const rejectVenueBooking = async (req, res) => {
     await booking.save();
     res.status(200).json({ success: true, message: "Booking rejected successfully" });
   } catch (error) {
-    console.log(err);
-    res.status(500).json({ success: false, message: "Error Rejecting Bookings", error: err.message });
+    console.log(error);
+    res.status(500).json({ success: false, message: "Error Rejecting Bookings", error: error.message });
   }
 }
 
@@ -76,13 +95,13 @@ const rejectVenueBooking = async (req, res) => {
 const makePaymentForVenue = async (req, res) => {
   try {
     const { bookingId } = req.body;
+
     const booking = await VenueBooking.findById(bookingId).populate("venue organizer");
     if (!booking) return res.status(404).json({ message: "Booking not found!" });
     if (booking.status !== "approved") return res.status(400).json({ message: "Booking is not approved yet" });
     const totalAmount = booking.venue.price;
     const venueImage = `http://localhost:3000/${booking.venue.image.replace(/\\/g, "/")}`;
 
-    console.log(venueImage);
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
@@ -117,24 +136,13 @@ const stripeWebHook = async (req, res) => {
   let event;
   try {
     const sig = req.headers["stripe-signature"];
+
     const rawBody = req.body; // Keep it raw for verification
 
     event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
 
     if (event.type === "checkout.session.completed") {
       console.log("Checkout session completed event received!");
-      
-      const session = event.data.object;
-      const bookingId = session.metadata.bookingId;
-
-      const booking = await VenueBooking.findById(bookingId).populate("venue");
-      if (!booking) return res.status(404).json({ message: "Booking not found!" });
-
-      booking.paymentStatus = "paid";
-      await booking.save();
-
-      console.log("Booking updated successfully!");
-
       res.json({ received: true });
     }
   } catch (error) {
@@ -144,40 +152,22 @@ const stripeWebHook = async (req, res) => {
 };
 
 
-const verifyPayment = async (req, res) => {
+const sendReceiptEmail = async (email, receipt) => {
   try {
-    const {session_id} = req.query;
-    if (!session_id) {
-      return res.status(400).json({ success: false, message: "Session ID is required" });
+    const receiptsDir = path.join(__dirname, "../uploads/receipts");
+
+    // Ensure the receipts folder exists
+    if (!fs.existsSync(receiptsDir)) {
+      fs.mkdirSync(receiptsDir, { recursive: true });
     }
-    const session = await stripe.checkout.sessions.retrieve(session_id);
-
-    if (session.payment_status === "paid") {
-      res.json({ success: true, message: "Payment successful", session });
-    } else {
-      res.json({ success: false, message: "Payment not completed" });
-    }
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error verifying payment", error: error.message });
-  }
-}
-
-
-//send Receipt to email
-const sendReceipt = async (req, res) => {
-  try {
-    const { email, receiptId } = req.body;
-    const receipt = await Receipt.findById(receiptId).populate("organizer venue");
-    if (!receipt) return res.status(404).josn({ message: "No receipt found!" });
-
-    const pdfPath = path.join(__dirname, `../receipts/receipt_${receipt._id}.pdf`);
+    const pdfPath = path.join(receiptsDir, `receipt_${receipt._id}.pdf`);
     const doc = new PDFDocument();
     doc.pipe(fs.createWriteStream(pdfPath));
     doc.fontSize(18).text("Venue Booking Receipt", { align: "center" });
     doc.moveDown();
     doc.fontSize(14).text(` Venue: ${receipt.venue.name}`);
     doc.text(` Location: ${receipt.venue.location}`);
-    doc.text(` Organizer: ${receipt.organizer.name}`);
+    doc.text(` Organizer: ${receipt.organizer.fullName}`);
     doc.text(` Payment Date: ${new Date(receipt.paymentDate).toDateString()}`);
     doc.text(` Amount Paid: $${receipt.amountPaid}`);
     doc.text(` Transaction ID: ${receipt.transactionId}`);
@@ -191,25 +181,66 @@ const sendReceipt = async (req, res) => {
         pass: process.env.EMAIL_PASSWORD
       }
     });
-    // Email options
+
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_USERNAME,
       to: email,
       subject: `Your Receipt for Venue Booking`,
       text: `Thank you for booking a venue. Your receipt is attached.`,
       attachments: [{ filename: `receipt_${receipt._id}.pdf`, path: pdfPath }],
     };
 
-    // Send email
     await transporter.sendMail(mailOptions);
-
-    res.status(200).json({ success: true, message: "Receipt sent successfully!" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Error sending receipt", error: error.message });
+    console.error("Error sending receipt email:", error);
   }
-}
+};
+
+
+const verifyPayment = async (req, res) => {
+  try {
+    const { session_id } = req.query;
+    if (!session_id) {
+      return res.status(400).json({ success: false, message: "Session ID is required" });
+    }
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+
+    if (session.payment_status === "paid") {
+      const booking = await VenueBooking.findById(req.params.id)
+        .populate("venue")
+        .populate("organizer");
+
+      if (!booking) return res.status(404).json({ success: false, error: "No Bookings Found" });
+
+      booking.paymentStatus = "paid";
+      await booking.save();
+      // Create Receipt
+      const newReceipt = new Receipt({
+        organizer: booking.organizer._id,
+        venue: booking.venue._id,
+        amountPaid: session.amount_total / 100, // Convert cents to dollars
+        transactionId: session.payment_intent,
+        paymentDate: new Date(),
+      });
+      await newReceipt.save();
+
+      const populatedReceipt = await Receipt.findById(newReceipt._id)
+        .populate('organizer')
+        .populate('venue');
+
+      // Send Receipt Email
+      await sendReceiptEmail(booking.organizer.email, populatedReceipt);
+
+      res.json({ success: true, message: "Payment successful, receipt generated", session });
+    } else {
+      res.json({ success: false, message: "Payment not completed" });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error verifying payment", error: error.message });
+  }
+};
 
 
 
-module.exports = { bookVenue, getAllVenueBooking, approveVenueBooking, rejectVenueBooking, makePaymentForVenue, stripeWebHook, verifyPayment, sendReceipt }
+
+module.exports = { bookVenue, getAllVenueBooking, approveVenueBooking, rejectVenueBooking, makePaymentForVenue, stripeWebHook, verifyPayment, sendReceiptEmail, getVenueBookingById }
