@@ -14,7 +14,6 @@ import {
 } from "react-icons/fa";
 
 export const BookVenue = () => {
-  const navigate = useNavigate();
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBookingConfirmed, setIsBookingConfirmed] = useState(false);
@@ -32,7 +31,7 @@ export const BookVenue = () => {
     date: "",
     artist: "",
     image: "",
-    price: 0,
+    price: "",
   });
 
   const handleChange = (e) => {
@@ -86,20 +85,20 @@ export const BookVenue = () => {
     setIsSubmitting(true);
 
     try {
+
       const formData = new FormData();
+      formData.append("venue", selectedVenue._id);
+      formData.append("title", bookingDetails.title);
+      formData.append("description", bookingDetails.description);
+      formData.append("category", bookingDetails.category);
+      formData.append("date", bookingDetails.date);
+      formData.append("artist", bookingDetails.artist);
+      formData.append("ticketPrice", bookingDetails.price);
 
-      formData.append('title', bookingDetails.title);
-      formData.append('description', bookingDetails.description);
-      formData.append('category', bookingDetails.category);
-      formData.append('date', bookingDetails.date);
-      formData.append('artist', bookingDetails.artist);
-      formData.append('price', bookingDetails.price);
+      formData.append("image", bookingDetails.image);
 
-      if (bookingDetails.image) {
-        formData.append('image', bookingDetails.image);
-      }
+      console.log(bookingDetails.image)
 
-      // Send booking request
       await axios.post("http://localhost:3000/api/venue-bookings", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true
@@ -190,7 +189,6 @@ export const BookVenue = () => {
             <div
               key={venue._id}
               className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative"
-              onClick={() => navigate(`/venues/${venue._id}`)}
             >
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
@@ -417,6 +415,7 @@ export const BookVenue = () => {
                             id="image-upload"
                             accept="image/*"
                             onChange={handleImageChange}
+                            name="image"
                           />
                           <label
                             htmlFor="image-upload"

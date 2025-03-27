@@ -20,7 +20,7 @@ export const AdminVenuePage = () => {
   const [showDetailModal, setShowDetailModal] = useState(false); // State for detail view modal
   const [detailVenue, setDetailVenue] = useState(null); // State to store the venue for detail view
   const [requestedVenueFilter, setRequestedVenueFilter] = useState("all"); // New state for filter
-
+  const [bookingVenue, setBookingVenue] = useState(null);
   // Add or Edit Venue
   const handleSaveVenue = async () => {
     const formData = new FormData();
@@ -43,7 +43,7 @@ export const AdminVenuePage = () => {
         toast.success("Venue updated successfully!");
       } else {
         // Create new venue
-        await axios.post("http://localhost:3000/api/venue", formData,  {
+        await axios.post("http://localhost:3000/api/venue", formData, {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true
         });
@@ -62,7 +62,6 @@ export const AdminVenuePage = () => {
     async function fetchVenues() {
       try {
         const response = await axios.get("http://localhost:3000/api/venue");
-        console.log("Fetched venues:", response.data);
         setVenues(response.data);
       } catch (error) {
         console.error("Error fetching venues:", error);
@@ -71,6 +70,20 @@ export const AdminVenuePage = () => {
     }
     fetchVenues();
   }, [refreshTrigger]); // Only refresh when this value changes
+
+
+  useEffect(() => {
+    async function fetchBookings() {
+      try {
+        const response = await axios.get("http://localhost:3000/api/venue-bookings");
+        setBookingVenue(response.data.bookings);
+      } catch (error) {
+        console.error("Error fetching venues:", error);
+        toast.error("Failed to load venues");
+      }
+    }
+    fetchBookings();
+  }, [])
 
   // Open Edit Modal
   const handleEditVenue = (venue) => {
@@ -98,11 +111,7 @@ export const AdminVenuePage = () => {
   // Approve Venue
   const handleApproveVenue = async (venueId) => {
     try {
-      await axios.put(`http://localhost:3000/api/venue/${venueId}/approve`, {
-        isApproved: true
-      }, {
-        withCredentials: true
-      });
+      await axios.put(`http://localhost:3000/api/venue-bookings/${venueId}/approve`);
       toast.success("Venue approved successfully!");
       setRefreshTrigger(prev => prev + 1); // Trigger a refresh
     } catch (error) {
@@ -114,11 +123,7 @@ export const AdminVenuePage = () => {
   // Reject Venue
   const handleRejectVenue = async (venueId) => {
     try {
-      await axios.put(`http://localhost:3000/api/venue/${venueId}/approve`, {
-        isApproved: false
-      }, {
-        withCredentials: true
-      });
+      await axios.put(`http://localhost:3000/api/venue-bookings/${venueId}/reject`);
       toast.success("Venue rejected successfully!");
       setRefreshTrigger(prev => prev + 1); // Trigger a refresh
     } catch (error) {
@@ -154,14 +159,14 @@ export const AdminVenuePage = () => {
   }
 
   const getStatusColor = (status) => {
-    if (status === true) return "bg-green-100 text-green-800 border-green-300";
-    if (status === false) return "bg-red-100 text-red-800 border-red-300";
+    if (status === "approved") return "bg-green-100 text-green-800 border-green-300";
+    if (status === "rejected") return "bg-red-100 text-red-800 border-red-300";
     return "bg-yellow-100 text-yellow-800 border-yellow-300";
   };
 
   const getStatusText = (status) => {
-    if (status === true) return "Approved";
-    if (status === false) return "Rejected";
+    if (status === "approved") return "Approved";
+    if (status === "rejected") return "Rejected";
     return "Pending";
   };
 
@@ -171,17 +176,7 @@ export const AdminVenuePage = () => {
     setShowDetailModal(true);
   };
 
-  // Filter venues based on whether they were added by admin or requested by users
-  const requestedVenues = venues.filter(venue => venue.isAdminAdded !== true);
 
-  // Filter requested venues based on the selected filter
-  const filteredRequestedVenues = requestedVenues.filter((venue) => {
-    if (requestedVenueFilter === "all") return true;
-    if (requestedVenueFilter === "approved") return venue.isApproved === true;
-    if (requestedVenueFilter === "rejected") return venue.isApproved === false;
-    if (requestedVenueFilter === "pending") return venue.isApproved === null || venue.isApproved === undefined;
-    return true;
-  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-8">
@@ -195,8 +190,8 @@ export const AdminVenuePage = () => {
             <button
               onClick={() => setActiveTab("adminVenues")}
               className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "adminVenues"
-                  ? "bg-[#ED4A43] text-white shadow-lg"
-                  : "text-gray-600 hover:bg-gray-100"
+                ? "bg-[#ED4A43] text-white shadow-lg"
+                : "text-gray-600 hover:bg-gray-100"
                 }`}
             >
               Venues Added by Admin
@@ -204,8 +199,8 @@ export const AdminVenuePage = () => {
             <button
               onClick={() => setActiveTab("requestedVenues")}
               className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "requestedVenues"
-                  ? "bg-[#ED4A43] text-white shadow-lg"
-                  : "text-gray-600 hover:bg-gray-100"
+                ? "bg-[#ED4A43] text-white shadow-lg"
+                : "text-gray-600 hover:bg-gray-100"
                 }`}
             >
               Requested Venues by User
@@ -336,8 +331,8 @@ export const AdminVenuePage = () => {
                 <button
                   onClick={() => setRequestedVenueFilter("all")}
                   className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${requestedVenueFilter === "all"
-                      ? "bg-[#ED4A43] text-white shadow-md"
-                      : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-[#ED4A43] text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-100"
                     }`}
                 >
                   All
@@ -345,8 +340,8 @@ export const AdminVenuePage = () => {
                 <button
                   onClick={() => setRequestedVenueFilter("approved")}
                   className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${requestedVenueFilter === "approved"
-                      ? "bg-green-500 text-white shadow-md"
-                      : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-green-500 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-100"
                     }`}
                 >
                   Approved
@@ -354,8 +349,8 @@ export const AdminVenuePage = () => {
                 <button
                   onClick={() => setRequestedVenueFilter("rejected")}
                   className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${requestedVenueFilter === "rejected"
-                      ? "bg-red-500 text-white shadow-md"
-                      : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-red-500 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-100"
                     }`}
                 >
                   Rejected
@@ -363,8 +358,8 @@ export const AdminVenuePage = () => {
                 <button
                   onClick={() => setRequestedVenueFilter("pending")}
                   className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${requestedVenueFilter === "pending"
-                      ? "bg-yellow-500 text-white shadow-md"
-                      : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-yellow-500 text-white shadow-md"
+                    : "text-gray-600 hover:bg-gray-100"
                     }`}
                 >
                   Pending
@@ -374,105 +369,107 @@ export const AdminVenuePage = () => {
 
             {/* Venue Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-              {filteredRequestedVenues.length > 0 ? filteredRequestedVenues.map((venue) => (
-                <div
-                  key={venue.id}
-                  className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative cursor-pointer"
-                  onClick={() => handleViewDetails(venue)}
-                >
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                      <div className="p-6 w-full">
-                        <div className="flex justify-between">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditVenue(venue);
-                            }}
-                            className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
-                          >
-                            <FaEdit size={18} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteVenue(venue.id);
-                            }}
-                            className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
-                          >
-                            <FaTrashAlt size={18} />
-                          </button>
+              {bookingVenue.length > 0 ?
+                bookingVenue.map((venue) => (
+                  <div
+                    key={venue.id}
+                    className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative cursor-pointer"
+                    onClick={() => handleViewDetails(venue)}
+                  >
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                        <div className="p-6 w-full">
+                          <div className="flex justify-between">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditVenue(venue);
+                              }}
+                              className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
+                            >
+                              <FaEdit size={18} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteVenue(venue.id);
+                              }}
+                              className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
+                            >
+                              <FaTrashAlt size={18} />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <img
-                      src={`http://localhost:3000/${venue.image}`}
-                      alt={venue.name}
-                      className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
-                    />
-                    <div
-                      className={`absolute top-4 right-4 px-3 py-1 rounded-full border ${getStatusColor(venue.isApproved)} text-xs font-bold`}
-                    >
-                      {getStatusText(venue.isApproved)}
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-3 text-gray-800">{venue.name}</h3>
-
-                    <div className="space-y-2 mb-6">
-                      <div className="flex items-center text-gray-600">
-                        <FaMapMarkerAlt className="mr-2 text-[#ED4A43]" />
-                        <span>{venue.location}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaUsers className="mr-2 text-[#ED4A43]" />
-                        <span>Capacity: {venue.capacity}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaBuilding className="mr-2 text-[#ED4A43]" />
-                        <span className="font-semibold">{venue.name}</span>
+                      <img
+                        src={`http://localhost:3000/${venue?.venue?.image}`}
+                        alt={venue.name}
+                        className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div
+                        className={`absolute top-4 right-4 px-3 py-1 rounded-full border ${getStatusColor(venue.status)} text-xs font-bold`}
+                      >
+                        {getStatusText(venue.status)}
                       </div>
                     </div>
 
-                    {/* User requested venues have approve and reject buttons */}
-                    <div className="grid grid-cols-2 gap-3 mt-4">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleApproveVenue(venue.id);
-                        }}
-                        className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === true
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold mb-3 text-gray-800">{venue?.venue?.name}</h3>
+
+                      <div className="space-y-2 mb-6">
+                        <div className="flex items-center text-gray-600">
+                          <FaMapMarkerAlt className="mr-2 text-[#ED4A43]" />
+                          <span>{venue?.venue?.location}</span>
+                        </div>
+                        <div className="flex items-center text-gray-600">
+                          <FaUsers className="mr-2 text-[#ED4A43]" />
+                          <span>Capacity: {venue?.venue?.capacity}</span>
+                        </div>
+                        <div className="flex items-center text-gray-600">
+                          <FaBuilding className="mr-2 text-[#ED4A43]" />
+                          <span className="font-semibold">{venue?.venue?.name}</span>
+                        </div>
+                      </div>
+
+                      {/* User requested venues have approve and reject buttons */}
+                      <div className="grid grid-cols-2 gap-3 mt-4">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleApproveVenue(venue?._id);
+                          }}
+                          className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === true
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
-                          }`}
-                        disabled={venue.isApproved === true}
-                      >
-                        <FaCheckCircle className="mr-2" /> Approve
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRejectVenue(venue.id);
-                        }}
-                        className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === false
+                            }`}
+                          disabled={venue.isApproved === true}
+                        >
+                          <FaCheckCircle className="mr-2" /> Approve
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRejectVenue(venue._id);
+                          }}
+                          className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === false
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-[#ED4A43] text-white hover:shadow-md"
-                          }`}
-                        disabled={venue.isApproved === false}
-                      >
-                        <FaTimesCircle className="mr-2" /> Reject
-                      </button>
+                            }`}
+                          disabled={venue.isApproved === false}
+                        >
+                          <FaTimesCircle className="mr-2" /> Reject
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )) : (
-                <div className="col-span-3 text-center py-16">
-                  <div className="text-5xl text-gray-300 mb-4">📝</div>
-                  <h3 className="text-xl font-semibold text-gray-500">No venue requests match the selected filter</h3>
-                  <p className="text-gray-400 mt-2">Try changing the filter or check back later</p>
-                </div>
-              )}
+                ))
+                :
+                (
+                  <div className="col-span-3 text-center py-16">
+                    <div className="text-5xl text-gray-300 mb-4">🏢</div>
+                    <h3 className="text-xl font-semibold text-gray-500">No booking yet</h3>
+                  </div>
+                )}
             </div>
           </>
         )}
@@ -685,8 +682,8 @@ export const AdminVenuePage = () => {
                   {/* Venue Image */}
                   <div className="relative w-full h-56 rounded-lg overflow-hidden border border-gray-200">
                     <img
-                      src={`http://localhost:3000/${detailVenue.image}`}
-                      alt={detailVenue.name}
+                      src={`http://localhost:3000/${detailVenue?.venue?.image}`}
+                      alt={detailVenue?.venue?.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -696,7 +693,7 @@ export const AdminVenuePage = () => {
                     <label className="block text-gray-700 font-medium mb-1">
                       Venue Name
                     </label>
-                    <p className="text-gray-900">{detailVenue.name}</p>
+                    <p className="text-gray-900">{detailVenue?.venue?.name}</p>
                   </div>
 
                   {/* Venue Location */}
@@ -704,7 +701,7 @@ export const AdminVenuePage = () => {
                     <label className="block text-gray-700 font-medium mb-1">
                       Location
                     </label>
-                    <p className="text-gray-900">{detailVenue.location}</p>
+                    <p className="text-gray-900">{detailVenue?.venue?.location}</p>
                   </div>
 
                   {/* Venue Capacity */}
@@ -712,7 +709,7 @@ export const AdminVenuePage = () => {
                     <label className="block text-gray-700 font-medium mb-1">
                       Capacity
                     </label>
-                    <p className="text-gray-900">{detailVenue.capacity}</p>
+                    <p className="text-gray-900">{detailVenue?.venue?.capacity}</p>
                   </div>
                 </div>
 
@@ -726,7 +723,7 @@ export const AdminVenuePage = () => {
                         <label className="block text-gray-700 font-medium mb-1">
                           Event Title
                         </label>
-                        <p className="text-gray-900">{detailVenue.eventTitle}</p>
+                        <p className="text-gray-900">{detailVenue?.eventDetails?.title}</p>
                       </div>
 
                       {/* Event Description */}
@@ -734,7 +731,7 @@ export const AdminVenuePage = () => {
                         <label className="block text-gray-700 font-medium mb-1">
                           Description
                         </label>
-                        <p className="text-gray-900">{detailVenue.description}</p>
+                        <p className="text-gray-900">{detailVenue?.eventDetails?.description}</p>
                       </div>
 
                       {/* Artist*/}
@@ -742,7 +739,7 @@ export const AdminVenuePage = () => {
                         <label className="block text-gray-700 font-medium mb-1">
                           Artist
                         </label>
-                        <p className="text-gray-900">{detailVenue.artist}</p>
+                        <p className="text-gray-900">{detailVenue?.eventDetails?.artist}</p>
                       </div>
 
                       {/* Event Date */}
@@ -751,7 +748,7 @@ export const AdminVenuePage = () => {
                           Event Date
                         </label>
                         <p className="text-gray-900">
-                          {new Date(detailVenue.date).toLocaleDateString()}
+                          {new Date(detailVenue?.eventDetails?.date).toLocaleDateString()}
                         </p>
                       </div>
 
@@ -760,7 +757,7 @@ export const AdminVenuePage = () => {
                         <label className="block text-gray-700 font-medium mb-1">
                           Category
                         </label>
-                        <p className="text-gray-900">{detailVenue.category}</p>
+                        <p className="text-gray-900">{detailVenue?.eventDetails?.category?.name}</p>
                       </div>
 
                       {/* Event Price */}
@@ -768,7 +765,7 @@ export const AdminVenuePage = () => {
                         <label className="block text-gray-700 font-medium mb-1">
                           Price
                         </label>
-                        <p className="text-gray-900">Rs.{detailVenue.price}</p>
+                        <p className="text-gray-900">Rs.{detailVenue?.eventDetails?.ticketPrice}</p>
                       </div>
                     </>
                   )}
@@ -780,7 +777,7 @@ export const AdminVenuePage = () => {
                       Additional Information
                     </h3>
                     <p className="text-sm text-gray-600">
-                      This venue is {detailVenue.isApproved ? "approved" : "pending approval"}.
+                      This venue is {detailVenue?.status === "approved" ? "approved" : "pending approval"}.
                     </p>
                   </div>
                 </div>
