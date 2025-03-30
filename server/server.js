@@ -13,6 +13,7 @@ const ticketRouter = require('./routes/ticket-route');
 const categoryRouter = require("./routes/category-route");
 const venueBookingRouter = require("./routes/venue-booking-route");
 const { stripeWebHook } = require('./controller/venue-booking-controller');
+const path = require("path");
 
 const PORT = 3000;
 
@@ -24,6 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(userRoute);
+app.use("/receipts", express.static(path.join(__dirname, "../receipts")));
 app.use("/api/event", eventRouter);
 app.use("/api/venue", venueRouter);
 app.use("/api/artist", artistRouter);

@@ -36,7 +36,4 @@ router.post("/pay", makePaymentForVenue);
 router.get("/verify-payment/:id", verifyPayment);
 
 
-
-
-
 module.exports = router;

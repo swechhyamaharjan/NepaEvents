@@ -59,12 +59,11 @@ const deleteEvent = async (req, res) => {
         res.status(500).json({ msg: "Server error" });
     }
 }
-const findEventsById = async (req, res) => {
+const findEventById = async (req, res) => {
     try {
         const id = req.params.id
-        const user = await Event.findById(id)
-            .populate("venue")
-        res.status(200).json({ success: true, data: user });
+        const event = await Event.findById(id).populate("venue").populate("organizer");
+        res.status(200).json({ success: true, event });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Server error" });
@@ -72,4 +71,4 @@ const findEventsById = async (req, res) => {
 }
 
 
-module.exports = { createEvent, getAllEvents, updateEvent, deleteEvent, findEventsById }
+module.exports = { createEvent, getAllEvents, updateEvent, deleteEvent, findEventById }

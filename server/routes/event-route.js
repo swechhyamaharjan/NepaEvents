@@ -1,5 +1,5 @@
 const express = require("express");
-const { createEvent, getAllEvents, updateEvent, deleteEvent, findEventsById } = require('../controller/event-controller');
+const { createEvent, getAllEvents, updateEvent, deleteEvent, findEventById } = require('../controller/event-controller');
 const verifyToken = require("../middleware/verify-token");
 const multer = require("multer");
 const path = require("path");
@@ -27,7 +27,7 @@ const upload = multer({ storage: storage });
 eventRouter.post('/', verifyToken, upload.single('image'), createEvent)
 eventRouter.get('/', getAllEvents)
 eventRouter.patch('/:eventId', updateEvent)
-eventRouter.get('/:id', findEventsById)
+eventRouter.get('/:id', findEventById)
 eventRouter.delete('/:id', deleteEvent)
 
 module.exports = eventRouter;

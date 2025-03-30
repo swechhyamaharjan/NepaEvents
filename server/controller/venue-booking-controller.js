@@ -7,6 +7,7 @@ const nodemailer = require("nodemailer");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
+const QRCode = require('qrcode');
 
 const bookVenue = async (req, res) => {
   try {
@@ -160,17 +161,115 @@ const sendReceiptEmail = async (email, receipt) => {
     if (!fs.existsSync(receiptsDir)) {
       fs.mkdirSync(receiptsDir, { recursive: true });
     }
+
     const pdfPath = path.join(receiptsDir, `receipt_${receipt._id}.pdf`);
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({
+      size: 'A4',
+      margins: { top: 50, bottom: 50, left: 50, right: 50 }
+    });
+
+    // Primary brand color
+    const primaryColor = '#ED4A43';
+
+    // Generate QR code
+    const qrData = JSON.stringify({
+      organizer: receipt.organizer.fullName,
+      venue: receipt.venue.name,
+      amountPaid: receipt.amountPaid,
+      transactionId: receipt.transactionId,
+      paymentDate: new Date(),
+    });
+    const qrCodeBuffer = await QRCode.toBuffer(qrData);
+
+    // Start writing to PDF
     doc.pipe(fs.createWriteStream(pdfPath));
-    doc.fontSize(18).text("Venue Booking Receipt", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(14).text(` Venue: ${receipt.venue.name}`);
-    doc.text(` Location: ${receipt.venue.location}`);
-    doc.text(` Organizer: ${receipt.organizer.fullName}`);
-    doc.text(` Payment Date: ${new Date(receipt.paymentDate).toDateString()}`);
-    doc.text(` Amount Paid: $${receipt.amountPaid}`);
-    doc.text(` Transaction ID: ${receipt.transactionId}`);
+
+    // Header with logo placeholder and title
+    doc.rect(0, 0, doc.page.width, 120).fill(primaryColor);
+    doc.fill('#FFFFFF').fontSize(24).font('Helvetica-Bold').text('BOOKING RECEIPT', 50, 50);
+    doc.fontSize(12).text('Thank you for your venue booking', 50, 80);
+
+    // Receipt details section
+    doc.fill('#000000').fontSize(14).font('Helvetica-Bold').text('RECEIPT DETAILS', 50, 150);
+    doc.moveTo(50, 170).lineTo(550, 170).stroke(primaryColor);
+
+    // Two-column layout for receipt info
+    const leftCol = 50;
+    const rightCol = 300;
+    let yPos = 190;
+
+    // Receipt information
+    doc.fontSize(10).font('Helvetica-Bold').text('Venue:', leftCol, yPos);
+    doc.font('Helvetica').text(receipt.venue.name, leftCol + 100, yPos);
+
+    doc.font('Helvetica-Bold').text('Receipt ID:', rightCol, yPos);
+    doc.font('Helvetica').text(receipt._id.toString().substring(0, 10), rightCol + 100, yPos);
+    yPos += 25;
+
+    doc.font('Helvetica-Bold').text('Location:', leftCol, yPos);
+    doc.font('Helvetica').text(receipt.venue.location, leftCol + 100, yPos);
+
+    doc.font('Helvetica-Bold').text('Date:', rightCol, yPos);
+    doc.font('Helvetica').text(new Date(receipt.paymentDate).toLocaleDateString(), rightCol + 100, yPos);
+    yPos += 25;
+
+    doc.font('Helvetica-Bold').text('Organizer:', leftCol, yPos);
+    doc.font('Helvetica').text(receipt.organizer.fullName, leftCol + 100, yPos);
+
+    doc.font('Helvetica-Bold').text('Time:', rightCol, yPos);
+    doc.font('Helvetica').text(new Date(receipt.paymentDate).toLocaleTimeString(), rightCol + 100, yPos);
+    yPos += 40;
+
+    // Payment details section
+    doc.fill('#000000').fontSize(14).font('Helvetica-Bold').text('PAYMENT DETAILS', 50, yPos);
+    yPos += 20;
+    doc.moveTo(50, yPos).lineTo(550, yPos).stroke(primaryColor);
+    yPos += 20;
+
+    // Payment information - Table header
+    doc.fillColor(primaryColor).rect(50, yPos, 500, 30).fill();
+    doc.fillColor('white');
+    doc.text('Description', 70, yPos + 10);
+    doc.text('Transaction ID', 250, yPos + 10);
+    doc.text('Amount', 450, yPos + 10);
+    yPos += 30;
+
+    // Payment information - Table row
+    doc.fillColor('#F6F6F6').rect(50, yPos, 500, 30).fill();
+    doc.strokeColor('#CCCCCC').rect(50, yPos, 500, 30).stroke();
+    doc.fillColor('black');
+    doc.text('Venue Booking', 70, yPos + 10);
+
+    // Handle potentially undefined transaction ID
+    const transactionIdText = receipt.transactionId ?
+      (receipt.transactionId.length > 15 ? receipt.transactionId.substring(0, 15) + '...' : receipt.transactionId) :
+      'N/A';
+    doc.text(transactionIdText, 250, yPos + 10);
+
+    // Make sure amount is properly formatted
+    const amountText = receipt.amountPaid ? `$${parseFloat(receipt.amountPaid).toFixed(2)}` : 'N/A';
+    doc.text(amountText, 450, yPos + 10);
+    yPos += 50;
+
+    // Total amount
+    doc.font('Helvetica-Bold').text('Total Amount Paid:', 350, yPos);
+    yPos += 20; // Add spacing to prevent overlap
+    doc.fillColor(primaryColor).text(amountText, 450, yPos);
+    yPos += 60; // Move cursor further for the next section
+
+
+    // QR Code section
+    doc.fillColor('black').fontSize(12).font('Helvetica-Bold').text('SCAN FOR VERIFICATION', 50, yPos);
+    doc.image(qrCodeBuffer, 50, yPos + 20, { fit: [100, 100] });
+
+    // Thank you message
+    doc.fontSize(10).font('Helvetica').text('This receipt serves as proof of payment for your venue booking.', 200, yPos + 30);
+    doc.text('Please keep this for your records.', 200, yPos + 50);
+
+    // Footer
+    const footerY = doc.page.height - 50;
+    doc.fontSize(8).text('For support, contact support@example.com', 50, footerY);
+    doc.text('Generated on ' + new Date().toLocaleString(), 350, footerY);
 
     doc.end();
 
@@ -187,12 +286,35 @@ const sendReceiptEmail = async (email, receipt) => {
       to: email,
       subject: `Your Receipt for Venue Booking`,
       text: `Thank you for booking a venue. Your receipt is attached.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd;">
+          <div style="background-color: #ED4A43; padding: 20px; text-align: center; color: white;">
+            <h1>Venue Booking Receipt</h1>
+          </div>
+          <div style="padding: 20px;">
+            <p>Dear ${receipt.organizer.fullName},</p>
+            <p>Thank you for your venue booking. Your payment has been successfully processed.</p>
+            <p><strong>Venue:</strong> ${receipt.venue.name}</p>
+            <p><strong>Amount Paid:</strong> ${amountText}</p>
+            <p><strong>Transaction ID:</strong> ${receipt.transactionId || 'N/A'}</p>
+            <p><strong>Date:</strong> ${new Date(receipt.paymentDate).toLocaleString()}</p>
+            <p>Please find your receipt attached to this email.</p>
+            <p>If you have any questions, please don't hesitate to contact us.</p>
+          </div>
+          <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px;">
+            <p>This is an automated email. Please do not reply.</p>
+          </div>
+        </div>
+      `,
       attachments: [{ filename: `receipt_${receipt._id}.pdf`, path: pdfPath }],
     };
 
     await transporter.sendMail(mailOptions);
+    console.log(`Receipt email sent to ${email}`);
+    return true;
   } catch (error) {
     console.error("Error sending receipt email:", error);
+    return false;
   }
 };
 
@@ -214,6 +336,22 @@ const verifyPayment = async (req, res) => {
 
       booking.paymentStatus = "paid";
       await booking.save();
+
+      //Create Event
+      const newEvent = new Event({
+        title: booking.eventDetails.title,
+        description: booking.eventDetails.description,
+        date: new Date(),
+        venue: booking.venue._id,
+        artist: booking.eventDetails.artist,
+        organizer: booking.organizer._id,
+        category: booking.eventDetails.category,
+        price: booking.eventDetails.ticketPrice,
+        createdAt: new Date(),
+        image: booking.eventDetails.image
+      })
+      await newEvent.save();
+
       // Create Receipt
       const newReceipt = new Receipt({
         organizer: booking.organizer._id,
