@@ -83,7 +83,7 @@ export const AdminVenuePage = () => {
       }
     }
     fetchBookings();
-  }, [])
+  }, [refreshTrigger]);
 
   // Open Edit Modal
   const handleEditVenue = (venue) => {
