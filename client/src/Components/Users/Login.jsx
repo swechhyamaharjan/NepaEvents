@@ -66,7 +66,7 @@ export const Login = () => {
                 Email address or phone number
               </label>
             </div>
-            
+
             <div className="relative">
               <input
                 type="password"
@@ -79,7 +79,7 @@ export const Login = () => {
                 Password
               </label>
             </div>
-            
+
             <button
               type="submit"
               className="w-full py-3 bg-[#ED4A43] text-white font-medium rounded-full hover:shadow-lg transition duration-300 transform hover:-translate-y-1"
@@ -87,20 +87,20 @@ export const Login = () => {
               Sign In
             </button>
           </form>
-          
+
           <div className="text-right mt-2">
             <span className="text-sm text-[#ED4A43] font-medium hover:text-red-700 cursor-pointer">
               Forgot Password?
             </span>
           </div>
-          
+
           {/* Divider */}
           <div className="flex items-center my-6">
             <div className="flex-grow border-t border-gray-300"></div>
             <div className="px-3 text-sm text-gray-500">or continue with</div>
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
-          
+
           {/* Social Authentication */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             <button
@@ -116,7 +116,7 @@ export const Login = () => {
               <FaFacebook className="text-xl" /> Facebook
             </button>
           </div>
-          
+
           {/* Additional Options */}
           <div className="space-y-3 mt-5">
             <button
