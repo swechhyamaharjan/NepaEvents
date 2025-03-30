@@ -52,7 +52,7 @@ export const HomePage = () => {
         {/* Background Image with Tilt */}
         <div
           className="absolute inset-0 bg-cover bg-center transform -skew-y-3 scale-110 origin-top-right"
-          style={{ 
+          style={{
             backgroundImage: `url(${bgImage})`,
             top: "-5%",
             height: "110%"
@@ -161,7 +161,7 @@ export const HomePage = () => {
       <div className="bg-white py-16 px-4 md:px-8 relative">
         {/* Decorative Background Element */}
         <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gray-50 clip-path-polygon"></div>
-        
+
         <div className="max-w-6xl mx-auto relative z-10">
           <h2 className="text-3xl font-bold text-gray-800 mb-12 relative pl-4">
             <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#ED4A43] rounded-full"></span>
@@ -193,7 +193,6 @@ export const HomePage = () => {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 };
