@@ -36,7 +36,7 @@ const {user} = useAuth();
               </svg>
             </div>
           </div>
-          <p className="text-6xl font-bold mt-4 text-gray-900">15</p>
+          <p className="text-6xl font-bold mt-4 text-gray-900">1</p>
           <div className="mt-4 h-1 w-full bg-gray-200 rounded-full">
             <div className="h-1 w-2/3 bg-[#ED4A43] rounded-full"></div>
           </div>
@@ -52,7 +52,7 @@ const {user} = useAuth();
               </svg>
             </div>
           </div>
-          <p className="text-6xl font-bold mt-4 text-gray-900">50</p>
+          <p className="text-6xl font-bold mt-4 text-gray-900">11</p>
           <div className="mt-4 h-1 w-full bg-gray-200 rounded-full">
             <div className="h-1 w-1/2 bg-blue-500 rounded-full"></div>
           </div>
@@ -88,7 +88,7 @@ const {user} = useAuth();
               </svg>
             </div>
           </div>
-          <p className="text-5xl font-bold text-gray-900 mt-6">1,000</p>
+          <p className="text-5xl font-bold text-gray-900 mt-6">50</p>
           <div className="mt-6 flex items-center space-x-2">
             <div className="h-2 w-full bg-gray-200 rounded-full">
               <div className="h-2 w-2/3 bg-[#ED4A43] rounded-full"></div>
@@ -108,7 +108,7 @@ const {user} = useAuth();
               </svg>
             </div>
           </div>
-          <p className="text-5xl font-bold text-gray-900 mt-6">20</p>
+          <p className="text-5xl font-bold text-gray-900 mt-6">5</p>
           <div className="mt-6 flex items-center space-x-2">
             <div className="h-2 w-full bg-gray-200 rounded-full">
               <div className="h-2 w-1/2 bg-blue-500 rounded-full"></div>
@@ -128,7 +128,7 @@ const {user} = useAuth();
               </svg>
             </div>
           </div>
-          <p className="text-5xl font-bold text-gray-900 mt-6">10,500</p>
+          <p className="text-5xl font-bold text-gray-900 mt-6">1000</p>
           <div className="mt-6 flex items-center space-x-2">
             <div className="h-2 w-full bg-gray-200 rounded-full">
               <div className="h-2 w-3/4 bg-amber-500 rounded-full"></div>
