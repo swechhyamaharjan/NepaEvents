@@ -1,14 +1,26 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { FaBell, FaUserCircle, FaCog, FaHistory, FaSignOutAlt, FaEdit } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { FaBell, FaUserCircle, FaCog, FaHistory, FaSignOutAlt, FaEdit, FaTicketAlt } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
 import logo from "./logo.png";
 import { useAuth } from "../../Context/AuthContext";
 
 export const NavBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isLoggedIn } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [activeLink, setActiveLink] = useState("/");
+
+  // Update active link when location changes
+  useEffect(() => {
+    setActiveLink(location.pathname);
+  }, [location]);
+
+  // Function to check if a link is active
+  const isActive = (path) => {
+    return activeLink === path;
+  };
 
   return (
     <nav className="bg-white border-b border-gray-200 py-4 shadow-sm sticky top-0 z-50">
@@ -31,10 +43,17 @@ export const NavBar = () => {
             ].map((link) => (
               <button
                 key={link.name}
-                className="text-sm font-medium text-gray-600 hover:text-[#ED4A43] transition-all duration-200"
+                className={`text-sm font-medium transition-all duration-200 relative ${
+                  isActive(link.path) 
+                    ? "text-[#ED4A43] font-semibold" 
+                    : "text-gray-600 hover:text-[#ED4A43]"
+                }`}
                 onClick={() => navigate(link.path)}
               >
                 {link.name}
+                {isActive(link.path) && (
+                  <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-[#ED4A43] rounded-full"></span>
+                )}
               </button>
             ))}
           </div>
@@ -43,32 +62,53 @@ export const NavBar = () => {
           <div className="flex items-center space-x-5">
             {/* Favorite Icon */}
             <button
-              className="text-gray-500 hover:text-[#ED4A43] transition-colors relative"
+              className={`transition-colors relative ${
+                isActive("/favourites") 
+                  ? "text-[#ED4A43]" 
+                  : "text-gray-500 hover:text-[#ED4A43]"
+              }`}
               onClick={() => navigate("/favourites")}
             >
               <FiHeart size={20} />
             </button>
 
             {/* Notifications */}
-            <button className="text-gray-500 hover:text-[#ED4A43] transition-colors relative"
-              onClick={() => navigate("/notifications")}>
+            <button 
+              className={`transition-colors relative ${
+                isActive("/notifications") 
+                  ? "text-[#ED4A43]" 
+                  : "text-gray-500 hover:text-[#ED4A43]"
+              }`}
+              onClick={() => navigate("/notifications")}
+            >
               <FaBell size={20} />
               <span className="absolute -top-1.5 -right-1.5 bg-[#ED4A43] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                 2
               </span>
             </button>
 
-            {/* Booking Detail */}
-            <button className="text-gray-500 hover:text-[#ED4A43] transition-colors relative"
-              onClick={() => navigate("/myBookings")}>
-              Bookings
+            {/* My Bookings Button */}
+            <button 
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 hover:scale-105 font-medium ${
+                isActive("/myBookings")
+                  ? "bg-[#D43C35] text-white" 
+                  : "bg-gradient-to-r from-[#ED4A43] to-[#FF6B64] text-white hover:from-[#FF6B64] hover:to-[#ED4A43]"
+              }`}
+              onClick={() => navigate("/myBookings")}
+            >
+              <FaTicketAlt className="text-white" size={16} />
+              <span>My Bookings</span>
             </button>
 
             {/* Profile Dropdown */}
             {isLoggedIn ? (
               <div className="relative">
                 <button
-                  className="flex items-center space-x-2 bg-[#ED4A43] text-white px-4 py-2 rounded-full hover:bg-[#D43C35] transition-colors"
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
+                    isActive("/profile") 
+                      ? "bg-[#D43C35] text-white" 
+                      : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
+                  }`}
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
                   <span className="bg-[#4CAF50] text-white font-medium rounded-full w-8 h-8 flex items-center justify-center">
@@ -79,26 +119,41 @@ export const NavBar = () => {
 
                 {/* Dropdown Menu */}
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-lg overflow-hidden">
+                  <div className="absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-lg overflow-hidden border border-gray-100">
                     <button
-                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => navigate("/profile")}
+                      className={`flex items-center w-full px-4 py-3 text-sm hover:bg-gray-100 ${
+                        isActive("/profile") ? "bg-gray-100 text-purple-600 font-medium" : "text-gray-700"
+                      }`}
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate("/profile");
+                      }}
                     >
                       <FaEdit className="mr-2 text-purple-600" />
                       Edit Profile
                     </button>
 
                     <button
-                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => navigate("/settings")}
+                      className={`flex items-center w-full px-4 py-3 text-sm hover:bg-gray-100 ${
+                        isActive("/settings") ? "bg-gray-100 text-blue-600 font-medium" : "text-gray-700"
+                      }`}
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate("/settings");
+                      }}
                     >
                       <FaCog className="mr-2 text-blue-600" />
                       Settings
                     </button>
 
                     <button
-                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => navigate("/history")}
+                      className={`flex items-center w-full px-4 py-3 text-sm hover:bg-gray-100 ${
+                        isActive("/history") ? "bg-gray-100 text-yellow-600 font-medium" : "text-gray-700"
+                      }`}
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate("/history");
+                      }}
                     >
                       <FaHistory className="mr-2 text-yellow-600" />
                       History
@@ -119,13 +174,16 @@ export const NavBar = () => {
               </div>
             ) : (
               <button
-                className="bg-[#ED4A43] text-white px-5 py-2 rounded-md hover:bg-[#D43C35] transition-colors"
+                className={`px-5 py-2 rounded-md transition-colors font-medium shadow-sm ${
+                  isActive("/login") 
+                    ? "bg-[#D43C35] text-white" 
+                    : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
+                }`}
                 onClick={() => navigate("/login")}
               >
                 LOG IN
               </button>
             )}
-
           </div>
         </div>
       </div>
