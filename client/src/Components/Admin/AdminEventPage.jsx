@@ -9,7 +9,7 @@ export const AdminEventPage = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [venues, setVenues] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [activeTab, setActiveTab] = useState("allEvents"); // "allEvents", "pendingEvents", "approvedEvents"
+  const [activeTab, setActiveTab] = useState("allEvents"); 
   const [imagePreview, setImagePreview] = useState(null);
   const [newEvent, setNewEvent] = useState({
     name: "",
@@ -91,7 +91,7 @@ export const AdminEventPage = () => {
   const handleSaveEvent = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
+    console.log(newEvent);
     const formData = new FormData();
     formData.append("title", newEvent.name);
     formData.append("date", newEvent.date);
