@@ -4,13 +4,6 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 export const Event = () => {
-  // const events = [
-  //   { id: 1, img: eventImage, name: "Concert X", date: "December 31, 2024", location: "Hyatt Regency", price: 100 },
-  //   { id: 2, img: eventImage, name: "Live Performance", date: "January 5, 2025", location: "Bhrikuti Mandap", price: 80 },
-  //   { id: 3, img: eventImage, name: "Dancing Show", date: "January 10, 2025", location: "Pragya Hall", price: 90 },
-  //   { id: 4, img: eventImage, name: "Comedy Show", date: "January 15, 2025", location: "Tudikhel", price: 70 },
-  // ];
-
   const [ticketCounts, setTicketCounts] = useState({});
   const [discount, setDiscount] = useState(0);
   const [events, setEvents] = useState([]);
@@ -41,9 +34,9 @@ export const Event = () => {
           </span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-          {/* Sidebar */}
-          <div className="md:col-span-3 bg-white p-6 rounded-xl shadow-md">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 relative">
+          {/* Fixed Sidebar */}
+          <div className="md:col-span-3 sticky top-4 self-start h-auto max-h-screen overflow-y-auto bg-white p-6 rounded-xl shadow-md">
             <div className="mb-6">
               <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
                 <FaSearch className="mr-2 text-[#ED4A43]" />
