@@ -2,10 +2,10 @@ const Event = require('../models/event-model');
 
 const createEvent = async (req, res) => {
     try {
-        const { title, description, date, venue, price } = req.body;
+        const { title, description, date, venue, price, artist, category } = req.body;
         const image = req.file ? req.file.path : null;
-        const createdBy = req.user.user._id;
-        const event = await Event.create({ title, description, date, venue, price, image, createdBy })
+        const organizer = req.user.user._id;
+        const event = await Event.create({ title, description, date, venue, price, image, artist, organizer, category,  createdAt: new Date(), });
         res.status(201).json({
             success: true,
             message: 'Event created successfully',
