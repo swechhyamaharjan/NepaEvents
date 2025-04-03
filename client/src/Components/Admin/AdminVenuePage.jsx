@@ -176,7 +176,12 @@ export const AdminVenuePage = () => {
     setShowDetailModal(true);
   };
 
-
+  // Filter venues based on the selected filter
+  const getFilteredVenues = () => {
+    if (!bookingVenue) return [];
+    if (requestedVenueFilter === "all") return bookingVenue;
+    return bookingVenue.filter(venue => venue.status === requestedVenueFilter);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-8">
@@ -369,8 +374,8 @@ export const AdminVenuePage = () => {
 
             {/* Venue Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-              {bookingVenue.length > 0 ?
-                bookingVenue.map((venue) => (
+              {bookingVenue && getFilteredVenues().length > 0 ?
+                getFilteredVenues().map((venue) => (
                   <div
                     key={venue.id}
                     className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative cursor-pointer"
@@ -438,11 +443,11 @@ export const AdminVenuePage = () => {
                             e.stopPropagation();
                             handleApproveVenue(venue?._id);
                           }}
-                          className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === true
+                          className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.status === "approved"
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
                             }`}
-                          disabled={venue.isApproved === true}
+                          disabled={venue.status === "approved"}
                         >
                           <FaCheckCircle className="mr-2" /> Approve
                         </button>
@@ -451,11 +456,11 @@ export const AdminVenuePage = () => {
                             e.stopPropagation();
                             handleRejectVenue(venue._id);
                           }}
-                          className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.isApproved === false
+                          className={`px-4 py-3 rounded-lg flex items-center justify-center ${venue.status === "rejected"
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-[#ED4A43] text-white hover:shadow-md"
                             }`}
-                          disabled={venue.isApproved === false}
+                          disabled={venue.status === "rejected"}
                         >
                           <FaTimesCircle className="mr-2" /> Reject
                         </button>
@@ -467,7 +472,11 @@ export const AdminVenuePage = () => {
                 (
                   <div className="col-span-3 text-center py-16">
                     <div className="text-5xl text-gray-300 mb-4">🏢</div>
-                    <h3 className="text-xl font-semibold text-gray-500">No booking yet</h3>
+                    <h3 className="text-xl font-semibold text-gray-500">
+                      {requestedVenueFilter === "all" 
+                        ? "No booking requests yet" 
+                        : `No ${requestedVenueFilter} venue requests found`}
+                    </h3>
                   </div>
                 )}
             </div>
@@ -632,6 +641,7 @@ export const AdminVenuePage = () => {
                   </div>
                 </div>
               </div>
+
 
               {/* Submit Button Area */}
               <div className="mt-10 text-center flex justify-center space-x-4">
