@@ -4,11 +4,13 @@ import { FaBell, FaUserCircle, FaCog, FaHistory, FaSignOutAlt, FaEdit, FaTicketA
 import { FiHeart } from "react-icons/fi";
 import logo from "./logo.png";
 import { useAuth } from "../../Context/AuthContext";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 export const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isLoggedIn } = useAuth();
+  const { user, setUser } = useAuth();  // Removed isLoggedIn and only used user
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeLink, setActiveLink] = useState("/");
 
@@ -18,8 +20,21 @@ export const NavBar = () => {
   }, [location]);
 
   // Function to check if a link is active
-  const isActive = (path) => {
-    return activeLink === path;
+  const isActive = (path) => activeLink === path;
+
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      await axios.post("http://localhost:3000/logout", {}, { withCredentials: true });
+      toast.success("Logged out successfully");
+      setUser(null);  // Ensure user is set to null
+      setDropdownOpen(false);
+      navigate("/login");
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || "Failed to logout.";
+      toast.error(errorMessage);
+      console.error("Error during logout:", error);
+    }
   };
 
   return (
@@ -44,9 +59,7 @@ export const NavBar = () => {
               <button
                 key={link.name}
                 className={`text-sm font-medium transition-all duration-200 relative ${
-                  isActive(link.path) 
-                    ? "text-[#ED4A43] font-semibold" 
-                    : "text-gray-600 hover:text-[#ED4A43]"
+                  isActive(link.path) ? "text-[#ED4A43] font-semibold" : "text-gray-600 hover:text-[#ED4A43]"
                 }`}
                 onClick={() => navigate(link.path)}
               >
@@ -63,9 +76,7 @@ export const NavBar = () => {
             {/* Favorite Icon */}
             <button
               className={`transition-colors relative ${
-                isActive("/favourites") 
-                  ? "text-[#ED4A43]" 
-                  : "text-gray-500 hover:text-[#ED4A43]"
+                isActive("/favourites") ? "text-[#ED4A43]" : "text-gray-500 hover:text-[#ED4A43]"
               }`}
               onClick={() => navigate("/favourites")}
             >
@@ -73,11 +84,9 @@ export const NavBar = () => {
             </button>
 
             {/* Notifications */}
-            <button 
+            <button
               className={`transition-colors relative ${
-                isActive("/notifications") 
-                  ? "text-[#ED4A43]" 
-                  : "text-gray-500 hover:text-[#ED4A43]"
+                isActive("/notifications") ? "text-[#ED4A43]" : "text-gray-500 hover:text-[#ED4A43]"
               }`}
               onClick={() => navigate("/notifications")}
             >
@@ -88,10 +97,10 @@ export const NavBar = () => {
             </button>
 
             {/* My Bookings Button */}
-            <button 
+            <button
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 hover:scale-105 font-medium ${
                 isActive("/myBookings")
-                  ? "bg-[#D43C35] text-white" 
+                  ? "bg-[#D43C35] text-white"
                   : "bg-gradient-to-r from-[#ED4A43] to-[#FF6B64] text-white hover:from-[#FF6B64] hover:to-[#ED4A43]"
               }`}
               onClick={() => navigate("/myBookings")}
@@ -100,14 +109,12 @@ export const NavBar = () => {
               <span>My Bookings</span>
             </button>
 
-            {/* Profile Dropdown */}
-            {isLoggedIn ? (
+            {/* Profile Dropdown - Only Show if User Exists */}
+            {user ? (
               <div className="relative">
                 <button
                   className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
-                    isActive("/profile") 
-                      ? "bg-[#D43C35] text-white" 
-                      : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
+                    isActive("/profile") ? "bg-[#D43C35] text-white" : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
                   }`}
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
@@ -121,9 +128,7 @@ export const NavBar = () => {
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-lg overflow-hidden border border-gray-100">
                     <button
-                      className={`flex items-center w-full px-4 py-3 text-sm hover:bg-gray-100 ${
-                        isActive("/profile") ? "bg-gray-100 text-purple-600 font-medium" : "text-gray-700"
-                      }`}
+                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => {
                         setDropdownOpen(false);
                         navigate("/profile");
@@ -134,9 +139,7 @@ export const NavBar = () => {
                     </button>
 
                     <button
-                      className={`flex items-center w-full px-4 py-3 text-sm hover:bg-gray-100 ${
-                        isActive("/settings") ? "bg-gray-100 text-blue-600 font-medium" : "text-gray-700"
-                      }`}
+                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => {
                         setDropdownOpen(false);
                         navigate("/settings");
@@ -147,9 +150,7 @@ export const NavBar = () => {
                     </button>
 
                     <button
-                      className={`flex items-center w-full px-4 py-3 text-sm hover:bg-gray-100 ${
-                        isActive("/history") ? "bg-gray-100 text-yellow-600 font-medium" : "text-gray-700"
-                      }`}
+                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => {
                         setDropdownOpen(false);
                         navigate("/history");
@@ -161,10 +162,7 @@ export const NavBar = () => {
 
                     <button
                       className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-gray-100"
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        navigate("/login");
-                      }}
+                      onClick={handleLogout}
                     >
                       <FaSignOutAlt className="mr-2" />
                       Logout
@@ -174,11 +172,7 @@ export const NavBar = () => {
               </div>
             ) : (
               <button
-                className={`px-5 py-2 rounded-md transition-colors font-medium shadow-sm ${
-                  isActive("/login") 
-                    ? "bg-[#D43C35] text-white" 
-                    : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
-                }`}
+                className="px-5 py-2 rounded-md transition-colors font-medium shadow-sm bg-[#ED4A43] text-white hover:bg-[#D43C35]"
                 onClick={() => navigate("/login")}
               >
                 LOG IN
