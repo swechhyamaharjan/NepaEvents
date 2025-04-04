@@ -9,7 +9,6 @@ export const AdminEventPage = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [venues, setVenues] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [activeTab, setActiveTab] = useState("allEvents"); 
   const [imagePreview, setImagePreview] = useState(null);
   const [newEvent, setNewEvent] = useState({
     name: "",
@@ -91,7 +90,7 @@ export const AdminEventPage = () => {
   const handleSaveEvent = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log(newEvent);
+    
     const formData = new FormData();
     formData.append("title", newEvent.name);
     formData.append("date", newEvent.date);
@@ -189,42 +188,6 @@ export const AdminEventPage = () => {
     }
   };
 
-  // Approve Event
-  const handleApproveEvent = async (eventId) => {
-    setIsLoading(true);
-    try {
-      await axios.patch(`http://localhost:3000/api/event/${eventId}`,
-        { isApproved: true },
-        { withCredentials: true }
-      );
-      toast.success("Event approved!");
-      fetchEvents(); // Refresh the events list
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to approve event");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Reject Event
-  const handleRejectEvent = async (eventId) => {
-    setIsLoading(true);
-    try {
-      await axios.patch(`http://localhost:3000/api/event/${eventId}`,
-        { isApproved: false },
-        { withCredentials: true }
-      );
-      toast.success("Event rejected!");
-      fetchEvents(); // Refresh the events list
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to reject event");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Handle Input Change
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -237,31 +200,19 @@ export const AdminEventPage = () => {
     if (file) {
       setNewEvent((prev) => ({ ...prev, image: file }));
 
-      // Preview image
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      // Create preview URL for the image
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
     }
   };
 
   // Remove image
   const handleImageRemove = () => {
+    if (imagePreview && imagePreview.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreview); // Clean up memory
+    }
     setImagePreview(null);
     setNewEvent((prev) => ({ ...prev, image: null }));
-  };
-
-  const getStatusColor = (status) => {
-    if (status === true) return "bg-green-100 text-green-800 border-green-300";
-    if (status === false) return "bg-red-100 text-red-800 border-red-300";
-    return "bg-yellow-100 text-yellow-800 border-yellow-300";
-  };
-
-  const getStatusText = (status) => {
-    if (status === true) return "Approved";
-    if (status === false) return "Rejected";
-    return "Pending";
   };
 
   const getCategoryName = (categoryId) => {
@@ -274,20 +225,6 @@ export const AdminEventPage = () => {
     if (!venues || venues.length === 0) return "Loading...";
     const venue = venues.find(v => v._id === venueId);
     return venue ? venue.name : "Unknown Venue";
-  };
-
-  // Filter events based on tab
-  const filteredEvents = () => {
-    switch (activeTab) {
-      case "pendingEvents":
-        return events.filter(event => event.isApproved === null);
-      case "approvedEvents":
-        return events.filter(event => event.isApproved === true);
-      case "rejectedEvents":
-        return events.filter(event => event.isApproved === false);
-      default:
-        return events;
-    }
   };
 
   // Format date for display
@@ -303,269 +240,114 @@ export const AdminEventPage = () => {
         <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#ED4A43] to-[#ED4A43] mb-2 text-center">Event Dashboard</h2>
         <p className="text-center text-gray-500 mb-12">Manage and organize your events in one place</p>
 
-        {/* Tab Navigation */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-white rounded-full shadow-md inline-flex p-1">
-            <button
-              onClick={() => setActiveTab("adminEvents")}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "adminEvents"
-                ? "bg-[#ED4A43] text-white shadow-lg"
-                : "text-gray-600 hover:bg-gray-100"
-                }`}
-            >
-              Events Added by Admin
-            </button>
-            <button
-              onClick={() => setActiveTab("requestedEvents")}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${activeTab === "requestedEvents"
-                ? "bg-[#ED4A43] text-white shadow-lg"
-                : "text-gray-600 hover:bg-gray-100"
-                }`}
-            >
-              Events Requested by User
-            </button>
-          </div>
+        {/* Add New Event Button */}
+        <div className="flex justify-end mb-10">
+          <button
+            onClick={handleAddEvent}
+            className="bg-[#ED4A43] text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 flex items-center"
+          >
+            <span className="mr-2">+</span> Create New Event
+          </button>
         </div>
 
-        {/* Add New Event Button - Only show in admin events tab */}
-        {activeTab === "adminEvents" && (
-          <div className="flex justify-end mb-10">
-            <button
-              onClick={() => {
-                setSelectedEvent(null);
-                setNewEvent({
-                  name: "",
-                  date: "",
-                  description: "",
-                  venue: "",
-                  price: "",
-                  artist: "",
-                  category: "",
-                  image: "",
-                });
-                setShowModal(true);
-              }}
-              className="bg-[#ED4A43] text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 flex items-center"
-            >
-              <span className="mr-2">+</span> Create New Event
-            </button>
-          </div>
-        )}
-
-        {/* Admin Added Events */}
-        {activeTab === "adminEvents" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-            {events.length > 0 ? (
-              events.filter(event => !event.isRequested).map((event) => (
-                <div
-                  key={event._id}
-                  className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative flex flex-col"
-                >
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                      <div className="p-6 w-full">
-                        <div className="flex justify-between">
-                          <button
-                            onClick={() => handleEditEvent(event)}
-                            className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
-                          >
-                            <FaEdit size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEvent(event._id)}
-                            className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
-                          >
-                            <FaTrashAlt size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <img
-                      src={`http://localhost:3000/${event.image}`}
-                      alt={event.title}
-                      className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "https://via.placeholder.com/300x200?text=No+Image";
-                      }}
-                    />
-                  </div>
-
-                  <div className="p-6 flex-grow">
-                    {/* Event Title */}
-                    <h3 className="text-xl font-bold mb-2 text-gray-800">{event.title}</h3>
-
-                    {/* Event Description - Truncated */}
-                    <div className="mb-4">
-                      <p className="text-gray-600 text-sm line-clamp-2">{event.description}</p>
-                    </div>
-
-                    {/* Event Details */}
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-gray-600">
-                        <FaCalendarAlt className="mr-2 text-[#ED4A43] flex-shrink-0" />
-                        <span className="text-sm">{new Date(event.date).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaMapMarkerAlt className="mr-2 text-[#ED4A43] flex-shrink-0" />
-                        <span className="text-sm truncate">{getVenueName(event.venue)}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaMoneyBillWave className="mr-2 text-[#ED4A43] flex-shrink-0" />
-                        <span className="font-semibold text-sm">Rs. {event.price}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaUser className="mr-2 text-[#ED4A43] flex-shrink-0" />
-                        <span className="text-sm truncate">{event.artist}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaTag className="mr-2 text-[#ED4A43] flex-shrink-0" />
-                        <span className="text-sm truncate">{getCategoryName(event.category)}</span>
+        {/* Events Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+          {events.length > 0 ? (
+            events.filter(event => !event.isRequested).map((event) => (
+              <div
+                key={event._id}
+                className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative flex flex-col"
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                    <div className="p-6 w-full">
+                      <div className="flex justify-between">
+                        <button
+                          onClick={() => handleEditEvent(event)}
+                          className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
+                        >
+                          <FaEdit size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEvent(event._id)}
+                          className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
+                        >
+                          <FaTrashAlt size={18} />
+                        </button>
                       </div>
                     </div>
                   </div>
+                  <img
+                    src={`http://localhost:3000/${event.image}`}
+                    alt={event.title}
+                    className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://via.placeholder.com/300x200?text=No+Image";
+                    }}
+                  />
+                </div>
 
-                  <div className="p-6 pt-0">
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => handleEditEvent(event)}
-                        className="px-4 py-3 rounded-lg flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-md"
-                      >
-                        <FaEdit className="mr-2" /> Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteEvent(event._id)}
-                        className="px-4 py-3 rounded-lg flex items-center justify-center bg-[#ED4A43] text-white hover:shadow-md"
-                      >
-                        <FaTrashAlt className="mr-2" /> Delete
-                      </button>
+                <div className="p-6 flex-grow">
+                  {/* Event Title */}
+                  <h3 className="text-xl font-bold mb-2 text-gray-800">{event.title}</h3>
+
+                  {/* Event Description - Truncated */}
+                  <div className="mb-4">
+                    <p className="text-gray-600 text-sm line-clamp-2">{event.description}</p>
+                  </div>
+
+                  {/* Event Details */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-gray-600">
+                      <FaCalendarAlt className="mr-2 text-[#ED4A43] flex-shrink-0" />
+                      <span className="text-sm">{new Date(event.date).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaMapMarkerAlt className="mr-2 text-[#ED4A43] flex-shrink-0" />
+                      <span className="text-sm truncate">{getVenueName(event.venue)}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaMoneyBillWave className="mr-2 text-[#ED4A43] flex-shrink-0" />
+                      <span className="font-semibold text-sm">Rs. {event.price}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaUser className="mr-2 text-[#ED4A43] flex-shrink-0" />
+                      <span className="text-sm truncate">{event.artist}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaTag className="mr-2 text-[#ED4A43] flex-shrink-0" />
+                      <span className="text-sm truncate">{getCategoryName(event.category)}</span>
                     </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-3 text-center py-16">
-                <FaCalendarAlt className="mx-auto text-gray-300 text-6xl mb-4" />
-                <h3 className="text-xl font-medium text-gray-500">No events added by admin yet</h3>
-                <p className="text-gray-400 mt-2">Click the "Create New Event" button to get started</p>
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* User Requested Events */}
-        {activeTab === "requestedEvents" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-            {events.length > 0 ? (
-              events.filter(event => event.isRequested).map((event) => (
-                <div
-                  key={event._id}
-                  className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group relative flex flex-col"
-                >
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                      <div className="p-6 w-full">
-                        <div className="flex justify-between">
-                          <button
-                            onClick={() => handleEditEvent(event)}
-                            className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
-                          >
-                            <FaEdit size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEvent(event._id)}
-                            className="bg-white/90 text-[#ED4A43] p-3 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
-                          >
-                            <FaTrashAlt size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <img
-                      src={`http://localhost:3000/${event.image}`}
-                      alt={event.title}
-                      className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "https://via.placeholder.com/300x200?text=No+Image";
-                      }}
-                    />
-                    <div
-                      className={`absolute top-4 right-4 px-3 py-1 rounded-full border ${getStatusColor(event.isApproved)} text-xs font-bold`}
+                <div className="p-6 pt-0">
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => handleEditEvent(event)}
+                      className="px-4 py-3 rounded-lg flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-md"
                     >
-                      {getStatusText(event.isApproved)}
-                    </div>
-                  </div>
-
-                  <div className="p-6 flex-grow">
-                    {/* Event Title */}
-                    <h3 className="text-xl font-bold mb-2 text-gray-800">{event.title}</h3>
-
-                    {/* Event Description - Truncated */}
-                    <div className="mb-4">
-                      <p className="text-gray-600 text-sm line-clamp-2">{event.description}</p>
-                    </div>
-
-                    {/* Event Details */}
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-gray-600">
-                        <FaCalendarAlt className="mr-2 text-[#ED4A43] flex-shrink-0" />
-                        <span className="text-sm">{new Date(event.date).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaMapMarkerAlt className="mr-2 text-[#ED4A43] flex-shrink-0" />
-                        <span className="text-sm truncate">{getVenueName(event.venue)}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaMoneyBillWave className="mr-2 text-[#ED4A43] flex-shrink-0" />
-                        <span className="font-semibold text-sm">Rs. {event.price}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaUser className="mr-2 text-[#ED4A43] flex-shrink-0" />
-                        <span className="text-sm truncate">{event.artist}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaTag className="mr-2 text-[#ED4A43] flex-shrink-0" />
-                        <span className="text-sm truncate">{getCategoryName(event.category)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-6 pt-0">
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => handleApproveEvent(event._id)}
-                        className={`px-4 py-3 rounded-lg flex items-center justify-center ${event.isApproved === true
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-md"
-                          }`}
-                        disabled={event.isApproved === true}
-                      >
-                        <FaCheckCircle className="mr-2" /> Approve
-                      </button>
-                      <button
-                        onClick={() => handleRejectEvent(event._id)}
-                        className={`px-4 py-3 rounded-lg flex items-center justify-center ${event.isApproved === false
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-[#ED4A43] text-white hover:shadow-md"
-                          }`}
-                        disabled={event.isApproved === false}
-                      >
-                        <FaTimesCircle className="mr-2" /> Reject
-                      </button>
-                    </div>
+                      <FaEdit className="mr-2" /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteEvent(event._id)}
+                      className="px-4 py-3 rounded-lg flex items-center justify-center bg-[#ED4A43] text-white hover:shadow-md"
+                    >
+                      <FaTrashAlt className="mr-2" /> Delete
+                    </button>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-3 text-center py-16">
-                <FaCalendarAlt className="mx-auto text-gray-300 text-6xl mb-4" />
-                <h3 className="text-xl font-medium text-gray-500">No event requests from users yet</h3>
-                <p className="text-gray-400 mt-2">User requested events will appear here</p>
               </div>
-            )}
-          </div>
-        )}
+            ))
+          ) : (
+            <div className="col-span-3 text-center py-16">
+              <FaCalendarAlt className="mx-auto text-gray-300 text-6xl mb-4" />
+              <h3 className="text-xl font-medium text-gray-500">No events found</h3>
+              <p className="text-gray-400 mt-2">Click the "Create New Event" button to get started</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal for Adding/Editing Event */}
@@ -631,29 +413,40 @@ export const AdminEventPage = () => {
                         onChange={handleImageChange}
                         className="hidden"
                         id="image-upload"
+                        accept="image/*"
                       />
                       <label
                         htmlFor="image-upload"
                         className="w-full flex items-center justify-center p-3 border-2 border-dashed border-red-300 bg-red-50 rounded-xl cursor-pointer hover:bg-red-100 transition-colors"
                       >
-                        <div className="text-center">
-                          <svg className="mx-auto h-10 w-10 text-[#ED4A43]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <p className="mt-1 text-sm text-[#ED4A43]">
-                            {selectedEvent && newEvent.image ? 'Change image' : 'Click to upload image'}
-                          </p>
-                          {newEvent.image && typeof newEvent.image === 'string' && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              Current image: {newEvent.image.split('/').pop()}
+                        {imagePreview ? (
+                          <div className="relative w-full h-48">
+                            <img 
+                              src={imagePreview} 
+                              alt="Preview" 
+                              className="w-full h-full object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleImageRemove();
+                              }}
+                              className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+                            >
+                              <FaTimesCircle className="text-red-500" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="text-center">
+                            <svg className="mx-auto h-10 w-10 text-[#ED4A43]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p className="mt-1 text-sm text-[#ED4A43]">
+                              {selectedEvent && newEvent.image ? 'Change image' : 'Click to upload image'}
                             </p>
-                          )}
-                          {newEvent.image && typeof newEvent.image !== 'string' && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              Selected: {newEvent.image.name}
-                            </p>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </label>
                     </div>
                   </div>
