@@ -11,9 +11,18 @@ export const Login = () => {
   const { setUser } = useAuth();
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
   const [email, setEmail] = useState('');
+  const [resetToken, setResetToken] = useState('');
   const otpInputs = useRef([]);
   
+  // Password reset states
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordMatch, setPasswordMatch] = useState(true);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -66,12 +75,45 @@ export const Login = () => {
       });
       if (res) {
         toast.success("OTP verified successfully");
-        navigate('/reset-password', { state: { email, token: res.data.token } });
+        setOtpVerified(true);
+        setResetToken(res.data.token);
       }
     } catch (error) {
       const errorMessage = error?.response?.data?.message || "Invalid OTP.";
       toast.error(errorMessage);
       console.error("Error verifying OTP:", error);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setPasswordMatch(false);
+      return;
+    }
+    
+    try {
+      // Replace with your password reset endpoint
+      const res = await axios.post('http://localhost:3000/reset-password', {
+        email,
+        token: resetToken,
+        password
+      });
+      
+      if (res) {
+        toast.success("Password reset successfully");
+        setShowForgotPassword(false);
+        setOtpSent(false);
+        setOtpVerified(false);
+        setPassword('');
+        setConfirmPassword('');
+      }
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || "Failed to reset password.";
+      toast.error(errorMessage);
+      console.error("Error resetting password:", error);
     }
   };
 
@@ -116,6 +158,26 @@ export const Login = () => {
     }
   };
 
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    if (confirmPassword) {
+      setPasswordMatch(e.target.value === confirmPassword);
+    }
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    setConfirmPassword(e.target.value);
+    setPasswordMatch(password === e.target.value);
+  };
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setConfirmPasswordVisible(!confirmPasswordVisible);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-lg backdrop-blur-sm bg-white/80 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
@@ -127,7 +189,11 @@ export const Login = () => {
             </svg>
           </div>
           <h2 className="text-3xl font-bold text-white absolute top-8 left-0 w-full text-center">
-            {showForgotPassword ? (otpSent ? "Enter OTP" : "Reset Password") : "Welcome Back"}
+            {showForgotPassword ? 
+              (otpSent ? 
+                (otpVerified ? "Reset Password" : "Enter OTP") 
+                : "Reset Password") 
+              : "Welcome Back"}
           </h2>
         </div>
 
@@ -135,54 +201,138 @@ export const Login = () => {
         <div className="px-8 py-6">
           {showForgotPassword ? (
             otpSent ? (
-              // OTP Verification Form
-              <form className="space-y-5" onSubmit={handleVerifyOTP}>
-                <p className="text-gray-600 text-center">
-                  We've sent a 6-digit code to <strong>{email}</strong>
-                </p>
-                
-                <div className="flex justify-center gap-2 my-6">
-                  {[...Array(6)].map((_, index) => (
+              otpVerified ? (
+                // Password Reset Form
+                <form className="space-y-5" onSubmit={handleResetPassword}>
+                  <p className="text-gray-600 text-center mb-4">
+                    Create a new password for <strong>{email}</strong>
+                  </p>
+                  
+                  {/* New Password Field */}
+                  <div className="relative">
                     <input
-                      key={index}
-                      type="text"
-                      maxLength="1"
-                      className="w-12 h-14 text-center text-xl font-semibold border-2 border-gray-300 rounded-lg focus:border-[#ED4A43] focus:outline-none transition"
-                      ref={el => otpInputs.current[index] = el}
-                      onChange={e => handleOtpChange(e, index)}
-                      onKeyDown={e => handleKeyDown(e, index)}
-                      onPaste={index === 0 ? handlePaste : null}
+                      type={passwordVisible ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      placeholder=" "
+                      className="w-full bg-transparent pt-5 pb-2 px-3 border-b-2 border-gray-300 focus:border-[#ED4A43] focus:outline-none peer transition"
+                      value={password}
+                      onChange={handlePasswordChange}
+                      required
                     />
-                  ))}
-                </div>
-                
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-[#ED4A43] text-white font-medium rounded-full hover:shadow-lg transition duration-300 transform hover:-translate-y-1"
-                >
-                  Verify OTP
-                </button>
-                
-                <div className="flex justify-between text-sm mt-4">
-                  <button 
-                    type="button" 
-                    className="text-[#ED4A43] hover:text-red-700"
-                    onClick={handleRequestOTP}
+                    <label htmlFor="password" className="absolute left-3 top-4 text-gray-500 transition-all duration-300 transform -translate-y-3 scale-75 z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-[#ED4A43]">
+                      New Password
+                    </label>
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
+                      onClick={togglePasswordVisibility}
+                    >
+                      {passwordVisible ? "Hide" : "Show"}
+                    </button>
+                  </div>
+
+                  {/* Confirm Password Field */}
+                  <div className="relative">
+                    <input
+                      type={confirmPasswordVisible ? "text" : "password"}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      placeholder=" "
+                      className={`w-full bg-transparent pt-5 pb-2 px-3 border-b-2 ${!passwordMatch ? 'border-red-500' : 'border-gray-300 focus:border-[#ED4A43]'} focus:outline-none peer transition`}
+                      value={confirmPassword}
+                      onChange={handleConfirmPasswordChange}
+                      required
+                    />
+                    <label htmlFor="confirmPassword" className={`absolute left-3 top-4 ${!passwordMatch ? 'text-red-500' : 'text-gray-500'} transition-all duration-300 transform -translate-y-3 scale-75 z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 ${passwordMatch ? 'peer-focus:text-[#ED4A43]' : 'peer-focus:text-red-500'}`}>
+                      Confirm Password
+                    </label>
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
+                      onClick={toggleConfirmPasswordVisibility}
+                    >
+                      {confirmPasswordVisible ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  
+                  {!passwordMatch && (
+                    <p className="text-red-500 text-sm">Passwords do not match</p>
+                  )}
+
+                  <p className="text-xs text-gray-500">
+                    Password must be at least 8 characters long and include a mix of uppercase, lowercase, numbers, and special characters.
+                  </p>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-[#ED4A43] text-white font-medium rounded-full hover:shadow-lg transition duration-300 transform hover:-translate-y-1"
                   >
-                    Resend OTP
+                    Reset Password
                   </button>
-                  <button 
-                    type="button" 
-                    className="text-gray-500 hover:text-gray-700"
+                  
+                  <button
+                    type="button"
+                    className="w-full py-2.5 bg-[#FFF5F4] text-gray-700 font-medium rounded-full border border-[#ED4A43] hover:bg-white transition"
                     onClick={() => {
                       setShowForgotPassword(false);
                       setOtpSent(false);
+                      setOtpVerified(false);
                     }}
                   >
                     Back to Login
                   </button>
-                </div>
-              </form>
+                </form>
+              ) : (
+                // OTP Verification Form
+                <form className="space-y-5" onSubmit={handleVerifyOTP}>
+                  <p className="text-gray-600 text-center">
+                    We've sent a 6-digit code to <strong>{email}</strong>
+                  </p>
+                  
+                  <div className="flex justify-center gap-2 my-6">
+                    {[...Array(6)].map((_, index) => (
+                      <input
+                        key={index}
+                        type="text"
+                        maxLength="1"
+                        className="w-12 h-14 text-center text-xl font-semibold border-2 border-gray-300 rounded-lg focus:border-[#ED4A43] focus:outline-none transition"
+                        ref={el => otpInputs.current[index] = el}
+                        onChange={e => handleOtpChange(e, index)}
+                        onKeyDown={e => handleKeyDown(e, index)}
+                        onPaste={index === 0 ? handlePaste : null}
+                      />
+                    ))}
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-[#ED4A43] text-white font-medium rounded-full hover:shadow-lg transition duration-300 transform hover:-translate-y-1"
+                  >
+                    Verify OTP
+                  </button>
+                  
+                  <div className="flex justify-between text-sm mt-4">
+                    <button 
+                      type="button" 
+                      className="text-[#ED4A43] hover:text-red-700"
+                      onClick={handleRequestOTP}
+                    >
+                      Resend OTP
+                    </button>
+                    <button 
+                      type="button" 
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={() => {
+                        setShowForgotPassword(false);
+                        setOtpSent(false);
+                      }}
+                    >
+                      Back to Login
+                    </button>
+                  </div>
+                </form>
+              )
             ) : (
               // Request OTP Form
               <form className="space-y-5" onSubmit={handleRequestOTP}>
