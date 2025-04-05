@@ -51,16 +51,15 @@ export const Login = () => {
   const handleRequestOTP = async (e) => {
     e.preventDefault();
     try {
-      // Replace with your OTP request endpoint
-      const res = await axios.post('http://localhost:3000/request-otp', { email });
-      if (res) {
-        toast.success("OTP sent to your email");
+      const response = await axios.post('http://localhost:3000/api/users/sendOtp', {email});
+      if (response) {
+        toast.success("OTP sent successfully");
         setOtpSent(true);
       }
     } catch (error) {
       const errorMessage = error?.response?.data?.message || "Failed to send OTP.";
       toast.error(errorMessage);
-      console.error("Error requesting OTP:", error);
+      console.error("Error sending OTP:", error);
     }
   };
 
@@ -69,14 +68,13 @@ export const Login = () => {
     const otp = otpInputs.current.map(input => input.value).join('');
     try {
       // Replace with your OTP verification endpoint
-      const res = await axios.post('http://localhost:3000/verify-otp', { 
-        email, 
-        otp 
+      const res = await axios.post('http://localhost:3000/api/users/verifyOtp', {
+        otpCode: otp, email
       });
       if (res) {
         toast.success("OTP verified successfully");
-        setOtpVerified(true);
         setResetToken(res.data.token);
+        setOtpVerified(true);
       }
     } catch (error) {
       const errorMessage = error?.response?.data?.message || "Invalid OTP.";
@@ -91,15 +89,13 @@ export const Login = () => {
     // Validate passwords match
     if (password !== confirmPassword) {
       setPasswordMatch(false);
+      toast.error("Passwords do not match");
       return;
     }
     
     try {
-      // Replace with your password reset endpoint
-      const res = await axios.post('http://localhost:3000/reset-password', {
-        email,
-        token: resetToken,
-        password
+      const res = await axios.post('http://localhost:3000/api/users/resetPassword', {
+        newPassword: password, email
       });
       
       if (res) {
@@ -312,14 +308,7 @@ export const Login = () => {
                     Verify OTP
                   </button>
                   
-                  <div className="flex justify-between text-sm mt-4">
-                    <button 
-                      type="button" 
-                      className="text-[#ED4A43] hover:text-red-700"
-                      onClick={handleRequestOTP}
-                    >
-                      Resend OTP
-                    </button>
+                  <div className="flex justify-end text-sm mt-4">
                     <button 
                       type="button" 
                       className="text-gray-500 hover:text-gray-700"
