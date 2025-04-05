@@ -1,6 +1,7 @@
 const User = require('../models/user-model');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const nodemailer = require('nodemailer');
 
 const registerUser = async (req, res) => {
   try {
@@ -113,7 +114,92 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, logoutUser, getUser, getAllUsers }
+
+const sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: "No user found for provided email" });
+
+    const OTP = Math.floor(100000 + Math.random() * 900000);
+    const otpExpiration = new Date(Date.now() + 2 * 60 * 1000);
+
+    const hashedOtp = await bcrypt.hash(`${OTP}`, 10);
+
+    await User.findOneAndUpdate({ email }, { otp: hashedOtp, otpExpiresAt: otpExpiration }, { upsert: true, new: true });
+
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USERNAME,
+      to: email,
+      subject: "Reset Your Password",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+          <h2 style="color: #333;">Password Reset Request</h2>
+          <p style="font-size: 16px;">Hello,</p>
+          <p style="font-size: 16px;">We received a request to reset your password. Use the OTP below to proceed:</p>
+          <h3 style="background: #f8f8f8; padding: 10px; border-radius: 5px; text-align: center; font-size: 24px; letter-spacing: 2px;">${OTP}</h3>
+          <p style="font-size: 16px;">If you didn’t request this, please ignore this email.</p>
+          <p style="color: red; font-weight: bold;">⚠️ Do not share this OTP with anyone for security reasons.</p>
+          <p style="font-size: 14px; color: #666;">Best regards,</p>
+          <p style="font-size: 14px; color: #666;">NepaEvents Team</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ success: true, message: "OTP sent successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Unable to send OTP" });
+    console.error("Error sending OTP email:", error);
+  }
+};
+
+
+const verifyOtp = async (req, res) => {
+  const { otpCode, email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: "No user found for provided email" });
+
+    if (user.otpExpiresAt < new Date()) return res.status(410).json({ success: false, message: "Otp has expired please try again" });
+
+    const isValidOtp = await bcrypt.compare(otpCode, user.otp);
+
+    if (!isValidOtp) return res.status(401).json({ success: false, message: "Invalid Otp Code" });
+
+    await User.updateOne({ _id: user._id }, { $unset: { otp: 1, otpExpiresAt: 1 } });
+
+    res.status(200).json({ success: true, message: "Otp Verification Successful" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Failed to Verify Otp', error });
+  }
+};
+
+
+const resetPassword = async (req, res) => {
+  const { newPassword, email } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const user = await User.findOneAndUpdate({ email }, { password: hashedPassword });
+    if (!user) return res.status(404).json({ success: false, message: "No user found for provided user" });
+    res.status(200).json({ success: true, message: "Password reset successfully you can login now" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, error })
+  }
+}
+
+module.exports = { registerUser, loginUser, logoutUser, getUser, getAllUsers, resetPassword, sendOtp, verifyOtp };
 
 
 
