@@ -26,8 +26,9 @@ export const NavBar = () => {
   const handleLogout = async () => {
     try {
       await axios.post("http://localhost:3000/logout", {}, { withCredentials: true });
+      localStorage.clear();
       toast.success("Logged out successfully");
-      setUser(null);  // Ensure user is set to null
+      setUser(null);  
       setDropdownOpen(false);
       navigate("/login");
     } catch (error) {
