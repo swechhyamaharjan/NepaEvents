@@ -106,7 +106,7 @@ export const AdminEventPage = () => {
     try {
       if (selectedEvent) {
         // Update existing event
-        await axios.put(`http://localhost:3000/api/event/${selectedEvent._id}`, formData, {
+        await axios.patch(`http://localhost:3000/api/event/${selectedEvent._id}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true
         });
