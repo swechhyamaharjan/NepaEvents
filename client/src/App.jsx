@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
-
 import { Signup } from "./Components/Users/Signup";
 import { HomePage } from "./Components/Users/HomePage";
 import { NavBar } from "./Components/Users/NavBar";
