@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrashAlt, FaCheckCircle, FaTimesCircle, FaMapMarkerAlt, FaUsers, FaBuilding, FaInfoCircle } from "react-icons/fa";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import VenueLocationMap from "../VenueLocationMap";
 
 export const AdminVenuePage = () => {
   const [venues, setVenues] = useState([]);
@@ -16,6 +17,7 @@ export const AdminVenuePage = () => {
     capacity: "",
     image: "",
     price: "",
+    locationCoordinates: "",
   });
   const [showDetailModal, setShowDetailModal] = useState(false); // State for detail view modal
   const [detailVenue, setDetailVenue] = useState(null); // State to store the venue for detail view
@@ -28,6 +30,7 @@ export const AdminVenuePage = () => {
     formData.append("location", newVenue.location);
     formData.append("capacity", newVenue.capacity);
     formData.append("price", newVenue.price);
+    formData.append("locationCoordinates", newVenue.locationCoordinates);
     formData.append("isAdminAdded", true);
     if (newVenue.image) {
       formData.append("image", newVenue.image);
@@ -533,6 +536,7 @@ export const AdminVenuePage = () => {
                       placeholder="Enter venue location"
                       className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
                     />
+                    <VenueLocationMap setNewVenue={setNewVenue}/>
                   </div>
 
                   {/* Venue Price */}
@@ -692,8 +696,8 @@ export const AdminVenuePage = () => {
                   {/* Venue Image */}
                   <div className="relative w-full h-56 rounded-lg overflow-hidden border border-gray-200">
                     <img
-                      src={`http://localhost:3000/${detailVenue?.venue?.image}`}
-                      alt={detailVenue?.venue?.name}
+                      src={`http://localhost:3000/${detailVenue?.image}`}
+                      alt={detailVenue?.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -703,7 +707,7 @@ export const AdminVenuePage = () => {
                     <label className="block text-gray-700 font-medium mb-1">
                       Venue Name
                     </label>
-                    <p className="text-gray-900">{detailVenue?.venue?.name}</p>
+                    <p className="text-gray-900">{detailVenue?.name}</p>
                   </div>
 
                   {/* Venue Location */}
@@ -711,7 +715,7 @@ export const AdminVenuePage = () => {
                     <label className="block text-gray-700 font-medium mb-1">
                       Location
                     </label>
-                    <p className="text-gray-900">{detailVenue?.venue?.location}</p>
+                    <p className="text-gray-900">{detailVenue?.location}</p>
                   </div>
 
                   {/* Venue Capacity */}
@@ -719,7 +723,7 @@ export const AdminVenuePage = () => {
                     <label className="block text-gray-700 font-medium mb-1">
                       Capacity
                     </label>
-                    <p className="text-gray-900">{detailVenue?.venue?.capacity}</p>
+                    <p className="text-gray-900">{detailVenue?.capacity}</p>
                   </div>
                 </div>
 
