@@ -1,24 +1,41 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../Context/AuthContext';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export const AdminHome = () => {
-  const navigate = useNavigate();
+const navigate = useNavigate();
 const {user} = useAuth();
+
+// Logout function
+  const handleLogout = async () => {
+    try {
+      await axios.post("http://localhost:3000/logout", {}, { withCredentials: true });
+      localStorage.clear();
+      toast.success("Logged out successfully");
+      navigate("/login");
+      window.location.reload();
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || "Failed to logout.";
+      toast.error(errorMessage);
+      console.error("Error during logout:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8 font-sans">
-      {console.log(user)}
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-grid-black/[0.02] bg-[size:30px_30px] pointer-events-none" />
       
       {/* Admin Header */}
       <div className='w-full flex items-center justify-end pb-10'>
         <div className='mr-8 bg-white px-6 py-3 rounded-lg shadow-md'>
-          <h2 className="text-gray-700 font-medium">Welcome, <span className="text-gray-900 font-bold">{user.user.fullName}</span></h2>
+          <h2 className="text-gray-700 font-medium">Welcome, <span className="text-gray-900 font-bold">{user?.fullName}</span></h2>
         </div>
         <button 
           className='logoutbtn bg-[#ED4A43] text-white py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:bg-opacity-90 transition-all duration-300' 
-          onClick={() => navigate("/login")}
+          onClick={handleLogout}
         >
           Logout
         </button>
