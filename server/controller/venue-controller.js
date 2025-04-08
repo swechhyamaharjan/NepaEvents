@@ -3,13 +3,13 @@ const Venue = require('../models/venue-model')
 const createVenue = async (req, res) => {
     console.log(req.body);
     try {
-        const { name, location, capacity, price} = req.body;
+        const { name, location, capacity, price, locationCoordinates} = req.body;
         const priceNumber = parseFloat(price);
         const image = req.file ? req.file.path : null; // Ensure image is stored
         if (!image) {
             return res.status(400).json({ message: 'Image is required' });
         }
-        const newVenue = await Venue.create({ name, location, capacity, image, price: priceNumber });
+        const newVenue = await Venue.create({ name, location, capacity, image, price: priceNumber, locationCoordinates });
         res.status(201).json({
             success: true,
             message: 'Venue booked successfully',
