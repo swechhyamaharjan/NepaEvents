@@ -6,7 +6,7 @@ const venueSchema = new mongoose.Schema({
   capacity: { type: Number, required: true },
   image: { type: String, required: true },
   price: { type: Number, require: true },
-  // status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+  locationCoordinates: {type: String, required: true},
 });
 
 module.exports = mongoose.model("Venue", venueSchema);
