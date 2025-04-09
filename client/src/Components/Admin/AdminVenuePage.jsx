@@ -476,8 +476,8 @@ export const AdminVenuePage = () => {
                   <div className="col-span-3 text-center py-16">
                     <div className="text-5xl text-gray-300 mb-4">🏢</div>
                     <h3 className="text-xl font-semibold text-gray-500">
-                      {requestedVenueFilter === "all" 
-                        ? "No booking requests yet" 
+                      {requestedVenueFilter === "all"
+                        ? "No booking requests yet"
                         : `No ${requestedVenueFilter} venue requests found`}
                     </h3>
                   </div>
@@ -536,7 +536,7 @@ export const AdminVenuePage = () => {
                       placeholder="Enter venue location"
                       className="w-full p-3 bg-red-50 border-2 border-red-100 rounded-xl focus:outline-none focus:border-[#ED4A43] transition-colors"
                     />
-                    <VenueLocationMap setNewVenue={setNewVenue}/>
+                    <VenueLocationMap setNewVenue={setNewVenue} />
                   </div>
 
                   {/* Venue Price */}
@@ -643,6 +643,7 @@ export const AdminVenuePage = () => {
                       Make sure all information is accurate and the image clearly shows the venue.
                     </p>
                   </div>
+
                 </div>
               </div>
 
@@ -794,6 +795,9 @@ export const AdminVenuePage = () => {
                       This venue is {detailVenue?.status === "approved" ? "approved" : "pending approval"}.
                     </p>
                   </div>
+                  <VenueLocationMap
+                    existingCoordinates={detailVenue.locationCoordinates}
+                  />
                 </div>
               </div>
 
