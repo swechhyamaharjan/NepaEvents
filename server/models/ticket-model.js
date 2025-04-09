@@ -13,7 +13,7 @@ const ticketSchema = new mongoose.Schema({
   event: { type: mongoose.Schema.Types.ObjectId, ref: "Event", required: true },
   quantity: { type: Number, required: false, min: 1 },
   price: { type: Number, required: true },
-  ticketCodes: [{ type: String, unique: true, required: true }],
+  ticketCodes: { type: String, unique: true, required: true },
   purchaseDate: { type: Date, default: Date.now },
 });
 
