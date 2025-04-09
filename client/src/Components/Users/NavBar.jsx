@@ -115,7 +115,7 @@ export const NavBar = () => {
               <div className="relative">
                 <button
                   className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
-                    isActive("/profile") ? "bg-[#D43C35] text-white" : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
+                    isActive("/editprofile") ? "bg-[#D43C35] text-white" : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
                   }`}
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
@@ -132,7 +132,7 @@ export const NavBar = () => {
                       className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => {
                         setDropdownOpen(false);
-                        navigate("/profile");
+                        navigate("/editprofile");
                       }}
                     >
                       <FaEdit className="mr-2 text-purple-600" />
