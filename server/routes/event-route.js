@@ -32,6 +32,6 @@ eventRouter.delete('/:id', deleteEvent)
 
 // Stripe Payment
 eventRouter.post("/buy", verifyToken, buyEventTicket);
-eventRouter.get("/verify-purchase", verifyToken, verifyEventPayment);
+eventRouter.get("/verify-purchase/:id", verifyToken, verifyEventPayment);
 
 module.exports = eventRouter;
