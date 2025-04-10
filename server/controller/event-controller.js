@@ -129,21 +129,53 @@ const sendEventTicketEmail = async (email, ticket) => {
         }
 
         const pdfPath = path.join(ticketsDir, `ticket_${ticket._id}.pdf`);
-
-        // Primary brand color
         const primaryColor = '#ED4A43';
 
-        // Generate QR code with ticket data
+        // Generating QR code with ticket data
         const qrData = JSON.stringify({
             ticketId: ticket._id,
             ticketCode: ticket.ticketCodes,
             eventName: ticket.event.title,
             venueId: ticket.event.venue._id, 
-            attendeeName: ticket.user.name,
+            attendeeName: ticket.user.fullName,
             ticketPrice: ticket.event.price,
             purchaseDate: ticket.purchaseDate.toISOString(),
         });
-        const qrCodeBuffer = await QRCode.toBuffer(qrData);
+        
+        // Create branded QR code with NepaEvents initials
+        const qrCodeOptions = {
+            errorCorrectionLevel: 'H', // High error correction allows for logo overlay
+            margin: 1,
+            color: {
+                dark: '#000000', // QR code color matching brand
+                light: '#FFFFFF' // Background color
+            }
+        };
+        
+        // Generate the QR code as an image
+        const qrCodeBuffer = await QRCode.toBuffer(qrData, qrCodeOptions);
+        
+        // Create a canvas to overlay NepaEvents initials on the QR code
+        const { createCanvas, loadImage } = require('canvas');
+        const canvas = createCanvas(300, 300); // Size of the canvas
+        const ctx = canvas.getContext('2d');
+        
+        // Draw the QR code on the canvas
+        const qrImage = await loadImage(qrCodeBuffer);
+        ctx.drawImage(qrImage, 0, 0, 300, 300);
+        
+        // Add NepaEvents initials in the center
+        ctx.fillStyle = '#FFFFFF'; // White background for the text area
+        ctx.fillRect(115, 130, 70, 40); // Create a white rectangle in the middle
+        
+        ctx.font = 'bold 20px Arial';
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('NE', 150, 150); // NE for NepaEvents initials
+        
+        // Convert canvas to buffer
+        const brandedQRBuffer = canvas.toBuffer('image/png');
 
         const doc = new PDFDocument({
             size: 'A4',
@@ -152,7 +184,132 @@ const sendEventTicketEmail = async (email, ticket) => {
         // Start writing to PDF
         doc.pipe(fs.createWriteStream(pdfPath));
 
+        // Add header with logo placeholder
+        doc.fontSize(24)
+           .fillColor(primaryColor)
+           .font('Helvetica-Bold')
+           .text('EVENT TICKET', { align: 'center' });
         
+        // Add a horizontal line
+        doc.moveTo(50, 100)
+           .lineTo(545, 100)
+           .strokeColor(primaryColor)
+           .lineWidth(2)
+           .stroke();
+        
+        // Add event title
+        doc.moveDown()
+           .fontSize(20)
+           .fillColor('#000')
+           .font('Helvetica-Bold')
+           .text(ticket.event.title, { align: 'center' });
+        
+        // Format date nicely
+        const eventDate = new Date(ticket.event.date);
+        const formattedDate = eventDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        const formattedTime = eventDate.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        // Event details section
+        doc.moveDown(0.5)
+           .fontSize(12)
+           .font('Helvetica')
+           .text(`Date: ${formattedDate}`, { align: 'center' })
+           .text(`Time: ${formattedTime}`, { align: 'center' });
+            
+        // Location details
+        doc.moveDown(0.5)
+           .fontSize(14)
+           .font('Helvetica-Bold')
+           .text('Location', { align: 'center' })
+           .fontSize(12)
+           .font('Helvetica')
+           .text(ticket.event.venue.name, { align: 'center' })
+           .text(ticket.event.venue.address, { align: 'center' });
+        
+        // Create a tear-off line
+        doc.moveDown(1)
+           .lineCap('round')
+           .dash(5, { space: 10 })
+           .moveTo(50, doc.y)
+           .lineTo(545, doc.y)
+           .stroke();
+        
+        // Reset line style
+        doc.undash();
+
+        // Add attendee info
+        doc.moveDown(1)
+           .fontSize(14)
+           .font('Helvetica-Bold')
+           .text('Attendee Information', { continued: false });
+           
+        doc.fontSize(12)
+           .font('Helvetica')
+           .text(`Name: ${ticket.user.fullName}`)
+           .text(`Email: ${email}`)
+           .text(`Ticket ID: ${ticket._id}`)
+           .text(`Purchase Date: ${new Date(ticket.purchaseDate).toLocaleDateString()}`);
+        
+        // Create a box for the QR code - centered properly
+        const pageWidth = doc.page.width - 100; 
+        const qrCodeSize = 130;
+        const qrCodeX = (pageWidth / 2) + 50; 
+        const qrCodeY = doc.y + 60; // Position with good spacing after attendee info
+        
+        // Add price - directly above the QR code
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .text(`Price: $${parseFloat(ticket.event.price).toFixed(2)}`, 
+                 qrCodeX - 40, qrCodeY - 25, 
+                 { align: 'right' });
+        
+        // Draw QR code border
+        doc.rect(qrCodeX - qrCodeSize/2 - 5, qrCodeY, qrCodeSize + 10, qrCodeSize + 10)
+           .strokeColor(primaryColor)
+           .lineWidth(1)
+           .stroke();
+        
+        // Add branded QR code
+        doc.image(brandedQRBuffer, qrCodeX - qrCodeSize/2, qrCodeY + 5, { 
+            fit: [qrCodeSize, qrCodeSize]
+        });
+
+        // Add scan instructions below QR code
+        doc.fontSize(10)
+           .text('Scan this QR code at the event entrance', 
+                 qrCodeX - qrCodeSize, qrCodeY + qrCodeSize + 15, 
+                 { width: qrCodeSize * 2, align: 'center' });
+        
+        // Calculate the y position after QR code for instructions
+        const instructionsY = qrCodeY + qrCodeSize + 50;
+        
+        // Add ticket instructions
+        doc.fontSize(12)
+           .fillColor('#555')
+           .text('Instructions:', 50, instructionsY, { continued: false })
+           .fontSize(10)
+           .text('1. Please bring a printed copy of this ticket or show it on your mobile device.', { indent: 10 })
+           .text('2. Arrive at least 30 minutes before the event starts.', { indent: 10 })
+           .text('3. This ticket is valid for one-time entry only.', { indent: 10 })
+           .text('4. Please follow venue guidelines regarding prohibited items.', { indent: 10 });
+        
+        // Add footer with terms
+        const pageHeight = doc.page.height;
+        doc.fontSize(8)
+           .fillColor('#888')
+           .text('This ticket is non-refundable and non-transferable. By using this ticket, you agree to the terms and conditions.', 
+                 50, pageHeight - 80, 
+                 { align: 'center', width: doc.page.width - 100 });
+           
         doc.end();
 
         // Create email transporter

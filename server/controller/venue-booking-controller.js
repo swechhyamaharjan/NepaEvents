@@ -171,7 +171,7 @@ const sendReceiptEmail = async (email, receipt) => {
     // Primary brand color
     const primaryColor = '#ED4A43';
 
-    // Generate QR code
+    // Generate QR code data
     const qrData = JSON.stringify({
       organizer: receipt.organizer.fullName,
       venue: receipt.venue.name,
@@ -179,7 +179,41 @@ const sendReceiptEmail = async (email, receipt) => {
       transactionId: receipt.transactionId,
       paymentDate: new Date(),
     });
-    const qrCodeBuffer = await QRCode.toBuffer(qrData);
+    
+    // Create branded QR code with NepaEvents initials in black color
+    const qrCodeOptions = {
+      errorCorrectionLevel: 'H', // High error correction to allow for logo overlay
+      margin: 1,
+      color: {
+        dark: '#000000', 
+        light: '#FFFFFF' 
+      }
+    };
+    
+    // Generate the QR code as an image
+    const qrCodeBuffer = await QRCode.toBuffer(qrData, qrCodeOptions);
+    
+    // Create a canvas to overlay NepaEvents initials on the QR code
+    const { createCanvas, loadImage } = require('canvas');
+    const canvas = createCanvas(300, 300); // Size of the canvas
+    const ctx = canvas.getContext('2d');
+    
+    // Draw the QR code on the canvas
+    const qrImage = await loadImage(qrCodeBuffer);
+    ctx.drawImage(qrImage, 0, 0, 300, 300);
+    
+    // Add NepaEvents initials in the center
+    ctx.fillStyle = '#FFFFFF'; 
+    ctx.fillRect(115, 130, 70, 40); 
+    
+    ctx.font = 'bold 20px Arial';
+    ctx.fillStyle = '#000000'; // Black color for the text as requested
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('NE', 150, 150); // NE for NepaEvents initials
+    
+    // Convert canvas to buffer
+    const brandedQRBuffer = canvas.toBuffer('image/png');
 
     // Start writing to PDF
     doc.pipe(fs.createWriteStream(pdfPath));
@@ -257,10 +291,9 @@ const sendReceiptEmail = async (email, receipt) => {
     doc.fillColor(primaryColor).text(amountText, 450, yPos);
     yPos += 60; // Move cursor further for the next section
 
-
-    // QR Code section
+    // QR Code section with branded QR
     doc.fillColor('black').fontSize(12).font('Helvetica-Bold').text('SCAN FOR VERIFICATION', 50, yPos);
-    doc.image(qrCodeBuffer, 50, yPos + 20, { fit: [100, 100] });
+    doc.image(brandedQRBuffer, 50, yPos + 20, { fit: [100, 100] });
 
     // Thank you message
     doc.fontSize(10).font('Helvetica').text('This receipt serves as proof of payment for your venue booking.', 200, yPos + 30);
