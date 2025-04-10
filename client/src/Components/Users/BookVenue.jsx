@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import {
   FaMapMarkerAlt,FaUsers,FaBuilding,FaHeart,FaSearch,FaCalendarAlt,FaInfoCircle,FaTrashAlt
 } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export const BookVenue = () => {
   const [selectedVenue, setSelectedVenue] = useState(null);
@@ -191,11 +192,13 @@ export const BookVenue = () => {
                     </button>
                   </div>
                 </div>
-                <img
+                <Link to={`/venue/${venue._id}`} className="block">
+                <img 
                   src={`http://localhost:3000/${venue.image}`}
                   alt={venue.name}
                   className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
                 />
+                </Link>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
