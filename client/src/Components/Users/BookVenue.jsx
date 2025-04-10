@@ -1,16 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import {
-  FaMapMarkerAlt,
-  FaUsers,
-  FaBuilding,
-  FaHeart,
-  FaSearch,
-  FaCalendarAlt,
-  FaInfoCircle,
-  FaTrashAlt
+  FaMapMarkerAlt,FaUsers,FaBuilding,FaHeart,FaSearch,FaCalendarAlt,FaInfoCircle,FaTrashAlt
 } from "react-icons/fa";
 
 export const BookVenue = () => {
@@ -85,7 +77,6 @@ export const BookVenue = () => {
     setIsSubmitting(true);
 
     try {
-
       const formData = new FormData();
       formData.append("venue", selectedVenue._id);
       formData.append("title", bookingDetails.title);
@@ -94,7 +85,6 @@ export const BookVenue = () => {
       formData.append("date", bookingDetails.date);
       formData.append("artist", bookingDetails.artist);
       formData.append("ticketPrice", bookingDetails.price);
-
       formData.append("image", bookingDetails.image);
 
       console.log(bookingDetails.image)
