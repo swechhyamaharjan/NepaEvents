@@ -26,6 +26,7 @@ import { AuthProvider } from "./Context/AuthContext";
 import { ProtectedRoute } from "./Middleware/ProtectedRoutes"; // Import ProtectedRoute
 import AdminCategory from "./Components/Admin/AdminCategory";
 import Userlist from "./Components/Admin/Userlist";
+import { AdminPaymentTable } from "./Components/Admin/AdminPaymentTable";
 
 
 // Layout for Users
@@ -74,6 +75,8 @@ function App() {
             <Route path="/admin/events" element={<AdminLayout><AdminEventPage /></AdminLayout>} />
             <Route path="/admin/venues" element={<AdminLayout><AdminVenuePage /></AdminLayout>} />
             <Route path="/admin/category" element={<AdminLayout><AdminCategory /></AdminLayout>} />
+            <Route path="/admin/payment" element={<AdminLayout><AdminPaymentTable /></AdminLayout>} />
+
             
           </Route>
         </Routes>
