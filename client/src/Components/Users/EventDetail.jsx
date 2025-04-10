@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaArrowLeft, FaInfoCircle, FaFileAlt } from 'react-icons/fa';
 import axios from 'axios';
+import VenueLocationMap from '../VenueLocationMap';
 
 export const EventDetail = () => {
   const { id } = useParams();
@@ -84,8 +85,14 @@ export const EventDetail = () => {
               <div className="p-6">
                 {activeTab === 'description' && (
                   <div>
+                  <div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-4">About This Event</h2>
                     <p className="text-gray-700 leading-relaxed">{event.description}</p>
+                  </div>
+                  <div>
+                    {console.log(event)};
+                  <VenueLocationMap existingCoordinates={event.venue.locationCoordinates}/>
+                  </div>
                   </div>
                 )}
                 {activeTab === 'details' && (
