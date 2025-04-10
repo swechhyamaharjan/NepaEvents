@@ -58,7 +58,7 @@ export const AdminSidebar = () => {
           <span>Category</span>
         </NavLink>
         <NavLink
-          to="/admin/payments"
+          to="/admin/payment"
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
               isActive ? "bg-gray-800 text-[#ED4A43] font-medium" : "hover:bg-gray-800/70"
