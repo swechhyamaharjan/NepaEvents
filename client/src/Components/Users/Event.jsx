@@ -8,7 +8,83 @@ export const Event = () => {
   const [discount, setDiscount] = useState(0);
   const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
+  //for filtering
+  const [filters, setFilters] = useState({
+    sort: 'date',
+    date: 'all',
+    price: 'all',
+    type: 'all'
+  });
+
+  // Date calculation helpers
+  const isToday = (date) => {
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+  };
+
+  const isTomorrow = (date) => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return date.toDateString() === tomorrow.toDateString();
+  };
+
+  const isThisWeekend = (date) => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const daysUntilSaturday = (6 - dayOfWeek + 7) % 7;
+    const nextSaturday = new Date(today);
+    nextSaturday.setDate(today.getDate() + daysUntilSaturday);
+
+    const nextSunday = new Date(nextSaturday);
+    nextSunday.setDate(nextSaturday.getDate() + 1);
+
+    return date >= nextSaturday && date <= nextSunday;
+  };
+
+  const isNextWeek = (date) => {
+    const today = new Date();
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + ((1 + 7 - today.getDay()) % 7));
+    const nextSunday = new Date(nextMonday);
+    nextSunday.setDate(nextMonday.getDate() + 6);
+
+    return date >= nextMonday && date <= nextSunday;
+  };
+
+  // Filter and sort events
+  const filteredEvents = events.filter(event => {
+    const searchMatch = event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.venue?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const eventDate = new Date(event.date);
+    let dateMatch = true;
+    switch (filters.date) {
+      case 'today': dateMatch = isToday(eventDate); break;
+      case 'tomorrow': dateMatch = isTomorrow(eventDate); break;
+      case 'this weekend': dateMatch = isThisWeekend(eventDate); break;
+      case 'next week': dateMatch = isNextWeek(eventDate); break;
+      case 'all': default: dateMatch = true;
+    }
+
+    const priceMatch = filters.price === 'free' ? event.price === 0 :
+      filters.price === 'paid' ? event.price > 0 : true;
+
+    const typeMatch = filters.type === 'all' ? true : event.type === filters.type;
+
+    return searchMatch && dateMatch && priceMatch && typeMatch;
+  });
+
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    if (filters.sort === 'price') return a.price - b.price;
+    return new Date(a.date) - new Date(b.date);
+  });
+
+  const handleFilterChange = (filterName, value) => {
+    setFilters(prev => ({ ...prev, [filterName]: value }));
+  };
+
+
   const handleTicketChange = (eventId, count) => {
     setTicketCounts((prev) => ({ ...prev, [eventId]: count }));
   };
@@ -25,17 +101,17 @@ export const Event = () => {
     fetchEvent();
   }, []);
 
-  const handleBookEvent = async(eventId) => {
+  const handleBookEvent = async (eventId) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/event/buy', {eventId},
+      const response = await axios.post('http://localhost:3000/api/event/buy', { eventId },
         { withCredentials: true }
       )
-      console.log(response.data)
+      localStorage.setItem('eventId', eventId);
       if (!response.data.success) {
         throw new Error("Unable to book event");
       }
       window.open(response.data.url, '_blank');
-      
+
 
     } catch (error) {
       console.log(error)
@@ -45,19 +121,6 @@ export const Event = () => {
 
   const applyGroupDiscount = (ticketCount) => (ticketCount >= 5 ? 20 : 0);
 
-  // Filter events based on search term directly in the render
-  const filteredEvents = events.filter(event => {
-    if (searchTerm.trim() === "") return true; // Show all events when search is empty
-    
-    // Check if event title contains search term
-    const titleMatch = event.title?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Check if venue name contains search term
-    const venueMatch = event.venue?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Return true if either matches
-    return titleMatch || venueMatch;
-  });
 
   // Handler for search input changes
   const handleSearchChange = (e) => {
@@ -98,11 +161,25 @@ export const Event = () => {
                 <h3 className="text-lg font-semibold mb-3 text-gray-800">Sort By</h3>
                 <div className="space-y-2">
                   <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="sort" className="form-radio text-[#ED4A43] mr-2" />
+                    <input
+                      type="radio"
+                      name="sort"
+                      value="price"
+                      checked={filters.sort === 'price'}
+                      onChange={(e) => handleFilterChange('sort', e.target.value)}
+                      className="form-radio text-[#ED4A43] mr-2"
+                    />
                     <span>Price</span>
                   </label>
                   <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="sort" className="form-radio text-[#ED4A43] mr-2" defaultChecked />
+                    <input
+                      type="radio"
+                      name="sort"
+                      value="date"
+                      checked={filters.sort === 'date'}
+                      onChange={(e) => handleFilterChange('sort', e.target.value)}
+                      className="form-radio text-[#ED4A43] mr-2"
+                    />
                     <span>Date</span>
                   </label>
                 </div>
@@ -114,22 +191,19 @@ export const Event = () => {
                   Date
                 </h3>
                 <div className="space-y-2">
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="date" className="form-radio text-[#ED4A43] mr-2" />
-                    <span>Today</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="date" className="form-radio text-[#ED4A43] mr-2" defaultChecked />
-                    <span>Tomorrow</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="date" className="form-radio text-[#ED4A43] mr-2" />
-                    <span>This weekend</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="date" className="form-radio text-[#ED4A43] mr-2" />
-                    <span>Next Week</span>
-                  </label>
+                  {['today', 'tomorrow', 'this weekend', 'next week', 'all'].map((option) => (
+                    <label key={option} className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="date"
+                        value={option}
+                        checked={filters.date === option}
+                        onChange={(e) => handleFilterChange('date', e.target.value)}
+                        className="form-radio text-[#ED4A43] mr-2"
+                      />
+                      <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
@@ -139,44 +213,38 @@ export const Event = () => {
                   Price
                 </h3>
                 <div className="space-y-2">
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="price" className="form-radio text-[#ED4A43] mr-2" />
-                    <span>Free</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="price" className="form-radio text-[#ED4A43] mr-2" defaultChecked />
-                    <span>Paid</span>
-                  </label>
+                  {['all', 'free', 'paid'].map((option) => (
+                    <label key={option} className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="price"
+                        value={option}
+                        checked={filters.price === option}
+                        onChange={(e) => handleFilterChange('price', e.target.value)}
+                        className="form-radio text-[#ED4A43] mr-2"
+                      />
+                      <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
               <div className="pt-4">
                 <h3 className="text-lg font-semibold mb-3 text-gray-800">Event Type</h3>
                 <div className="space-y-2">
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="type" className="form-radio text-[#ED4A43] mr-2" />
-                    <span>Concert</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="type" className="form-radio text-[#ED4A43] mr-2" defaultChecked />
-                    <span>Sports</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="type" className="form-radio text-[#ED4A43] mr-2" />
-                    <span>Art Exhibition</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="type" className="form-radio text-[#ED4A43] mr-2" />
-                    <span>Standup Comedy</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="type" className="form-radio text-[#ED4A43] mr-2" />
-                    <span>Theatre</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input type="radio" name="type" className="form-radio text-[#ED4A43] mr-2" />
-                    <span>Parties</span>
-                  </label>
+                  {['all', 'concert', 'sports', 'exhibition', 'comedy', 'theatre', 'party'].map((option) => (
+                    <label key={option} className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="type"
+                        value={option}
+                        checked={filters.type === option}
+                        onChange={(e) => handleFilterChange('type', e.target.value)}
+                        className="form-radio text-[#ED4A43] mr-2"
+                      />
+                      <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
             </div>
@@ -184,9 +252,9 @@ export const Event = () => {
 
           {/* Events List */}
           <div className="md:col-span-9">
-            {filteredEvents.length > 0 ? (
+            {sortedEvents.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredEvents.map((event) => {
+                {sortedEvents.map((event) => {
                   const ticketCount = ticketCounts[event._id] || 1;
                   const groupDiscount = applyGroupDiscount(ticketCount);
                   const finalDiscount = Math.max(discount, groupDiscount);
@@ -215,7 +283,7 @@ export const Event = () => {
                         <div className="space-y-2 mb-4">
                           <div className="flex items-center text-gray-600">
                             <FaCalendarAlt className="text-[#ED4A43] mr-2" />
-                            <p>{event.date}</p>
+                            <p>{event.date.substring(0, 10)}</p>
                           </div>
                           <div className="flex items-center text-gray-600">
                             <FaMapMarkerAlt className="text-[#ED4A43] mr-2" />
@@ -245,7 +313,7 @@ export const Event = () => {
                           </div>
 
                           <button
-                          onClick={()=>handleBookEvent(event._id)} 
+                            onClick={() => handleBookEvent(event._id)}
                             className="w-full py-3 bg-[#ED4A43] hover:bg-[#D43C35] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center relative z-20"
                           >
                             <FaTicketAlt className="mr-2" />
