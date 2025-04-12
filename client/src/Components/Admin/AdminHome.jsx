@@ -1,14 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../Context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
 export const AdminHome = () => {
-const navigate = useNavigate();
-const {user} = useAuth();
+  const navigate = useNavigate();
+  const [totalEvents, setTotalEvents] = useState(null);
+  const [totalUsers, setTotalUsers] = useState(null);
+  const { user } = useAuth();
 
-// Logout function
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const usersResponse = await axios.get("http://localhost:3000/api/users/list", {
+          withCredentials: true,
+        });
+
+        const eventsResponse = await axios.get("http://localhost:3000/api/event", {
+          withCredentials: true,
+        });
+
+        setTotalEvents(eventsResponse.data.length);
+        setTotalUsers(usersResponse.data.length);
+      } catch (error) {
+        const errorMessage = error?.response?.data?.message || "Failed to fetch data.";
+        toast.error(errorMessage);
+        console.error("Error during fetching data:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+
+  // Logout function
   const handleLogout = async () => {
     try {
       await axios.post("http://localhost:3000/logout", {}, { withCredentials: true });
@@ -27,20 +53,20 @@ const {user} = useAuth();
     <div className="min-h-screen bg-gray-100 p-8 font-sans">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-grid-black/[0.02] bg-[size:30px_30px] pointer-events-none" />
-      
+
       {/* Admin Header */}
       <div className='w-full flex items-center justify-end pb-10'>
         <div className='mr-8 bg-white px-6 py-3 rounded-lg shadow-md'>
           <h2 className="text-gray-700 font-medium">Welcome, <span className="text-gray-900 font-bold">{user?.fullName}</span></h2>
         </div>
-        <button 
-          className='logoutbtn bg-[#ED4A43] text-white py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:bg-opacity-90 transition-all duration-300' 
+        <button
+          className='logoutbtn bg-[#ED4A43] text-white py-3 px-8 rounded-lg shadow-md hover:shadow-lg hover:bg-opacity-90 transition-all duration-300'
           onClick={handleLogout}
         >
           Logout
         </button>
       </div>
-      
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
         {/* Total Events */}
@@ -53,28 +79,30 @@ const {user} = useAuth();
               </svg>
             </div>
           </div>
-          <p className="text-6xl font-bold mt-4 text-gray-900">1</p>
+          <p className="text-6xl font-bold mt-4 text-gray-900">{totalEvents}</p>
           <div className="mt-4 h-1 w-full bg-gray-200 rounded-full">
             <div className="h-1 w-2/3 bg-[#ED4A43] rounded-full"></div>
           </div>
         </div>
-        
+
         {/* Total Users */}
         <div className="bg-white text-gray-800 p-8 rounded-lg shadow-md border-l-4 border-blue-500 hover:shadow-lg transition-all duration-300">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold uppercase tracking-wider">Total Users</h2>
+            <h2 className="text-2xl font-bold uppercase tracking-wider">
+              Total Users:
+            </h2>
             <div className="bg-blue-500 p-2 rounded-full">
               <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
               </svg>
             </div>
           </div>
-          <p className="text-6xl font-bold mt-4 text-gray-900">11</p>
+          <p className="text-6xl font-bold mt-4 text-gray-900">{totalUsers}</p>
           <div className="mt-4 h-1 w-full bg-gray-200 rounded-full">
             <div className="h-1 w-1/2 bg-blue-500 rounded-full"></div>
           </div>
         </div>
-        
+
         {/* Pending Payments */}
         <div className="bg-white text-gray-800 p-8 rounded-lg shadow-md border-l-4 border-amber-500 hover:shadow-lg transition-all duration-300">
           <div className="flex justify-between items-center">
@@ -86,7 +114,7 @@ const {user} = useAuth();
               </svg>
             </div>
           </div>
-          <p className="text-6xl font-bold mt-4 text-gray-900">2,000</p>
+          <p className="text-6xl font-bold mt-4 text-gray-900">20</p>
           <div className="mt-4 h-1 w-full bg-gray-200 rounded-full">
             <div className="h-1 w-3/4 bg-amber-500 rounded-full"></div>
           </div>

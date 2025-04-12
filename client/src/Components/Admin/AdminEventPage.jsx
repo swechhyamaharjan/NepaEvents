@@ -21,6 +21,9 @@ export const AdminEventPage = () => {
     image: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  // New state for delete confirmation modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState(null);
 
   // Fetch venues
   useEffect(() => {
@@ -169,22 +172,30 @@ export const AdminEventPage = () => {
     setShowModal(true);
   };
 
-  // Delete Event
-  const handleDeleteEvent = async (eventId) => {
-    if (window.confirm("Are you sure you want to delete this event?")) {
-      setIsLoading(true);
-      try {
-        await axios.delete(`http://localhost:3000/api/event/${eventId}`, {
-          withCredentials: true
-        });
-        toast.success("Event deleted successfully!");
-        fetchEvents(); // Refresh the events list
-      } catch (error) {
-        console.log(error);
-        toast.error("Failed to delete event");
-      } finally {
-        setIsLoading(false);
-      }
+  // Modified: Show delete confirmation modal instead of window.confirm
+  const handleDeleteEvent = (eventId) => {
+    setEventToDelete(eventId);
+    setShowDeleteModal(true);
+  };
+
+  // Confirm and execute event deletion
+  const confirmDeleteEvent = async () => {
+    if (!eventToDelete) return;
+    
+    setIsLoading(true);
+    try {
+      await axios.delete(`http://localhost:3000/api/event/${eventToDelete}`, {
+        withCredentials: true
+      });
+      toast.success("Event deleted successfully!");
+      fetchEvents(); // Refresh the events list
+      setShowDeleteModal(false);
+      setEventToDelete(null);
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to delete event");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -599,6 +610,39 @@ export const AdminEventPage = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+            <div className="text-center mb-6">
+              <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaTrashAlt className="text-[#ED4A43] text-xl" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">Delete Event</h3>
+              <p className="text-gray-600 mt-2">Are you sure you want to delete this event? This action cannot be undone.</p>
+            </div>
+            
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setEventToDelete(null);
+                }}
+                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteEvent}
+                className="px-6 py-3 bg-[#ED4A43] text-white rounded-lg hover:bg-[#D43C35] transition-colors font-medium flex items-center"
+              >
+                <FaTrashAlt className="mr-2" /> Delete Event
+              </button>
+            </div>
           </div>
         </div>
       )}
