@@ -80,9 +80,16 @@ const findEventById = async (req, res) => {
 const buyEventTicket = async (req, res) => {
     try {
         const { eventId } = req.body;
-
-        const event = await Event.findById(eventId).populate("venue organizer");
-        if (!event) return res.status(404).json({ message: "Event not found!" });
+        const event = await Event.findById(eventId)
+            .populate("venue")
+            .populate("organizer");
+            
+        if (!event) {
+            return res.status(404).json({ 
+                success: false,
+                message: "Event not found!" 
+            });
+        }
 
         const totalAmount = event.price;
         const eventImage = event.image ? `http://localhost:3000/${event.image.replace(/\\/g, "/")}` : null;
@@ -91,30 +98,36 @@ const buyEventTicket = async (req, res) => {
             payment_method_types: ["card"],
             mode: "payment",
             success_url: `http://localhost:5173/event-payment-success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `http://localhost:5173/payment-failure`,
+            cancel_url: `http://localhost:5173/event-payment-failure`,
             customer_email: req.user.user.email,
-            line_items: [
-                {
-                    price_data: {
-                        currency: "usd",
-                        product_data: {
-                            name: `Event Ticket: ${event.title}`,
-                            images: eventImage ? [eventImage] : [],
-                        },
-                        unit_amount: totalAmount * 100, // Stripe uses cents
+            line_items: [{
+                price_data: {
+                    currency: "usd",
+                    product_data: {
+                        name: `Event Ticket: ${event.title}`,
+                        images: eventImage ? [eventImage] : [],
                     },
-                    quantity: 1,
+                    unit_amount: totalAmount * 100,
                 },
-            ],
+                quantity: 1,
+            }],
             metadata: {
                 eventId: event._id.toString(),
                 userId: req.user.user._id.toString()
             },
-        })
-        res.status(200).json({ success: true, url: session.url });
+        });
+        
+        res.status(200).json({ 
+            success: true, 
+            url: session.url 
+        });
     } catch (error) {
         console.error("Error creating payment session:", error);
-        res.status(500).json({ message: "Error creating payment session", error: error.message });
+        res.status(500).json({ 
+            success: false,
+            message: "Error creating payment session", 
+            error: error.message 
+        });
     }
 };
 
@@ -362,9 +375,8 @@ const verifyEventPayment = async (req, res) => {
             const ticketCode = `TICKET-${Math.random().toString(36).substring(2, 15)}`; // Generate a unique ticket code
 
             // Creating Ticket
-
             const newTicket = new Ticket({
-                user: eventbuying.organizer._id,
+                user: req.user.user._id,
                 event: eventbuying._id,
                 quantity: 1,
                 price: eventbuying.price,
@@ -393,4 +405,81 @@ const verifyEventPayment = async (req, res) => {
     }
 };
 
-module.exports = { createEvent, getAllEvents, updateEvent, deleteEvent, findEventById, buyEventTicket, verifyEventPayment};
+const bookingOverAllDetail = async (req, res) => {
+    try {
+      const userId = req.user.user._id;
+  
+      // Find all events organized by the user
+      const userEvents = await Event.find({ organizer: userId });
+  
+      if (userEvents.length === 0) {
+        return res.status(200).json({
+          events: [],
+          totalSold: 0,
+          totalRevenue: 0
+        });
+      }
+  
+      const eventIds = userEvents.map(event => event._id);
+  
+      // Aggregate ticket data for these events
+      const ticketStats = await Ticket.aggregate([
+        {
+          $match: {
+            event: { $in: eventIds }
+          }
+        },
+        {
+          $group: {
+            _id: "$event",
+            totalSold: {
+              $sum: { $ifNull: ["$quantity", 0] }
+            },
+            totalRevenue: {
+              $sum: {
+                $multiply: [
+                  { $ifNull: ["$quantity", 0] },
+                  "$price"
+                ]
+              }
+            }
+          }
+        }
+      ]);
+  
+      // Create a map for quick lookup of ticket stats
+      const statsMap = new Map();
+      ticketStats.forEach(stat => {
+        statsMap.set(stat._id.toString(), {
+          totalSold: stat.totalSold,
+          totalRevenue: stat.totalRevenue
+        });
+      });
+  
+      // Enrich events with ticket stats
+      const eventsWithStats = userEvents.map(event => {
+        const stat = statsMap.get(event._id.toString()) || { totalSold: 0, totalRevenue: 0 };
+        return {
+          ...event.toObject(),
+          totalSold: stat.totalSold,
+          totalRevenue: stat.totalRevenue
+        };
+      });
+  
+      // Calculate overall totals
+      const totalSold = ticketStats.reduce((sum, stat) => sum + stat.totalSold, 0);
+      const totalRevenue = ticketStats.reduce((sum, stat) => sum + stat.totalRevenue, 0);
+  
+      res.status(200).json({
+        events: eventsWithStats,
+        totalSold,
+        totalRevenue
+      });
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  };
+
+module.exports = { createEvent, getAllEvents, updateEvent, deleteEvent, findEventById, buyEventTicket, verifyEventPayment, bookingOverAllDetail };
