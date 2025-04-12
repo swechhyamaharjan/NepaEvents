@@ -1,5 +1,5 @@
 const express = require('express');
-const {registerUser, loginUser, logoutUser, getUser, getAllUsers, sendOtp, verifyOtp, resetPassword} = require('../controller/user-controller');
+const {registerUser, loginUser, logoutUser, getUser, getAllUsers, sendOtp, verifyOtp, resetPassword, updateUserProfile} = require('../controller/user-controller');
 const verifyToken = require('../middleware/verify-token');
 
 const router = express.Router();
@@ -13,4 +13,5 @@ router.post("/sendOtp", sendOtp)
 router.post("/verifyOtp", verifyOtp)
 router.post("/resetPassword", resetPassword)
 
+router.put("/updateProfile/:id", verifyToken, updateUserProfile )
 module.exports = router;
