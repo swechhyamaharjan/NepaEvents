@@ -14,6 +14,4 @@ const getTicketById = async (req, res) => {
 }
 
 
-
-
 module.exports = { getTicketById };

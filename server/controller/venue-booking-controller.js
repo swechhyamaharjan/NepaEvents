@@ -369,7 +369,7 @@ const verifyPayment = async (req, res) => {
 
       booking.paymentStatus = "paid";
       await booking.save();
-
+console.log(booking);
       //Create Event
       const newEvent = new Event({
         title: booking.eventDetails.title,

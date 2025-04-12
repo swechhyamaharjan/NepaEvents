@@ -1,5 +1,5 @@
 const express = require("express");
-const { createEvent, getAllEvents, updateEvent, deleteEvent, findEventById, buyEventTicket, verifyEventPayment } = require('../controller/event-controller');
+const { createEvent, getAllEvents, updateEvent, deleteEvent, findEventById, buyEventTicket, verifyEventPayment, bookingOverAllDetail } = require('../controller/event-controller');
 const verifyToken = require("../middleware/verify-token");
 const multer = require("multer");
 const path = require("path");
@@ -29,6 +29,7 @@ eventRouter.get('/', getAllEvents)
 eventRouter.patch('/:eventId', updateEvent)
 eventRouter.get('/:id', findEventById)
 eventRouter.delete('/:id', deleteEvent)
+eventRouter.get('/overview', bookingOverAllDetail);
 
 // Stripe Payment
 eventRouter.post("/buy", verifyToken, buyEventTicket);
