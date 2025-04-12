@@ -122,6 +122,33 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const updateUserProfile = async (req, res) => {
+  const { id } = req.params;
+  const { fullName, email, password } = req.body;
+  console.log(req.body);
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update the user fields
+    user.fullName = fullName || user.fullName;
+    user.email = email || user.email;
+    
+    if (password) {
+      user.password = await bcrypt.hash(password, 10); // hashing the password 
+    }
+    await user.save();
+
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+};
+
+
 
 const sendOtp = async (req, res) => {
   try {
@@ -207,7 +234,7 @@ const resetPassword = async (req, res) => {
   }
 }
 
-module.exports = { registerUser, loginUser, logoutUser, getUser, getAllUsers, resetPassword, sendOtp, verifyOtp };
+module.exports = { registerUser, loginUser, logoutUser, getUser, getAllUsers, resetPassword, sendOtp, verifyOtp, updateUserProfile };
 
 
 

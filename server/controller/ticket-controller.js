@@ -13,24 +13,7 @@ const getTicketById = async (req, res) => {
   }
 }
 
-const buyTicket = async (req, res) => {
-  const { eventId, quantity } = req.body;
-  const user = req.user.user.id;
-
-  if (!quantity || quantity < 1) {
-    return res.status(400).json({ success: false, message: "Ticket Quantity Must Be Atleast 1" });
-  }
-
-  const event = await Event.findById(eventId);
-  if (!event) {
-    return res.status(404).json({ success: false, message: "No Event Found" });
-  }
-
-  const ticketPrice = event.price * quantity;
-
-
-}
 
 
 
-module.exports = { buyTicket, getTicketById };
+module.exports = { getTicketById };
