@@ -28,7 +28,7 @@ export const NavBar = () => {
       await axios.post("http://localhost:3000/logout", {}, { withCredentials: true });
       localStorage.clear();
       toast.success("Logged out successfully");
-      setUser(null);  
+      setUser(null);
       setDropdownOpen(false);
       navigate("/login");
     } catch (error) {
@@ -59,9 +59,8 @@ export const NavBar = () => {
             ].map((link) => (
               <button
                 key={link.name}
-                className={`text-sm font-medium transition-all duration-200 relative ${
-                  isActive(link.path) ? "text-[#ED4A43] font-semibold" : "text-gray-600 hover:text-[#ED4A43]"
-                }`}
+                className={`text-sm font-medium transition-all duration-200 relative ${isActive(link.path) ? "text-[#ED4A43] font-semibold" : "text-gray-600 hover:text-[#ED4A43]"
+                  }`}
                 onClick={() => navigate(link.path)}
               >
                 {link.name}
@@ -76,9 +75,8 @@ export const NavBar = () => {
           <div className="flex items-center space-x-5">
             {/* Favorite Icon */}
             <button
-              className={`transition-colors relative ${
-                isActive("/favourites") ? "text-[#ED4A43]" : "text-gray-500 hover:text-[#ED4A43]"
-              }`}
+              className={`transition-colors relative ${isActive("/favourites") ? "text-[#ED4A43]" : "text-gray-500 hover:text-[#ED4A43]"
+                }`}
               onClick={() => navigate("/favourites")}
             >
               <FiHeart size={20} />
@@ -86,9 +84,8 @@ export const NavBar = () => {
 
             {/* Notifications */}
             <button
-              className={`transition-colors relative ${
-                isActive("/notifications") ? "text-[#ED4A43]" : "text-gray-500 hover:text-[#ED4A43]"
-              }`}
+              className={`transition-colors relative ${isActive("/notifications") ? "text-[#ED4A43]" : "text-gray-500 hover:text-[#ED4A43]"
+                }`}
               onClick={() => navigate("/notifications")}
             >
               <FaBell size={20} />
@@ -99,11 +96,10 @@ export const NavBar = () => {
 
             {/* My Bookings Button */}
             <button
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 hover:scale-105 font-medium ${
-                isActive("/myBookings")
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 hover:scale-105 font-medium ${isActive("/myBookings")
                   ? "bg-[#D43C35] text-white"
                   : "bg-gradient-to-r from-[#ED4A43] to-[#FF6B64] text-white hover:from-[#FF6B64] hover:to-[#ED4A43]"
-              }`}
+                }`}
               onClick={() => navigate("/myBookings")}
             >
               <FaTicketAlt className="text-white" size={16} />
@@ -114,9 +110,8 @@ export const NavBar = () => {
             {user ? (
               <div className="relative">
                 <button
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
-                    isActive("/editprofile") ? "bg-[#D43C35] text-white" : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
-                  }`}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${isActive("/editprofile") ? "bg-[#D43C35] text-white" : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
+                    }`}
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
                   <span className="bg-[#4CAF50] text-white font-medium rounded-full w-8 h-8 flex items-center justify-center">
@@ -139,27 +134,6 @@ export const NavBar = () => {
                       Edit Profile
                     </button>
 
-                    <button
-                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        navigate("/settings");
-                      }}
-                    >
-                      <FaCog className="mr-2 text-blue-600" />
-                      Settings
-                    </button>
-
-                    <button
-                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        navigate("/history");
-                      }}
-                    >
-                      <FaHistory className="mr-2 text-yellow-600" />
-                      History
-                    </button>
 
                     <button
                       className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-gray-100"
