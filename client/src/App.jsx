@@ -27,6 +27,9 @@ import { ProtectedRoute } from "./Middleware/ProtectedRoutes"; // Import Protect
 import AdminCategory from "./Components/Admin/AdminCategory";
 import Userlist from "./Components/Admin/Userlist";
 import { AdminPaymentTable } from "./Components/Admin/AdminPaymentTable";
+import EventPaymentSuccess from "./Components/Users/EventPaymentSuccess";
+import EventPaymentFailure from "./Components/Users/EventPaymentFailure";
+import EventRevenue from "./Components/Users/EventRevenue";
 
 
 // Layout for Users
@@ -65,8 +68,11 @@ function App() {
           <Route path="/favourites" element={<UserLayout><Favourites /></UserLayout>} />
           <Route path="/editprofile" element={<UserLayout><EditProfile /></UserLayout>} />
           <Route path="/notifications" element={<UserLayout><Notifications /></UserLayout>} />
+          <Route path="/eventRevenue" element={<UserLayout><EventRevenue /></UserLayout>} />
           <Route path="/payment-success" element={<UserLayout><PaymentSuccess /></UserLayout>} />
           <Route path="/payment-failure" element={<UserLayout><PaymentFailure/></UserLayout>} />
+          <Route path="/event-payment-success" element={<UserLayout><EventPaymentSuccess /></UserLayout>} />
+          <Route path="/event-payment-failure" element={<UserLayout><EventPaymentFailure/></UserLayout>} />
           <Route path="/admin/userlist" element={<AdminLayout><Userlist /></AdminLayout>} />
 
           {/* Protected Admin Routes */}
