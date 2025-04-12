@@ -7,6 +7,8 @@ export const Event = () => {
   const [ticketCounts, setTicketCounts] = useState({});
   const [discount, setDiscount] = useState(0);
   const [events, setEvents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  
   const handleTicketChange = (eventId, count) => {
     setTicketCounts((prev) => ({ ...prev, [eventId]: count }));
   };
@@ -21,9 +23,46 @@ export const Event = () => {
       }
     }
     fetchEvent();
-  }, [])
+  }, []);
+
+  const handleBookEvent = async(eventId) => {
+    try {
+      const response = await axios.post('http://localhost:3000/api/event/buy', {eventId},
+        { withCredentials: true }
+      )
+      console.log(response.data)
+      if (!response.data.success) {
+        throw new Error("Unable to book event");
+      }
+      window.open(response.data.url, '_blank');
+      
+
+    } catch (error) {
+      console.log(error)
+    }
+
+  }
 
   const applyGroupDiscount = (ticketCount) => (ticketCount >= 5 ? 20 : 0);
+
+  // Filter events based on search term directly in the render
+  const filteredEvents = events.filter(event => {
+    if (searchTerm.trim() === "") return true; // Show all events when search is empty
+    
+    // Check if event title contains search term
+    const titleMatch = event.title?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Check if venue name contains search term
+    const venueMatch = event.venue?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Return true if either matches
+    return titleMatch || venueMatch;
+  });
+
+  // Handler for search input changes
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
   return (
     <div className="bg-gray-50 py-12 px-4 md:px-12 lg:px-20 min-h-screen">
@@ -45,7 +84,9 @@ export const Event = () => {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search events..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
                   className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:border-transparent"
                 />
                 <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
@@ -142,78 +183,87 @@ export const Event = () => {
           </div>
 
           {/* Events List */}
-          <div className="md:col-span-9 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event) => {
-              const ticketCount = ticketCounts[event._id] || 1;
-              const groupDiscount = applyGroupDiscount(ticketCount);
-              const finalDiscount = Math.max(discount, groupDiscount);
-              const totalPrice = ticketCount * event.price * (1 - finalDiscount / 100);
+          <div className="md:col-span-9">
+            {filteredEvents.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredEvents.map((event) => {
+                  const ticketCount = ticketCounts[event._id] || 1;
+                  const groupDiscount = applyGroupDiscount(ticketCount);
+                  const finalDiscount = Math.max(discount, groupDiscount);
+                  const totalPrice = ticketCount * event.price * (1 - finalDiscount / 100);
 
-              return (
-                <div key={event._id} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 relative group">
-                  <Link to={`/event/${event._id}`} className="absolute inset-0 z-10">
-                    <span className="sr-only">View details for {event.title}</span>
-                  </Link>
-
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={`http://localhost:3000/${event.image}`}
-                      alt={event.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
-
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-[#ED4A43] transition-colors duration-300">
-                      {event.title}
-                    </h3>
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-gray-600">
-                        <FaCalendarAlt className="text-[#ED4A43] mr-2" />
-                        <p>{event.date}</p>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FaMapMarkerAlt className="text-[#ED4A43] mr-2" />
-                        <p>{event?.venue?.name}</p>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-gray-100">
-                      <div className="flex items-center justify-between mb-3">
-                        <label className="font-medium text-gray-700">Tickets:</label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={ticketCount}
-                          onChange={(e) => handleTicketChange(event._id, parseInt(e.target.value) || 1)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-20 px-3 py-2 border border-gray-200 rounded-md text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:border-transparent relative z-20"
-                        />
-                      </div>
-
-                      {/* Updated price display */}
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="font-medium text-gray-700">Total:</span>
-                        <span className="text-lg font-bold text-[#ED4A43]">
-                          ${totalPrice.toFixed(2)}
-                        </span>
-                      </div>
-
-                      <Link
-                        to={`/event/${event._id}`}
-                        className="w-full py-3 bg-[#ED4A43] hover:bg-[#D43C35] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center relative z-20"
-                      >
-                        <FaTicketAlt className="mr-2" />
-                        Book Now
+                  return (
+                    <div key={event._id} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 relative group">
+                      <Link to={`/event/${event._id}`} className="absolute inset-0 z-10">
+                        <span className="sr-only">View details for {event.title}</span>
                       </Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
 
+                      <div className="relative h-48 overflow-hidden">
+                        <img
+                          src={`http://localhost:3000/${event.image}`}
+                          alt={event.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </div>
+
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-[#ED4A43] transition-colors duration-300">
+                          {event.title}
+                        </h3>
+
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center text-gray-600">
+                            <FaCalendarAlt className="text-[#ED4A43] mr-2" />
+                            <p>{event.date}</p>
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <FaMapMarkerAlt className="text-[#ED4A43] mr-2" />
+                            <p>{event?.venue?.name}</p>
+                          </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-100">
+                          <div className="flex items-center justify-between mb-3">
+                            <label className="font-medium text-gray-700">Tickets:</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={ticketCount}
+                              onChange={(e) => handleTicketChange(event._id, parseInt(e.target.value) || 1)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="w-20 px-3 py-2 border border-gray-200 rounded-md text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-[#ED4A43] focus:border-transparent relative z-20"
+                            />
+                          </div>
+
+                          {/* Updated price display */}
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="font-medium text-gray-700">Total:</span>
+                            <span className="text-lg font-bold text-[#ED4A43]">
+                              ${totalPrice.toFixed(2)}
+                            </span>
+                          </div>
+
+                          <button
+                          onClick={()=>handleBookEvent(event._id)} 
+                            className="w-full py-3 bg-[#ED4A43] hover:bg-[#D43C35] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center relative z-20"
+                          >
+                            <FaTicketAlt className="mr-2" />
+                            Book Now
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-md">
+                <FaSearch className="text-5xl text-gray-300 mb-4" />
+                <h3 className="text-xl font-bold text-gray-700">No events found</h3>
+                <p className="text-gray-500 mt-2">Try changing your search criteria</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
