@@ -110,18 +110,19 @@ const MyBooking = () => {
                     </div>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${getStatusColor(booking?.status)}`}>
                       <span className="mr-1">{getStatusIcon(booking?.status)}</span>
-                      {booking?.status || 'Unknown Status'}
+
+                      {booking?.paymentStatus === "paid" ? "Venue Booked" : booking?.status || 'Unknown Status'}
                     </span>
                   </div>
                   <div className="mt-4 flex justify-end gap-2">
-                    {booking?.status === 'approved' && (
+                    {booking?.status === 'approved' && booking?.paymentStatus === 'pending' ? (
                       <button
                         className="px-4 py-2 text-sm bg-[#ED4A43] text-white rounded hover:bg-red-600"
                         onClick={() => handleStripePayment(booking?._id)}
                       >
                         Pay Now
                       </button>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </div>
