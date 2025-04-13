@@ -1,4 +1,5 @@
 const Event = require('../models/event-model');
+const User = require('../models/user-model');
 const { Ticket } = require('../models/ticket-model');
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const fs = require("fs");
@@ -482,4 +483,74 @@ const bookingOverAllDetail = async (req, res) => {
     }
   };
 
-module.exports = { createEvent, getAllEvents, updateEvent, deleteEvent, findEventById, buyEventTicket, verifyEventPayment, bookingOverAllDetail };
+  // Add event to favorites
+  const addFavoriteEvent = async (req, res) => {
+      try {
+          const eventId = req.params.id;
+          const userId = req.user.user._id;; 
+    
+     // Check if event exists
+     const event = await Event.findById(eventId);
+     if (!event) {
+         return res.status(404).json({ message: 'Event not found' });
+     }
+  
+     // Add to favorites
+     const user = await User.findByIdAndUpdate(
+         userId,
+         { $addToSet: { favoriteEvents: eventId } },
+         { new: true }
+     ).populate('favoriteEvents');
+  
+     res.status(200).json({
+         success: true,
+         message: 'Event added to favorites',
+         favoriteEvents: user.favoriteEvents
+     });
+  } catch (error) {
+     console.error('Error adding favorite event', error);
+     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+  };
+  
+    // Remove event from favorites
+  const removeFavoriteEvent = async (req, res) => {
+      try {
+        const eventId = req.params.id;
+          const userId = req.user.user._id;; 
+    
+        const user = await User.findByIdAndUpdate(
+          userId,
+          { $pull: { favoriteEvents: eventId } },
+          { new: true }
+        ).populate('favoriteEvents');
+    
+        res.status(200).json({
+          success: true,
+          message: 'Event removed from favorites',
+          favoriteEvents: user.favoriteEvents
+        });
+      } catch (error) {
+        console.error('Error removing favorite event:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+      }
+    };
+  
+    // Get user's favorite events
+  const getFavoriteEvents = async (req, res) => {
+      try {
+        const userId = req.user.user._id;; 
+    
+        const user = await User.findById(userId).populate('favoriteEvents');
+        if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+        }
+    
+        res.status(200).json(user.favoriteEvents);
+      } catch (error) {
+        console.error('Error getting favorite events:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+      }
+    };
+
+module.exports = { createEvent, getAllEvents, updateEvent, deleteEvent, findEventById, buyEventTicket, verifyEventPayment, bookingOverAllDetail, addFavoriteEvent, removeFavoriteEvent, getFavoriteEvents };
