@@ -26,6 +26,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  favoriteVenues: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  }],
+  favoriteEvents: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Event'
+  }],
   otpExpiresAt: { type: Date },
   createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });
