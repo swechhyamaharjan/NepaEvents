@@ -17,6 +17,7 @@ export const BookVenue = () => {
   const [categories, setCategories] = useState(null);
   const [venues, setVenues] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
+   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [bookingDetails, setBookingDetails] = useState({
     title: "",
     description: "",
@@ -139,13 +140,40 @@ export const BookVenue = () => {
     setIsModalOpen(true);
   };
 
-  const toggleFavorite = (venueId) => {
-    if (favorites.includes(venueId)) {
-      setFavorites(favorites.filter(id => id !== venueId));
-    } else {
-      setFavorites([...favorites, venueId]);
+  const toggleFavorite = async (venueId) => {
+    try {
+      if (favorites.includes(venueId)) {
+        await axios.delete(`http://localhost:3000/api/venue/${venueId}/favorite`, {
+          withCredentials: true
+        });
+        setFavorites(favorites.filter(id => id !== venueId));
+      } else {
+        await axios.post(`http://localhost:3000/api/venue/${venueId}/favorite`, {}, {
+          withCredentials: true
+        });
+        setFavorites([...favorites, venueId]);
+      }
+    } catch (error) {
+      console.error("Error updating favorites:", error);
+      toast.error("Failed to update favorites");
     }
   };
+  useEffect(() => {
+    async function fetchFavorites() {
+      try {
+        const response = await axios.get('http://localhost:3000/api/venue/user/favorites', {
+          withCredentials: true
+        });
+        setFavorites(response.data.map(venue => venue._id));
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      }
+    }
+    
+    if (isLoggedIn) {
+      fetchFavorites();
+    }
+  }, [isLoggedIn]);
 
   const filteredVenues = venues.filter(venue =>
     venue.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
