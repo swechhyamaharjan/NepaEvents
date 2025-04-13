@@ -1,5 +1,6 @@
 const express = require("express");
-const { createVenue, getAllVenues, updateVenue, deleteVenue, getVenueById } = require('../controller/venue-controller');
+const { createVenue, getAllVenues, updateVenue, deleteVenue, getVenueById, addFavoriteVenue,removeFavoriteVenue, getFavoriteVenues } = require('../controller/venue-controller');
+const verifyToken = require("../middleware/verify-token");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -28,6 +29,10 @@ venueRouter.get('/', getAllVenues)
 venueRouter.patch('/:venueId', upload.single("image"), updateVenue)
 venueRouter.delete('/:id', deleteVenue)
 venueRouter.get('/:id', getVenueById)
+
+venueRouter.post('/:id/favorite', verifyToken, addFavoriteVenue);
+venueRouter.delete('/:id/favorite', verifyToken, removeFavoriteVenue);
+venueRouter.get('/user/favorites', verifyToken, getFavoriteVenues);
 
 venueRouter.post('/bookVenue',)
 module.exports = venueRouter;
