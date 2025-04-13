@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FiHeart, FiCalendar, FiMapPin, FiClock, FiTrash2 } from "react-icons/fi";
 import { FaBuilding } from "react-icons/fa";
 import { useAuth } from "../../Context/AuthContext";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 const Favourites = () => {
   const navigate = useNavigate();
@@ -14,72 +16,6 @@ const Favourites = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeCardId, setActiveCardId] = useState(null);
 
-  // Simulated data fetch - replace with your actual API calls
-  useEffect(() => {
-    if (isLoggedIn) {
-      // Fetch user's favourite events and venues
-      setTimeout(() => {
-        setFavouriteEvents([
-          {
-            id: 1,
-            title: "Music Festival 2025",
-            date: "April 10, 2025",
-            time: "4:00 PM",
-            location: "Kathmandu, Nepal",
-            image: "https://via.placeholder.com/300x180",
-            price: "Rs. 1500",
-            category: "Music"
-          },
-          {
-            id: 2,
-            title: "Tech Conference 2025",
-            date: "May 15, 2025",
-            time: "10:00 AM",
-            location: "Pokhara, Nepal",
-            image: "https://via.placeholder.com/300x180",
-            price: "Rs. 2000",
-            category: "Technology"
-          },
-          {
-            id: 3,
-            title: "Food Festival",
-            date: "June 5, 2025",
-            time: "11:00 AM",
-            location: "Bhaktapur, Nepal",
-            image: "https://via.placeholder.com/300x180",
-            price: "Rs. 500",
-            category: "Food"
-          }
-        ]);
-        
-        setFavouriteVenues([
-          {
-            id: 1,
-            name: "Heritage Garden",
-            location: "Kathmandu, Nepal",
-            capacity: "500 people",
-            image: "https://via.placeholder.com/300x180",
-            price: "Rs. 25,000",
-            type: "Outdoor"
-          },
-          {
-            id: 2,
-            name: "Royal Conference Center",
-            location: "Lalitpur, Nepal",
-            capacity: "1000 people",
-            image: "https://via.placeholder.com/300x180",
-            price: "Rs. 50,000",
-            type: "Indoor"
-          }
-        ]);
-        
-        setIsLoading(false);
-      }, 800);
-    } else {
-      setIsLoading(false);
-    }
-  }, [isLoggedIn]);
-
   // Check URL params for active tab on component mount
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -89,14 +25,62 @@ const Favourites = () => {
     }
   }, [location]);
 
-  const removeFavouriteEvent = (id) => {
-    setFavouriteEvents(favouriteEvents.filter(event => event.id !== id));
-    // Here you would also make an API call to remove from favorites in the backend
+  // Fetch favorites based on active tab
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!isLoggedIn) {
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        if (activeTab === "events") {
+          const response = await axios.get('http://localhost:3000/api/event/user/favorites', {
+            withCredentials: true
+          });
+          setFavouriteEvents(response.data);
+        } else {
+          const response = await axios.get('http://localhost:3000/api/venue/user/favorites', {
+            withCredentials: true
+          });
+          setFavouriteVenues(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+        toast.error("Failed to load favorites");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFavorites();
+  }, [isLoggedIn, activeTab]);
+
+  const removeFavouriteEvent = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/event/${id}/favorite`, {
+        withCredentials: true
+      });
+      setFavouriteEvents(favouriteEvents.filter(event => event._id !== id));
+      toast.success("Removed from favorites");
+    } catch (error) {
+      console.error("Error removing favorite event:", error);
+      toast.error("Failed to remove from favorites");
+    }
   };
 
-  const removeFavouriteVenue = (id) => {
-    setFavouriteVenues(favouriteVenues.filter(venue => venue.id !== id));
-    // Here you would also make an API call to remove from favorites in the backend
+  const removeFavouriteVenue = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/venue/${id}/favorite`, {
+        withCredentials: true
+      });
+      setFavouriteVenues(favouriteVenues.filter(venue => venue._id !== id));
+      toast.success("Removed from favorites");
+    } catch (error) {
+      console.error("Error removing favorite venue:", error);
+      toast.error("Failed to remove from favorites");
+    }
   };
 
   const handleCardClick = (id) => {
@@ -189,27 +173,29 @@ const Favourites = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {favouriteEvents.map((event) => (
                 <div 
-                  key={event.id} 
+                  key={event._id} 
                   className={`bg-white rounded-lg overflow-hidden shadow-md transition-all duration-200 ${
-                    activeCardId === event.id 
+                    activeCardId === event._id 
                       ? 'scale-98 shadow-inner bg-gray-50' 
                       : 'hover:shadow-lg'
                   }`}
-                  onClick={() => handleCardClick(event.id)}
+                  onClick={() => handleCardClick(event._id)}
                 >
                   <div className="relative">
                     <img 
-                      src={event.image} 
+                      src={`http://localhost:3000/${event.image}`} 
                       alt={event.title} 
                       className="w-full h-48 object-cover"
                     />
-                    <span className="absolute top-3 right-3 bg-white py-1 px-3 rounded-full text-sm font-medium text-gray-700">
-                      {event.category}
-                    </span>
+                    {event.category && (
+                      <span className="absolute top-3 right-3 bg-white py-1 px-3 rounded-full text-sm font-medium text-gray-700">
+                        {event.category}
+                      </span>
+                    )}
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        removeFavouriteEvent(event.id);
+                        removeFavouriteEvent(event._id);
                       }}
                       className="absolute top-3 left-3 bg-white p-2 rounded-full text-[#ED4A43] hover:bg-gray-100 active:bg-gray-200 transition-colors"
                     >
@@ -220,22 +206,28 @@ const Favourites = () => {
                     <h3 className="text-lg font-bold text-gray-800 mb-2">{event.title}</h3>
                     <div className="flex items-center text-gray-500 mb-2">
                       <FiCalendar className="mr-2" />
-                      <span>{event.date}</span>
+                      <span>{new Date(event.date).toLocaleDateString()}</span>
                     </div>
-                    <div className="flex items-center text-gray-500 mb-2">
-                      <FiClock className="mr-2" />
-                      <span>{event.time}</span>
-                    </div>
+                    {event.time && (
+                      <div className="flex items-center text-gray-500 mb-2">
+                        <FiClock className="mr-2" />
+                        <span>{event.time}</span>
+                      </div>
+                    )}
                     <div className="flex items-center text-gray-500 mb-4">
                       <FiMapPin className="mr-2" />
-                      <span>{event.location}</span>
+                      <span>{event.location || event.venue?.name}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[#ED4A43] font-bold">{event.price}</span>
+                      {event.price ? (
+                        <span className="text-[#ED4A43] font-bold">Rs. {event.price}</span>
+                      ) : (
+                        <span className="text-[#ED4A43] font-bold">Free</span>
+                      )}
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/event/${event.id}`);
+                          navigate(`/event/${event._id}`);
                         }}
                         className="bg-[#ED4A43] text-white px-4 py-2 rounded hover:bg-[#D43C35] active:bg-[#B8332D] transition-colors"
                       >
@@ -268,27 +260,29 @@ const Favourites = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {favouriteVenues.map((venue) => (
                 <div 
-                  key={venue.id} 
+                  key={venue._id} 
                   className={`bg-white rounded-lg overflow-hidden shadow-md transition-all duration-200 ${
-                    activeCardId === venue.id 
+                    activeCardId === venue._id 
                       ? 'scale-98 shadow-inner bg-gray-50' 
                       : 'hover:shadow-lg'
                   }`}
-                  onClick={() => handleCardClick(venue.id)}
+                  onClick={() => handleCardClick(venue._id)}
                 >
                   <div className="relative">
                     <img 
-                      src={venue.image} 
+                      src={`http://localhost:3000/${venue.image}`} 
                       alt={venue.name} 
                       className="w-full h-48 object-cover"
                     />
-                    <span className="absolute top-3 right-3 bg-white py-1 px-3 rounded-full text-sm font-medium text-gray-700">
-                      {venue.type}
-                    </span>
+                    {venue.type && (
+                      <span className="absolute top-3 right-3 bg-white py-1 px-3 rounded-full text-sm font-medium text-gray-700">
+                        {venue.type}
+                      </span>
+                    )}
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        removeFavouriteVenue(venue.id);
+                        removeFavouriteVenue(venue._id);
                       }}
                       className="absolute top-3 left-3 bg-white p-2 rounded-full text-[#ED4A43] hover:bg-gray-100 active:bg-gray-200 transition-colors"
                     >
@@ -306,11 +300,11 @@ const Favourites = () => {
                       <span>Capacity: {venue.capacity}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[#ED4A43] font-bold">{venue.price}</span>
+                      <span className="text-[#ED4A43] font-bold">Rs. {venue.price}</span>
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/venue/${venue.id}`);
+                          navigate(`/venue/${venue._id}`);
                         }}
                         className="bg-[#ED4A43] text-white px-4 py-2 rounded hover:bg-[#D43C35] active:bg-[#B8332D] transition-colors"
                       >
