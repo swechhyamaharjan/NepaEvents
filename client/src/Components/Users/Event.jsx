@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaSearch, FaRegCalendarAlt } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaSearch, FaRegCalendarAlt, FaHeart } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -8,6 +8,8 @@ export const Event = () => {
   const [discount, setDiscount] = useState(0);
   const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [favorites, setFavorites] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   //for filtering
   const [filters, setFilters] = useState({
@@ -94,6 +96,12 @@ export const Event = () => {
       try {
         const response = await axios.get('http://localhost:3000/api/event');
         setEvents(response.data);
+        
+        // Initialize favorites from localStorage
+        const savedFavorites = localStorage.getItem('eventFavorites');
+        if (savedFavorites) {
+          setFavorites(JSON.parse(savedFavorites));
+        }
       } catch (error) {
         console.log(error)
       }
@@ -116,8 +124,44 @@ export const Event = () => {
     } catch (error) {
       console.log(error)
     }
-
   }
+
+  const toggleFavorite = async (eventId) => {
+    try {
+      if (favorites.includes(eventId)) {
+        // Remove from favorites
+        await axios.delete(`http://localhost:3000/api/event/${eventId}/favorite`, {
+          withCredentials: true
+        });
+        setFavorites(favorites.filter(id => id !== eventId));
+      } else {
+        // Add to favorites
+        await axios.post(`http://localhost:3000/api/event/${eventId}/favorite`, {}, {
+          withCredentials: true
+        });
+        setFavorites([...favorites, eventId]);
+      }
+    } catch (error) {
+      console.error("Error updating favorites:", error);
+      toast.error("Failed to update favorites");
+    }
+  };
+  useEffect(() => {
+    async function fetchFavorites() {
+      try {
+        const response = await axios.get('http://localhost:3000/api/event/user/favorites', {
+          withCredentials: true
+        });
+        setFavorites(response.data.map(event => event._id));
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      }
+    }
+    
+    if (isLoggedIn) {
+      fetchFavorites();
+    }
+  }, [isLoggedIn]);
 
   const applyGroupDiscount = (ticketCount) => (ticketCount >= 5 ? 20 : 0);
 
@@ -273,6 +317,20 @@ export const Event = () => {
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        
+                        {/* Favorite Icon - Updated to match provided style */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(event._id);
+                          }}
+                          className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-colors duration-200 z-20"
+                        >
+                          <FaHeart
+                            size={18}
+                            className={favorites.includes(event._id) ? "text-[#ED4A43]" : "text-gray-400"}
+                          />
+                        </button>
                       </div>
 
                       <div className="p-6">
@@ -313,7 +371,11 @@ export const Event = () => {
                           </div>
 
                           <button
-                            onClick={() => handleBookEvent(event._id)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleBookEvent(event._id);
+                            }}
                             className="w-full py-3 bg-[#ED4A43] hover:bg-[#D43C35] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center relative z-20"
                           >
                             <FaTicketAlt className="mr-2" />
