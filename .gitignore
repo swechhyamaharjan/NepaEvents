@@ -1,0 +1,30 @@
+# Node modules
+client/node_modules/
+server/node_modules/
+
+# Build output
+client/build/
+client/dist/
+server/build/
+server/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# dotenv files (contains secrets)
+.env
+.env.*
+client/.env
+server/.env
+
+# Google OAuth and other secrets
+google-credentials.json
+client_secret.json
+*.pem
+*.key
+
+# OS / IDE stuff
+.DS_Store
+.vscode/
+.idea/
