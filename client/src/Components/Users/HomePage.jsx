@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../api/api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -10,13 +10,13 @@ import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
 
 // Icons
-import { 
-  FaCalendarAlt, 
-  FaMapMarkerAlt, 
-  FaClock, 
-  FaTicketAlt, 
-  FaStar, 
-  FaBuilding, 
+import {
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaClock,
+  FaTicketAlt,
+  FaStar,
+  FaBuilding,
   FaArrowRight,
   FaSearch,
   FaChevronLeft,
@@ -24,11 +24,11 @@ import {
 } from "react-icons/fa";
 
 // Images (replace with your actual paths)
-import bgImage from "/public/images/bg-image.png";
-import event1 from "/public/images/event1.png";
-import event2 from "/public/images/event2.png";
-import event3 from "/public/images/event3.png";
-import event4 from "/public/images/event4.png";
+import bgImage from "/images/bg-image.png";
+import event1 from "/images/event1.png";
+import event2 from "/images/event2.png";
+import event3 from "/images/event3.png";
+import event4 from "/images/event4.png";
 import Footer from './Footer';
 
 export const HomePage = () => {
@@ -38,12 +38,12 @@ export const HomePage = () => {
   const formattedDate = today.toLocaleDateString("en-US", options);
   const dayOfWeek = today.toLocaleDateString("en-US", { weekday: "long" });
   const { isLoggedIn, user } = useAuth();
-  
+
   // State for recommended events
   const [recommendedEvents, setRecommendedEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   // State for available venues
   const [venues, setVenues] = useState([]);
   const [venuesLoading, setVenuesLoading] = useState(false);
@@ -60,11 +60,11 @@ export const HomePage = () => {
   const [todayEventsError, setTodayEventsError] = useState(null);
 
   // Fetch categories
-  useEffect(() => {     
+  useEffect(() => {
     async function fetchCategories() {
       setCategoriesLoading(true);
       try {
-        const response = await axios.get("http://localhost:3000/api/category");
+        const response = await api.get("/api/category");
         setCategories(response.data);
         setCategoriesError(null);
       } catch (error) {
@@ -73,7 +73,7 @@ export const HomePage = () => {
       } finally {
         setCategoriesLoading(false);
       }
-    }     
+    }
     fetchCategories();
   }, []);
 
@@ -85,33 +85,31 @@ export const HomePage = () => {
         // Get today's date at start of day
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
-        
+
         // Get today's date at end of day
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999);
-        
+
         // Format dates for query params
         const startISO = startOfDay.toISOString();
         const endISO = endOfDay.toISOString();
-        
+
         // Fetch events for today
-        const response = await axios.get('http://localhost:3000/api/event', {
-          withCredentials: true
-        });
-        
+        const response = await api.get('/api/event');
+
         if (Array.isArray(response.data)) {
           // Filter events happening today
           const todaysEvents = response.data.filter(event => {
             const eventDate = new Date(event.date);
             return eventDate >= startOfDay && eventDate <= endOfDay;
           });
-          
+
           setTodayEvents(todaysEvents);
         } else {
           console.error("Expected array but got:", typeof response.data);
           setTodayEvents([]);
         }
-        
+
         setTodayEventsError(null);
       } catch (err) {
         console.error("Error fetching today's events:", err);
@@ -120,7 +118,7 @@ export const HomePage = () => {
         setTodayEventsLoading(false);
       }
     };
-    
+
     fetchTodayEvents();
   }, []);
 
@@ -129,17 +127,15 @@ export const HomePage = () => {
     const fetchRecommendedEvents = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('http://localhost:3000/api/event/recommendations', {
-          withCredentials: true
-        });
-        
+        const response = await api.get('/api/event/recommendations');
+
         if (Array.isArray(response.data)) {
           setRecommendedEvents(response.data);
         } else {
           console.error("Expected array but got:", typeof response.data);
           setRecommendedEvents([]);
         }
-        
+
         setError(null);
       } catch (err) {
         console.error("Error fetching recommendations:", err);
@@ -151,23 +147,21 @@ export const HomePage = () => {
 
     fetchRecommendedEvents();
   }, []);
-  
+
   // Fetch available venues
   useEffect(() => {
     const fetchVenues = async () => {
       setVenuesLoading(true);
       try {
-        const response = await axios.get('http://localhost:3000/api/venue', {
-          withCredentials: true
-        });
-        
+        const response = await api.get('/api/venue');
+
         if (Array.isArray(response.data)) {
           setVenues(response.data);
         } else {
           console.error("Expected array of venues but got:", typeof response.data);
           setVenues([]);
         }
-        
+
         setVenuesError(null);
       } catch (err) {
         console.error("Error fetching venues:", err);
@@ -184,7 +178,7 @@ export const HomePage = () => {
   const goToEventDetails = (eventId) => {
     navigate(`/event/${eventId}`);
   };
-  
+
   // Navigate to venue details page
   const goToVenueDetails = (venueId) => {
     navigate(`/venue/${venueId}`);
@@ -212,28 +206,28 @@ export const HomePage = () => {
   // Get event image URL (handle both relative and absolute URLs)
   const getImageUrl = (imageUrl, defaultImage = event1) => {
     if (!imageUrl) return defaultImage;
-    
+
     // If it's already a full URL
     if (imageUrl.startsWith('http')) {
       return imageUrl;
     }
-    
+
     // If it's a relative path
-    return `http://localhost:3000${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+    return `${api.defaults.baseURL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
   };
 
   // Function to render event card
   const renderEventCard = (event, index, isApiEvent = false) => {
     const eventName = isApiEvent ? event.title || event.name : event.name;
-    
+
     // Handle venue location properly
     let eventPlace = "Location not specified";
     if (isApiEvent) {
       if (event.venue) {
         if (typeof event.venue === 'object') {
           // Venue is populated as an object
-          eventPlace = event.venue.name ? 
-            (event.venue.location ? `${event.venue.name}, ${event.venue.location}` : event.venue.name) : 
+          eventPlace = event.venue.name ?
+            (event.venue.location ? `${event.venue.name}, ${event.venue.location}` : event.venue.name) :
             "Venue name not available";
         } else {
           // Venue is just an ID
@@ -245,11 +239,11 @@ export const HomePage = () => {
     } else {
       eventPlace = event.place || "Location not specified";
     }
-    
+
     const eventTime = isApiEvent ? formatEventTime(event.date || event.startTime) : event.time;
     const eventImage = isApiEvent ? getImageUrl(event.coverImage || event.image) : event.img;
     const eventId = isApiEvent ? event._id : null;
-    
+
     return (
       <div
         key={index}
@@ -300,7 +294,7 @@ export const HomePage = () => {
     const venueCapacity = venue.capacity || "Unspecified";
     const venueImage = getImageUrl(venue.image, event1);
     const isBooked = venue.isBooked || false;
-    
+
     return (
       <div
         key={index}
@@ -324,7 +318,7 @@ export const HomePage = () => {
               <span className="text-sm font-medium text-gray-800">Cap: {venueCapacity}</span>
             </div>
           </div>
-          
+
           {/* Booking Status Indicator */}
           {isBooked && (
             <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-lg shadow-md">
@@ -355,7 +349,7 @@ export const HomePage = () => {
   const renderCategoryCard = (category, index) => {
     const categoryName = category.name || "Unnamed Category";
     const categoryImage = getImageUrl(category.image, event1);
-    
+
     return (
       <div
         key={index}
@@ -484,7 +478,7 @@ export const HomePage = () => {
                   ))
                 )}
               </Swiper>
-              
+
               {/* Custom Navigation */}
               <button className="events-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-300 -ml-4">
                 <FaChevronLeft />
@@ -508,14 +502,14 @@ export const HomePage = () => {
               </h2>
               <FaStar className="text-yellow-400 text-2xl" />
             </div>
-            <button 
+            <button
               onClick={() => navigate('/events')}
               className="inline-flex items-center px-6 py-2.5 bg-transparent border border-[#ED4A43] text-[#ED4A43] hover:bg-[#ED4A43] hover:text-white transition-all duration-300 rounded-lg font-semibold"
             >
               View All Events
             </button>
           </div>
-          
+
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ED4A43] mx-auto"></div>
@@ -548,7 +542,7 @@ export const HomePage = () => {
                   </SwiperSlide>
                 ))}
               </Swiper>
-              
+
               <button className="recommended-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-300 -ml-4">
                 <FaChevronLeft />
               </button>
@@ -563,7 +557,7 @@ export const HomePage = () => {
           )}
         </div>
       </div>
-      
+
       {/* Available Venues Section */}
       <div className="bg-gray-800 py-16 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
@@ -575,14 +569,14 @@ export const HomePage = () => {
               </h2>
               <FaBuilding className="text-blue-400 text-2xl" />
             </div>
-            <button 
+            <button
               onClick={() => navigate('/venues')}
               className="inline-flex items-center px-6 py-2.5 bg-transparent border border-[#ED4A43] text-[#ED4A43] hover:bg-[#ED4A43] hover:text-white transition-all duration-300 rounded-lg font-semibold"
             >
               View All Venues
             </button>
           </div>
-          
+
           {venuesLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ED4A43] mx-auto"></div>
@@ -614,7 +608,7 @@ export const HomePage = () => {
                   </SwiperSlide>
                 ))}
               </Swiper>
-              
+
               <button className="venues-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-300 -ml-4">
                 <FaChevronLeft />
               </button>
@@ -635,7 +629,7 @@ export const HomePage = () => {
         {/* Decorative elements */}
         <div className="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-[#ED4A43]/10 blur-3xl"></div>
         <div className="absolute -left-20 -bottom-20 w-64 h-64 rounded-full bg-[#ED4A43]/10 blur-3xl"></div>
-        
+
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-800 relative inline-block">
@@ -680,7 +674,7 @@ export const HomePage = () => {
                   </SwiperSlide>
                 ))}
               </Swiper>
-              
+
               <button className="categories-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg hover:bg-gray-100 text-gray-800 flex items-center justify-center transition-all duration-300 -ml-4">
                 <FaChevronLeft />
               </button>

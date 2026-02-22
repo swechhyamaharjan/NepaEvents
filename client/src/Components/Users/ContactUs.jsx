@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { FaUser, FaEnvelope, FaComment, FaPaperPlane, FaPhone, FaMapMarkerAlt, FaClock } from "react-icons/fa";
+import api from "../../api/api";
 
 export const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -21,17 +22,11 @@ export const ContactUs = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
-      const res = await fetch("http://localhost:3000/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-  
-      if (res.ok) {
+      const res = await api.post("/api/contact", formData);
+
+      if (res.status === 200 || res.status === 201) {
         toast.success("Message sent successfully! Thank you for reaching out.");
         setFormData({ name: "", email: "", message: "" });
       } else {
@@ -42,11 +37,10 @@ export const ContactUs = () => {
       toast.error("An error occurred. Please try again later.");
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-50 py-16 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Section Header */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-extrabold relative inline-block">
             <span className="bg-clip-text text-transparent bg-[#ED4A43]">
@@ -60,7 +54,6 @@ export const ContactUs = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Contact Information */}
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden lg:col-span-1 transform transition-all hover:shadow-xl">
             <div className="bg-gradient-to-r from-[#ED4A43] to-[#FF6B64] text-white p-8">
               <h3 className="text-2xl font-bold mb-6">Get in Touch</h3>
@@ -68,7 +61,7 @@ export const ContactUs = () => {
                 Fill out the form and our team will get back to you within 24 hours.
               </p>
             </div>
-            
+
             <div className="p-8">
               <div className="space-y-6">
                 <div className="flex items-start">
@@ -80,7 +73,7 @@ export const ContactUs = () => {
                     <p className="text-gray-600">+977 9841326536</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="bg-red-50 p-3 rounded-full text-[#ED4A43] mr-4">
                     <FaEnvelope className="text-lg" />
@@ -90,7 +83,7 @@ export const ContactUs = () => {
                     <p className="text-gray-600">info@nepaevents.com</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="bg-red-50 p-3 rounded-full text-[#ED4A43] mr-4">
                     <FaMapMarkerAlt className="text-lg" />
@@ -100,7 +93,7 @@ export const ContactUs = () => {
                     <p className="text-gray-600">Tinkune, Kathmandu, Nepal</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="bg-red-50 p-3 rounded-full text-[#ED4A43] mr-4">
                     <FaClock className="text-lg" />
@@ -113,10 +106,8 @@ export const ContactUs = () => {
               </div>
             </div>
           </div>
-          
-          {/* Contact Form */}
+
           <div className="bg-white rounded-2xl shadow-lg p-8 lg:col-span-2">
-            {/* Success message */}
             {formStatus && (
               <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-md">
                 <div className="flex">
@@ -136,7 +127,6 @@ export const ContactUs = () => {
 
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Name */}
                 <div className="col-span-1">
                   <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
                     Full Name
@@ -158,7 +148,6 @@ export const ContactUs = () => {
                   </div>
                 </div>
 
-                {/* Email */}
                 <div className="col-span-1">
                   <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
                     Email Address
@@ -180,7 +169,6 @@ export const ContactUs = () => {
                   </div>
                 </div>
 
-                {/* Message */}
                 <div className="col-span-2">
                   <label htmlFor="message" className="block text-gray-700 font-medium mb-2">
                     Your Message
@@ -202,7 +190,6 @@ export const ContactUs = () => {
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <div className="col-span-2">
                   <button
                     type="submit"

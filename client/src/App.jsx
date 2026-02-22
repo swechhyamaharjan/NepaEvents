@@ -2,8 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import { Signup } from "./Components/Users/Signup";
 import { HomePage } from "./Components/Users/HomePage";
-import { NavBar } from "./Components/Users/NavBar";
-import { Footer } from "./Components/Users/Footer";
+import NavBar from "./Components/Users/NavBar";
+import Footer from "./Components/Users/Footer";
 import { Event } from "./Components/Users/Event";
 import { AboutUs } from "./Components/Users/AboutUs";
 import { ContactUs } from "./Components/Users/ContactUs";
@@ -17,6 +17,9 @@ import PaymentFailure from "./Components/Users/PaymentFailure";
 import Favourites from "./Components/Users/Favourites";
 import Notifications from "./Components/Users/Notifications";
 import EditProfile from "./Components/Users/EditProfile";
+import MyTickets from "./Components/Users/MyTickets";
+import MyPayments from "./Components/Users/MyPayments";
+import { CreateEvent } from "./Components/Users/CreateEvent";
 
 import { AdminEventPage } from "./Components/Admin/AdminEventPage";
 import { AdminHome } from "./Components/Admin/AdminHome";
@@ -62,6 +65,9 @@ function App() {
           <Route path="/aboutus" element={<UserLayout><AboutUs /></UserLayout>} />
           <Route path="/contactus" element={<UserLayout><ContactUs /></UserLayout>} />
           <Route path="/mybookings" element={<UserLayout><MyBooking /></UserLayout>} />
+          <Route path="/mytickets" element={<UserLayout><MyTickets /></UserLayout>} />
+          <Route path="/mypayments" element={<UserLayout><MyPayments /></UserLayout>} />
+          <Route path="/create-event" element={<UserLayout><CreateEvent /></UserLayout>} />
           <Route path="/event/:id" element={<UserLayout><EventDetail /></UserLayout>} />
           <Route path="/venue/:id" element={<UserLayout><VenueDetail /></UserLayout>} />
           <Route path="/bookvenue" element={<UserLayout><BookVenue /></UserLayout>} />

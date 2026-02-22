@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import api from '../../api/api';
 import { toast } from "react-hot-toast";
 import {
-  FaMapMarkerAlt,FaUsers,FaBuilding,FaHeart,FaSearch,FaCalendarAlt,FaInfoCircle,FaTrashAlt
+  FaMapMarkerAlt, FaUsers, FaBuilding, FaHeart, FaSearch, FaCalendarAlt, FaInfoCircle, FaTrashAlt
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
@@ -17,7 +17,7 @@ export const BookVenue = () => {
   const [categories, setCategories] = useState(null);
   const [venues, setVenues] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
-   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [bookingDetails, setBookingDetails] = useState({
     title: "",
     description: "",
@@ -91,7 +91,7 @@ export const BookVenue = () => {
 
       console.log(bookingDetails.image)
 
-      await axios.post("http://localhost:3000/api/venue-bookings", formData, {
+      await api.post("/api/venue-bookings", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true
       });
@@ -110,7 +110,7 @@ export const BookVenue = () => {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await axios.get("http://localhost:3000/api/category");
+        const response = await api.get("/api/category");
         setCategories(response.data);
       } catch (error) {
         console.log(error);
@@ -124,7 +124,7 @@ export const BookVenue = () => {
   useEffect(() => {
     async function fetchVenues() {
       try {
-        const response = await axios.get("http://localhost:3000/api/venue");
+        const response = await api.get("/api/venue");
         console.log("Fetched venues:", response.data);
         setVenues(response.data);
       } catch (error) {
@@ -143,12 +143,12 @@ export const BookVenue = () => {
   const toggleFavorite = async (venueId) => {
     try {
       if (favorites.includes(venueId)) {
-        await axios.delete(`http://localhost:3000/api/venue/${venueId}/favorite`, {
+        await api.delete(`/api/venue/${venueId}/favorite`, {
           withCredentials: true
         });
         setFavorites(favorites.filter(id => id !== venueId));
       } else {
-        await axios.post(`http://localhost:3000/api/venue/${venueId}/favorite`, {}, {
+        await api.post(`/api/venue/${venueId}/favorite`, {}, {
           withCredentials: true
         });
         setFavorites([...favorites, venueId]);
@@ -161,7 +161,7 @@ export const BookVenue = () => {
   useEffect(() => {
     async function fetchFavorites() {
       try {
-        const response = await axios.get('http://localhost:3000/api/venue/user/favorites', {
+        const response = await api.get('/api/venue/user/favorites', {
           withCredentials: true
         });
         setFavorites(response.data.map(venue => venue._id));
@@ -169,7 +169,7 @@ export const BookVenue = () => {
         console.error("Error fetching favorites:", error);
       }
     }
-    
+
     if (isLoggedIn) {
       fetchFavorites();
     }
@@ -221,11 +221,11 @@ export const BookVenue = () => {
                   </div>
                 </div>
                 <Link to={`/venue/${venue._id}`} className="block">
-                <img 
-                  src={`http://localhost:3000/${venue.image}`}
-                  alt={venue.name}
-                  className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
-                />
+                  <img
+                    src={`${api.defaults.baseURL}/${venue.image}`}
+                    alt={venue.name}
+                    className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700"
+                  />
                 </Link>
                 <button
                   onClick={(e) => {

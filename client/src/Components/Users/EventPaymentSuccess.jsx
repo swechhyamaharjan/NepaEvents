@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../../api/api";
 import React, { useEffect, useState } from "react";
 import {
   FaCheckCircle,
@@ -18,14 +18,10 @@ export const EventPaymentSuccess = () => {
 
   useEffect(() => {
     const eventId = localStorage.getItem("eventId");
-    console.log(eventId)
-    console.log(sessionId)
+
     async function fetchEventDetail() {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/event/${eventId}`,
-          { withCredentials: true }
-        );
+        const response = await api.get(`/api/event/${eventId}`);
         setEventDetail(response.data.event);
       } catch (err) {
         console.error(err);
@@ -37,9 +33,7 @@ export const EventPaymentSuccess = () => {
 
     async function verifyPayment() {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/event/verify-purchase/${eventId}?session_id=${sessionId}`, { withCredentials: true })
-
+        const response = await api.get(`/api/event/verify-purchase/${eventId}?session_id=${sessionId}`);
         if (!response.data.success) {
           throw new Error(response.data.message || "Payment verification failed");
         }
@@ -48,6 +42,7 @@ export const EventPaymentSuccess = () => {
         console.error("Payment verification error:", error);
       }
     }
+
     if (eventId && sessionId) {
       verifyPayment();
       fetchEventDetail();
@@ -59,8 +54,8 @@ export const EventPaymentSuccess = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 text-lg">Confirming your payment...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ED4A43]"></div>
       </div>
     );
   }
@@ -101,73 +96,70 @@ export const EventPaymentSuccess = () => {
               </h3>
 
               {eventDetail ? (
-                <>
-                  {console.log(eventDetail)}
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-medium">Event ID:</span>
-                      <span className="text-gray-800 font-semibold bg-gray-100 px-3 py-1 rounded-full text-sm">
-                        {eventDetail._id}
-                      </span>
-                    </div>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 font-medium">Event ID:</span>
+                    <span className="text-gray-800 font-semibold bg-gray-100 px-3 py-1 rounded-full text-sm">
+                      {eventDetail._id}
+                    </span>
+                  </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-medium">Event:</span>
-                      <span className="text-gray-800 font-semibold">
-                        {eventDetail.title}
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 font-medium">Event:</span>
+                    <span className="text-gray-800 font-semibold">
+                      {eventDetail.title}
+                    </span>
+                  </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-medium flex items-center">
-                        <FaCalendarAlt className="text-[#ED4A43] mr-2" />
-                        Date:
-                      </span>
-                      <span className="text-gray-800 font-semibold">
-                        {new Date(eventDetail.date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 font-medium flex items-center">
+                      <FaCalendarAlt className="text-[#ED4A43] mr-2" />
+                      Date:
+                    </span>
+                    <span className="text-gray-800 font-semibold">
+                      {new Date(eventDetail.date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-medium flex items-center">
-                        <FaMapMarkerAlt className="text-[#ED4A43] mr-2" />
-                        Venue:
-                      </span>
-                      <span className="text-gray-800 font-semibold">
-                        {eventDetail.venue?.name || eventDetail.venue}
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 font-medium flex items-center">
+                      <FaMapMarkerAlt className="text-[#ED4A43] mr-2" />
+                      Venue:
+                    </span>
+                    <span className="text-gray-800 font-semibold">
+                      {eventDetail.venue?.name || eventDetail.venue}
+                    </span>
+                  </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-medium">
-                        Organizer:
-                      </span>
-                      <span className="text-gray-800 font-semibold">
-                        {eventDetail.organizer?.fullName || eventDetail.organizer?.name || "Event Organizer"}
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 font-medium">
+                      Organizer:
+                    </span>
+                    <span className="text-gray-800 font-semibold">
+                      {eventDetail.organizer?.fullName || eventDetail.organizer?.name || "Event Organizer"}
+                    </span>
+                  </div>
 
-                    <div className="mt-2 pt-4 flex justify-between items-center bg-gray-50 p-4 rounded-lg">
-                      <span className="text-gray-800 font-bold">
-                        Ticket Price:
+                  <div className="mt-2 pt-4 flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+                    <span className="text-gray-800 font-bold">
+                      Ticket Price:
+                    </span>
+                    <div className="flex flex-col items-end">
+                      <span className="text-2xl font-bold text-[#ED4A43]">
+                        ${eventDetail.price?.toFixed(2)}
                       </span>
-                      <div className="flex flex-col items-end">
-                        <span className="text-2xl font-bold text-[#ED4A43]">
-                          ${eventDetail.price?.toFixed(2)}
-                        </span>
-                        <span className="text-xs text-green-600 font-medium">
-                          Payment Completed
-                        </span>
-                      </div>
+                      <span className="text-xs text-green-600 font-medium">
+                        Payment Completed
+                      </span>
                     </div>
                   </div>
-                </>
+                </div>
               ) : (
                 <p className="text-center text-gray-500">
                   No event details available.
@@ -190,7 +182,7 @@ export const EventPaymentSuccess = () => {
               </Link>
 
               <Link
-                to="/events"
+                to="/event"
                 className="py-3.5 bg-white border-2 border-[#ED4A43] text-[#ED4A43] font-semibold rounded-lg shadow-sm hover:shadow-md flex items-center justify-center"
               >
                 Browse Events

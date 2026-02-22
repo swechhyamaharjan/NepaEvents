@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/api';
 import { toast } from "react-hot-toast";
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
 
 export const Signup = () => {
   const navigate = useNavigate();
-  
+
   const interestsOptions = [
-    "music", "sports", "art", "technology", "food", 
+    "music", "sports", "art", "technology", "food",
     "education", "outdoor", "entertainment", "business", "other"
   ];
 
@@ -32,7 +32,7 @@ export const Signup = () => {
     };
 
     try {
-      const { data } = await axios.post('http://localhost:3000/register', valuesWithInterests);
+      const { data } = await api.post('/register', valuesWithInterests);
       if (data) {
         toast.success(data.message);
         setShowInterestModal(false);
@@ -47,7 +47,7 @@ export const Signup = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-lg backdrop-blur-sm bg-white/80 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
-        
+
         {/* Header */}
         <div className="relative h-32 bg-gradient-to-r from-[#ED4A43] to-[#F27A74]">
           <div className="absolute bottom-0 left-0 w-full">
@@ -102,9 +102,9 @@ export const Signup = () => {
 
             <div className="relative pt-3">
               <label className="block text-gray-600 text-sm mb-1">Select Role</label>
-              <select 
-                name="role" 
-                id="role" 
+              <select
+                name="role"
+                id="role"
                 className="w-full bg-transparent py-2 px-3 border-b-2 border-gray-300 focus:border-[#ED4A43] focus:outline-none transition appearance-none rounded-none text-gray-700"
               >
                 <option value="user">User</option>

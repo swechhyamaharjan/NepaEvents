@@ -1,5 +1,5 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
+import api from "../../api/api";
 import { FaEye, FaUserCircle, FaCalendarAlt, FaEnvelope, FaTag } from "react-icons/fa";
 
 const AdminUserList = () => {
@@ -10,7 +10,7 @@ const AdminUserList = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/users/list");
+        const response = await api.get("/api/users");
         console.log(response.data);
         setUsers(response.data);
       } catch (error) {
@@ -42,8 +42,8 @@ const AdminUserList = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {users.map((user) => (
-            <div 
-              key={user._id} 
+            <div
+              key={user._id}
               className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl border-2 border-gray-100"
             >
               <div className="p-6">
@@ -52,25 +52,24 @@ const AdminUserList = () => {
                     <FaUserCircle className="text-[#ED4A43] text-3xl" />
                     <h3 className="text-xl font-bold text-gray-800">{user.fullName}</h3>
                   </div>
-                  <span 
-                    className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${
-                      user.role === 'admin' 
-                        ? 'bg-[#ED4A43] text-white' 
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${user.role === 'admin'
+                        ? 'bg-[#ED4A43] text-white'
                         : 'bg-gray-100 text-gray-800'
-                    }`}
+                      }`}
                   >
                     {user.role}
                   </span>
                 </div>
-                
+
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-gray-600">
                     <FaEnvelope className="mr-2 text-[#ED4A43]" />
                     <p className="truncate">{user.email}</p>
                   </div>
                 </div>
-                
-                <div className="flex justify-end"> 
+
+                <div className="flex justify-end">
                   <button
                     onClick={() => viewUserDetails(user)}
                     className="bg-gray-50 border border-[#ED4A43] text-[#ED4A43] hover:bg-[#ED4A43] hover:text-white p-2 rounded-lg transition-all duration-300 flex items-center group"
@@ -87,7 +86,7 @@ const AdminUserList = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl w-96 max-w-full p-8 relative">
               <div className="absolute top-4 right-4">
-                <button 
+                <button
                   onClick={() => setShowDetailModal(false)}
                   className="text-gray-500 hover:text-[#ED4A43] transition-colors"
                 >
@@ -98,7 +97,7 @@ const AdminUserList = () => {
                 <FaUserCircle className="mx-auto text-6xl text-[#ED4A43] mb-4" />
                 <h3 className="text-2xl font-bold text-gray-800">{selectedUser.fullName}</h3>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center">
                   <FaEnvelope className="mr-3 text-[#ED4A43]" />
@@ -113,8 +112,8 @@ const AdminUserList = () => {
                   <p className="font-medium">Joined {formatDate(selectedUser.createdAt)}</p>
                 </div>
               </div>
-              
-              <button 
+
+              <button
                 onClick={() => setShowDetailModal(false)}
                 className="mt-6 w-full bg-[#ED4A43] text-white px-4 py-2 rounded-lg hover:bg-[#D43C35] transition-colors"
               >

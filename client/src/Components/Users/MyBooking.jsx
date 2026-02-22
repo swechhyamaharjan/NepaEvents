@@ -1,5 +1,5 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import api from '../../api/api';
 import { useAuth } from '../../Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,12 +8,13 @@ const MyBooking = () => {
   const [filter, setFilter] = useState('All');
   const { user } = useAuth();
   const navigate = useNavigate();
+
   useEffect(() => {
     if (!user?._id) return;
 
     async function fetchBooking() {
       try {
-        const response = await axios.get('http://localhost:3000/api/venue-bookings');
+        const response = await api.get('/api/venue-bookings/my-bookings');
         const currentUserBooking = response?.data?.bookings?.filter(
           (booking) => booking?.organizer?._id === user?._id
         );
@@ -54,7 +55,7 @@ const MyBooking = () => {
 
   const handleStripePayment = async (id) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/venue-bookings/pay', { bookingId: id });
+      const response = await api.post('/api/venue-bookings/pay', { bookingId: id });
       localStorage.setItem('bookingId', id);
       window.open(response.data.url, '_blank');
     } catch (error) {

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
+import api from "../../api/api";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaEnvelope, FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../Context/AuthContext";
-import axios from "axios";
 import { toast } from "react-hot-toast";
 
 const EditProfile = () => {
@@ -17,12 +17,14 @@ const EditProfile = () => {
   });
 
   useEffect(() => {
-    setFormData({
-      fullName: user?.fullName || "",
-      email: user?.email || "",
-      password: "",
-    });
-  }, [user, navigate]);
+    if (user) {
+      setFormData({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        password: "",
+      });
+    }
+  }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -37,15 +39,13 @@ const EditProfile = () => {
     setIsLoading(true);
 
     try {
-
-      const response = await axios.put(
-        `http://localhost:3000/api/users/updateProfile/${user._id}`,
-        {  
+      const response = await api.put(
+        `/api/users/updateProfile/${user._id}`,
+        {
           fullName: formData.fullName,
           email: formData.email,
           password: formData.password,
-        },
-        { withCredentials: true }
+        }
       );
 
       setUser(response.data.user);
@@ -73,9 +73,7 @@ const EditProfile = () => {
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Edit Profile</h1>
 
         <form onSubmit={handleSubmit}>
-          {/* Form Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Full Name */}
             <div className="col-span-2 md:col-span-1">
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
               <div className="relative">
@@ -95,7 +93,6 @@ const EditProfile = () => {
               </div>
             </div>
 
-            {/* Email */}
             <div className="col-span-2 md:col-span-1">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <div className="relative">
@@ -115,7 +112,6 @@ const EditProfile = () => {
               </div>
             </div>
 
-            {/* Password */}
             <div className="col-span-2">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Change Password</label>
               <div className="relative">
@@ -129,13 +125,12 @@ const EditProfile = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   className="pl-10 w-full py-3 border border-gray-300 rounded-lg focus:ring-[#ED4A43] focus:border-[#ED4A43] outline-none transition-colors"
-                  placeholder="Change Password"
+                  placeholder="Leave blank to keep current password"
                 />
               </div>
             </div>
           </div>
 
-          {/* Submit Buttons */}
           <div className="mt-8 flex justify-end">
             <button
               type="button"

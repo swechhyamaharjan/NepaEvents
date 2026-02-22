@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from "react";
+import api from "../../api/api";
 import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaSearch, FaRegCalendarAlt, FaHeart, FaPercent } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+
 
 export const Event = () => {
   const [ticketCounts, setTicketCounts] = useState({});
@@ -110,9 +111,9 @@ export const Event = () => {
   useEffect(() => {
     async function fetchEvent() {
       try {
-        const response = await axios.get('http://localhost:3000/api/event');
+        const response = await api.get('/api/event');
         setEvents(response.data);
-        
+
         // Initialize favorites from localStorage
         const savedFavorites = localStorage.getItem('eventFavorites');
         if (savedFavorites) {
@@ -131,7 +132,7 @@ export const Event = () => {
       const promoCode = promoCodes[eventId] || '';
       // Optionally validate promo code before sending
       await validatePromoCode(eventId, promoCode);
-      const response = await axios.post('http://localhost:3000/api/event/buy', { eventId, ticketCount, promoCode },
+      const response = await api.post('/api/event/buy', { eventId, ticketCount, promoCode },
         { withCredentials: true }
       )
       localStorage.setItem('eventId', eventId);
@@ -148,13 +149,13 @@ export const Event = () => {
     try {
       if (favorites.includes(eventId)) {
         // Remove from favorites
-        await axios.delete(`http://localhost:3000/api/event/${eventId}/favorite`, {
+        await api.delete(`/api/event/${eventId}/favorite`, {
           withCredentials: true
         });
         setFavorites(favorites.filter(id => id !== eventId));
       } else {
         // Add to favorites
-        await axios.post(`http://localhost:3000/api/event/${eventId}/favorite`, {}, {
+        await api.post(`/api/event/${eventId}/favorite`, {}, {
           withCredentials: true
         });
         setFavorites([...favorites, eventId]);
@@ -167,7 +168,7 @@ export const Event = () => {
   useEffect(() => {
     async function fetchFavorites() {
       try {
-        const response = await axios.get('http://localhost:3000/api/event/user/favorites', {
+        const response = await api.get('/api/event/user/favorites', {
           withCredentials: true
         });
         setFavorites(response.data.map(event => event._id));
@@ -175,7 +176,7 @@ export const Event = () => {
         console.error("Error fetching favorites:", error);
       }
     }
-    
+
     if (isLoggedIn) {
       fetchFavorites();
     }
@@ -328,7 +329,7 @@ export const Event = () => {
                       <Link to={`/event/${event._id}`} className="block">
                         <div className="relative h-48 overflow-hidden">
                           <img
-                            src={`http://localhost:3000/${event.image}`}
+                            src={`${api.defaults.baseURL}/${event.image}`}
                             alt={event.title}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />

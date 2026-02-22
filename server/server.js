@@ -55,3 +55,5 @@ cron.schedule('0 0 * * *', async () => {
 app.listen(PORT, () => {
   console.log(`Server is running at port ${PORT}`)
 });
+
+module.exports = app;

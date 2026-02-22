@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import api from '../../api/api';
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "react-hot-toast";
 import {
   FaCheckCircle,
@@ -19,18 +19,14 @@ const Notifications = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch notifications on component mount
   useEffect(() => {
     fetchNotifications();
   }, []);
 
-  // Function to fetch notifications
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:3000/api/notifications", {
-        withCredentials: true,
-      });
+      const response = await api.get('/api/notifications');
 
       if (response.data.success) {
         setNotifications(response.data.notifications);
@@ -45,17 +41,13 @@ const Notifications = () => {
     }
   };
 
-  // Mark notification as read
   const markAsRead = async (notificationId) => {
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/notifications/${notificationId}/read`,
-        {},
-        { withCredentials: true }
+      const response = await api.put(
+        `/api/notifications/${notificationId}/read`
       );
 
       if (response.data.success) {
-        // Update notification in state
         setNotifications((prev) =>
           prev.map((notif) =>
             notif._id === notificationId ? { ...notif, isRead: true } : notif
@@ -68,17 +60,13 @@ const Notifications = () => {
     }
   };
 
-  // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
-      const response = await axios.put(
-        "http://localhost:3000/api/notifications/read-all",
-        {},
-        { withCredentials: true }
+      const response = await api.put(
+        "/api/notifications/read-all"
       );
 
       if (response.data.success) {
-        // Update all notifications in state
         setNotifications((prev) =>
           prev.map((notif) => ({ ...notif, isRead: true }))
         );
@@ -90,16 +78,11 @@ const Notifications = () => {
     }
   };
 
-  // Delete notification
   const deleteNotification = async (notificationId) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:3000/api/notifications/${notificationId}`,
-        { withCredentials: true }
-      );
+      const response = await api.delete(`/api/notifications/${notificationId}`);
 
       if (response.data.success) {
-        // Remove notification from state
         setNotifications((prev) =>
           prev.filter((notif) => notif._id !== notificationId)
         );
@@ -111,16 +94,14 @@ const Notifications = () => {
     }
   };
 
-  // Handle notification click - mark as read and navigate if needed
   const handleNotificationClick = async (notification) => {
     if (!notification.isRead) {
       await markAsRead(notification._id);
     }
 
-    // Navigate based on notification type and related item
     if (notification.relatedItem) {
       const { itemId, itemType } = notification.relatedItem;
-      
+
       if (itemType === "event") {
         navigate(`/event/${itemId}`);
       } else if (itemType === "booking") {
@@ -129,7 +110,6 @@ const Notifications = () => {
     }
   };
 
-  // Get icon based on notification type
   const getNotificationIcon = (type) => {
     switch (type) {
       case "venue_approval":
@@ -143,7 +123,6 @@ const Notifications = () => {
     }
   };
 
-  // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -157,7 +136,6 @@ const Notifications = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        {/* Header with back button */}
         <div className="flex items-center mb-8">
           <button
             onClick={() => navigate(-1)}
@@ -168,7 +146,6 @@ const Notifications = () => {
           <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
         </div>
 
-        {/* Actions */}
         <div className="flex justify-between items-center mb-8">
           <p className="text-gray-600">
             {notifications.filter((n) => !n.isRead).length} unread notifications
@@ -184,7 +161,6 @@ const Notifications = () => {
           )}
         </div>
 
-        {/* Notifications list */}
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ED4A43]"></div>
@@ -210,30 +186,26 @@ const Notifications = () => {
             {notifications.map((notification) => (
               <div
                 key={notification._id}
-                className={`bg-white rounded-xl shadow-sm overflow-hidden border-l-4 transition-all ${
-                  notification.isRead
-                    ? "border-gray-200"
-                    : "border-[#ED4A43]"
-                }`}
+                className={`bg-white rounded-xl shadow-sm overflow-hidden border-l-4 transition-all ${notification.isRead
+                  ? "border-gray-200"
+                  : "border-[#ED4A43]"
+                  }`}
               >
                 <div className="flex items-start p-4">
-                  {/* Icon */}
                   <div className="p-2 rounded-full bg-gray-100 mr-4">
                     {getNotificationIcon(notification.type)}
                   </div>
 
-                  {/* Content */}
                   <div
                     className="flex-1 cursor-pointer"
                     onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex justify-between items-start">
                       <h3
-                        className={`font-semibold ${
-                          notification.isRead
-                            ? "text-gray-700"
-                            : "text-gray-900"
-                        }`}
+                        className={`font-semibold ${notification.isRead
+                          ? "text-gray-700"
+                          : "text-gray-900"
+                          }`}
                       >
                         {notification.title}
                       </h3>
@@ -242,17 +214,15 @@ const Notifications = () => {
                       </span>
                     </div>
                     <p
-                      className={`mt-1 text-sm ${
-                        notification.isRead
-                          ? "text-gray-500"
-                          : "text-gray-700"
-                      }`}
+                      className={`mt-1 text-sm ${notification.isRead
+                        ? "text-gray-500"
+                        : "text-gray-700"
+                        }`}
                     >
                       {notification.message}
                     </p>
                   </div>
 
-                  {/* Delete button */}
                   <button
                     onClick={() => deleteNotification(notification._id)}
                     className="ml-2 p-1 text-gray-400 hover:text-red-500 transition-colors"

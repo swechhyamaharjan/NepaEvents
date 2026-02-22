@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from "react";
+import api from "../../api/api";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../Context/AuthContext';
 import { FaCalendarAlt, FaUsers, FaMoneyBillWave, FaTicketAlt, FaChartLine, FaUserPlus, FaDollarSign } from 'react-icons/fa';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
@@ -33,28 +33,22 @@ export const AdminHome = () => {
     const fetchData = async () => {
       try {
         // Fetch users
-        const usersResponse = await axios.get("http://localhost:3000/api/users/list", {
-          withCredentials: true,
-        });
+        const usersResponse = await api.get('/api/users/list');
 
         // Fetch events
-        const eventsResponse = await axios.get("http://localhost:3000/api/event", {
-          withCredentials: true,
-        });
+        const eventsResponse = await api.get('/api/event');
 
         // Fetch payment revenue
-        const paymentResponse = await axios.get("http://localhost:3000/api/admin/payment-revenue", {
-          withCredentials: true,
-        });
+        const paymentResponse = await api.get("/api/admin/payment-revenue");
 
         // Calculate total attendance
-        const attendance = eventsResponse.data.reduce((sum, event) => 
+        const attendance = eventsResponse.data.reduce((sum, event) =>
           sum + (event.totalSold || 0), 0);
 
         // Calculate new users (last 7 days)
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        const recentUsers = usersResponse.data.filter(user => 
+        const recentUsers = usersResponse.data.filter(user =>
           new Date(user.createdAt) > oneWeekAgo
         ).length;
 
@@ -90,7 +84,7 @@ export const AdminHome = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:3000/logout", {}, { withCredentials: true });
+      await api.post("/logout", {});
       localStorage.clear();
       toast.success("Logged out successfully");
       navigate("/login");
@@ -103,9 +97,9 @@ export const AdminHome = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD' 
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
     }).format(amount || 0);
   };
 
@@ -128,7 +122,7 @@ export const AdminHome = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function(value) {
+          callback: function (value) {
             return formatCurrency(value);
           }
         }

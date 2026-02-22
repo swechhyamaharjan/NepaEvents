@@ -4,13 +4,13 @@ import { FaBell, FaUserCircle, FaCog, FaHistory, FaSignOutAlt, FaEdit, FaTicketA
 import { FiHeart } from "react-icons/fi";
 import logo from "./logo.png";
 import { useAuth } from "../../Context/AuthContext";
-import axios from "axios";
+import api from "../../api/api";
 import { toast } from "react-hot-toast";
 
 export const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, setUser } = useAuth();  // Removed isLoggedIn and only used user
+  const { user, setUser } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeLink, setActiveLink] = useState("/");
   const [notificationCount, setNotificationCount] = useState(0);
@@ -26,25 +26,24 @@ export const NavBar = () => {
     if (user) {
       const fetchNotifications = async () => {
         try {
-          const response = await axios.get('http://localhost:3000/api/notifications', {
-            withCredentials: true
-          });
-          
+          const response = await api.get('/api/notifications');
+
           if (response.data.success) {
             // Count unread notifications
-            const unreadCount = response.data.notifications.filter(notif => !notif.isRead).length;
+            // Using 'read' as per backend pattern identified in previous versions
+            const unreadCount = (response.data.notifications || []).filter(notif => !notif.read).length;
             setNotificationCount(unreadCount);
           }
         } catch (error) {
           console.error("Error fetching notifications:", error);
         }
       };
-      
+
       fetchNotifications();
-      
+
       // Set up interval to check for new notifications every 30 seconds
       const intervalId = setInterval(fetchNotifications, 30000);
-      
+
       // Clean up interval on component unmount
       return () => clearInterval(intervalId);
     }
@@ -56,7 +55,7 @@ export const NavBar = () => {
   // Logout function
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:3000/logout", {}, { withCredentials: true });
+      await api.post("/logout", {});
       localStorage.clear();
       toast.success("Logged out successfully");
       setUser(null);
@@ -130,11 +129,11 @@ export const NavBar = () => {
             {/* My Bookings Button */}
             {user && (
               <button
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 hover:scale-105 font-medium ${isActive("/myBookings")
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 hover:scale-105 font-medium ${isActive("/mybookings")
                   ? "bg-[#D43C35] text-white"
                   : "bg-gradient-to-r from-[#ED4A43] to-[#FF6B64] text-white hover:from-[#FF6B64] hover:to-[#ED4A43]"
                   }`}
-                onClick={() => navigate("/myBookings")}
+                onClick={() => navigate("/mybookings")}
               >
                 <FaTicketAlt className="text-white" size={16} />
                 <span>My Bookings</span>
@@ -145,14 +144,14 @@ export const NavBar = () => {
             {user && (
               <div className="relative">
                 <button
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${isActive("/editprofile") ? "bg-[#D43C35] text-white" : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
+                  className={`flex items-center space-x-2 px-4 py-3 rounded-full transition-colors ${isActive("/editprofile") ? "bg-[#D43C35] text-white" : "bg-[#ED4A43] text-white hover:bg-[#D43C35]"
                     }`}
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
                   <span className="bg-[#4CAF50] text-white font-medium rounded-full w-8 h-8 flex items-center justify-center">
-                    {user?.fullName?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase()}
+                    {user?.fullName?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || 'U'}
                   </span>
-                  <span className="font-medium">{user?.fullName || user?.username}</span>
+                  <span className="font-medium">{user?.fullName || user?.username || 'User'}</span>
                 </button>
 
                 {/* Dropdown Menu */}
@@ -169,6 +168,27 @@ export const NavBar = () => {
                       Edit Profile
                     </button>
 
+                    <button
+                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate("/mytickets");
+                      }}
+                    >
+                      <FaTicketAlt className="mr-2 text-blue-600" />
+                      My Tickets
+                    </button>
+
+                    <button
+                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate("/mypayments");
+                      }}
+                    >
+                      <FaHistory className="mr-2 text-green-600" />
+                      My Payments
+                    </button>
 
                     <button
                       className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-gray-100"
@@ -196,3 +216,5 @@ export const NavBar = () => {
     </nav>
   );
 };
+
+export default NavBar;

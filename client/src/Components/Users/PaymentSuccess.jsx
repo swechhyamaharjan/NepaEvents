@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../../api/api";
 import React, { useEffect, useState } from "react";
 import {
   FaCheckCircle,
@@ -15,13 +15,13 @@ export const PaymentSuccess = () => {
   const [error, setError] = useState("");
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
+
   useEffect(() => {
-    const bookingId = localStorage.getItem("bookingId")
+    const bookingId = localStorage.getItem("bookingId");
+
     async function fetchPaymentDetail() {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/venue-bookings/${bookingId}`
-        );
+        const response = await api.get(`/api/venue-bookings/${bookingId}`);
         setPaymentDetail(response.data.booking);
       } catch (err) {
         console.error(err);
@@ -30,22 +30,31 @@ export const PaymentSuccess = () => {
         setLoading(false);
       }
     }
+
     async function verifyPayment() {
       try {
-        await axios.get(`http://localhost:3000/api/venue-bookings/verify-payment/${bookingId}?session_id=${sessionId}`);
+        await api.get(`/api/venue-bookings/verify-payment/${bookingId}?session_id=${sessionId}`);
         console.log("Booking successful receipt sent to email");
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     }
-    fetchPaymentDetail();
-    verifyPayment();
-  }, []);
+
+    if (bookingId) {
+      fetchPaymentDetail();
+      if (sessionId) {
+        verifyPayment();
+      }
+    } else {
+      setError("Missing booking information.");
+      setLoading(false);
+    }
+  }, [sessionId]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 text-lg">Loading payment details...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ED4A43]"></div>
       </div>
     );
   }
@@ -86,69 +95,67 @@ export const PaymentSuccess = () => {
               </h3>
 
               {paymentDetail ? (
-                <>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-medium">
-                        Booking Id:
-                      </span>
-                      <span className="text-gray-800 font-semibold bg-gray-100 px-3 py-1 rounded-full text-sm">
-                        {paymentDetail._id}
-                      </span>
-                    </div>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 font-medium">
+                      Booking Id:
+                    </span>
+                    <span className="text-gray-800 font-semibold bg-gray-100 px-3 py-1 rounded-full text-sm">
+                      {paymentDetail._id}
+                    </span>
+                  </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-medium">Venue:</span>
-                      <span className="text-gray-800 font-semibold">
-                        {paymentDetail.venue?.name}
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 font-medium">Venue:</span>
+                    <span className="text-gray-800 font-semibold">
+                      {paymentDetail.venue?.name}
+                    </span>
+                  </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-medium flex items-center">
-                        <FaCalendarAlt className="text-[#ED4A43] mr-2" />
-                        Date:
-                      </span>
-                      <span className="text-gray-800 font-semibold">
-                        {paymentDetail.eventDetails?.date}
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 font-medium flex items-center">
+                      <FaCalendarAlt className="text-[#ED4A43] mr-2" />
+                      Date:
+                    </span>
+                    <span className="text-gray-800 font-semibold">
+                      {paymentDetail.eventDetails?.date ? new Date(paymentDetail.eventDetails.date).toLocaleDateString() : 'N/A'}
+                    </span>
+                  </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-medium flex items-center">
-                        <FaMapMarkerAlt className="text-[#ED4A43] mr-2" />
-                        Location:
-                      </span>
-                      <span className="text-gray-800 font-semibold">
-                        {paymentDetail.venue?.location}
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 font-medium flex items-center">
+                      <FaMapMarkerAlt className="text-[#ED4A43] mr-2" />
+                      Location:
+                    </span>
+                    <span className="text-gray-800 font-semibold">
+                      {paymentDetail.venue?.location}
+                    </span>
+                  </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-medium flex items-center">
-                        <FaUsers className="text-[#ED4A43] mr-2" />
-                        Capacity:
-                      </span>
-                      <span className="text-gray-800 font-semibold">
-                        {paymentDetail.venue?.capacity} people
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span className="text-gray-600 font-medium flex items-center">
+                      <FaUsers className="text-[#ED4A43] mr-2" />
+                      Capacity:
+                    </span>
+                    <span className="text-gray-800 font-semibold">
+                      {paymentDetail.venue?.capacity} people
+                    </span>
+                  </div>
 
-                    <div className="mt-2 pt-4 flex justify-between items-center bg-gray-50 p-4 rounded-lg">
-                      <span className="text-gray-800 font-bold">
-                        Total Amount:
+                  <div className="mt-2 pt-4 flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+                    <span className="text-gray-800 font-bold">
+                      Total Amount:
+                    </span>
+                    <div className="flex flex-col items-end">
+                      <span className="text-2xl font-bold text-[#ED4A43]">
+                        Rs. {paymentDetail.venue?.price?.toFixed(2)}
                       </span>
-                      <div className="flex flex-col items-end">
-                        <span className="text-2xl font-bold text-[#ED4A43]">
-                          Rs. {paymentDetail.venue?.price?.toFixed(2)}
-                        </span>
-                        <span className="text-xs text-green-600 font-medium">
-                          Payment Completed
-                        </span>
-                      </div>
+                      <span className="text-xs text-green-600 font-medium">
+                        Payment Completed
+                      </span>
                     </div>
                   </div>
-                </>
+                </div>
               ) : (
                 <p className="text-center text-gray-500">
                   No payment details available.
