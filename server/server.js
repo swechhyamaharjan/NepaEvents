@@ -23,7 +23,7 @@ const cron = require('node-cron');
 const PORT = 3000;
 
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: 'http://localhost:5173',
   credentials: true,
 }));
 app.use(express.urlencoded({ extended: true }));
@@ -55,5 +55,3 @@ cron.schedule('0 0 * * *', async () => {
 app.listen(PORT, () => {
   console.log(`Server is running at port ${PORT}`)
 });
-
-module.exports = app;

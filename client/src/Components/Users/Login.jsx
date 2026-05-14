@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../api/api';
+import axios from 'axios';
 import { toast } from "react-hot-toast";
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
@@ -29,7 +29,9 @@ export const Login = () => {
     const formData = new FormData(e.target);
     const values = Object.fromEntries(formData.entries());
     try {
-      const res = await api.post('/login', values);
+      const res = await axios.post('http://localhost:3000/login', values, {
+        withCredentials: true,
+      });
       if (res) {
         setUser(res.data);
         toast.success("Logged in successfully");
@@ -50,7 +52,7 @@ export const Login = () => {
   const handleRequestOTP = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post('/api/users/sendOtp', { email });
+      const response = await axios.post('http://localhost:3000/api/users/sendOtp', { email });
       if (response) {
         toast.success("OTP sent successfully");
         setOtpSent(true);
@@ -67,7 +69,7 @@ export const Login = () => {
     const otp = otpInputs.current.map(input => input.value).join('');
     try {
       // Replace with your OTP verification endpoint
-      const res = await api.post('/api/users/verifyOtp', {
+      const res = await axios.post('http://localhost:3000/api/users/verifyOtp', {
         otpCode: otp, email
       });
       if (res) {
@@ -93,7 +95,7 @@ export const Login = () => {
     }
 
     try {
-      const res = await api.post('/api/users/resetPassword', {
+      const res = await axios.post('http://localhost:3000/api/users/resetPassword', {
         newPassword: password, email
       });
 
@@ -175,9 +177,10 @@ export const Login = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await api.post(
-        '/api/users/google',
-        { idToken: credentialResponse.credential }
+      const res = await axios.post(
+        'http://localhost:3000/api/users/google',
+        { idToken: credentialResponse.credential },
+        { withCredentials: true } // to set cookies
       );
       if (!res.data.success) {
         throw new Error('Unable to sigin with google')

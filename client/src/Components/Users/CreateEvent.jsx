@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api/api";
+import axios from "axios";
 import toast from "react-hot-toast";
 
 export const CreateEvent = () => {
@@ -22,10 +22,11 @@ export const CreateEvent = () => {
   const [categories, setCategories] = useState(null);
   const navigate = useNavigate();
 
+  // Fetch venues and categories from API
   useEffect(() => {
     async function fetchVenues() {
       try {
-        const response = await api.get("/api/venue");
+        const response = await axios.get("http://localhost:3000/api/venue");
         setVenues(response.data);
       } catch (error) {
         console.log(error);
@@ -37,7 +38,7 @@ export const CreateEvent = () => {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await api.get("/api/category");
+        const response = await axios.get("http://localhost:3000/api/category");
         setCategories(response.data);
       } catch (error) {
         console.log(error);
@@ -54,16 +55,18 @@ export const CreateEvent = () => {
     }));
   };
 
+  // Handle Image Change
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFormData((prev) => ({ ...prev, image: file }));
     }
   };
-
+  
+  // Form submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     const submitData = new FormData();
     submitData.append("title", formData.title);
     submitData.append("description", formData.description);
@@ -77,10 +80,11 @@ export const CreateEvent = () => {
     }
 
     try {
-      await api.post("/api/event", submitData, {
-        headers: { "Content-Type": "multipart/form-data" }
+      const response = await axios.post("http://localhost:3000/api/event", submitData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true
       });
-
+      
       toast.success("Event submitted for approval!");
       setFormStatus("Event submitted successfully! It has been sent for admin approval and might be rejected or approved.");
     } catch (error) {
@@ -93,6 +97,7 @@ export const CreateEvent = () => {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-4xl mx-auto">
+        {/* Header with decorative elements */}
         <div className="relative mb-12 text-center">
           <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-24 h-2 bg-[#ED4A43] rounded-full opacity-70"></div>
           <h2 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#ED4A43] to-[#FF7A6E] inline-block">
@@ -105,7 +110,9 @@ export const CreateEvent = () => {
           </div>
         </div>
 
+        {/* Form Container */}
         <div className="bg-white backdrop-blur-sm bg-opacity-90 rounded-3xl shadow-xl overflow-hidden border border-red-100">
+          {/* Form Header */}
           <div className="bg-gradient-to-r from-[#ED4A43] to-[#FF7A6E] p-6 text-white">
             <p className="text-lg font-medium">
               Design your perfect event with the form below
@@ -132,7 +139,9 @@ export const CreateEvent = () => {
 
           <form onSubmit={handleSubmit} className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left Column */}
               <div className="space-y-6">
+                {/* Event Title */}
                 <div>
                   <label htmlFor="title" className="block text-gray-700 font-medium mb-1">
                     Event Title
@@ -149,6 +158,7 @@ export const CreateEvent = () => {
                   />
                 </div>
 
+                {/* Event Description */}
                 <div>
                   <label htmlFor="description" className="block text-gray-700 font-medium mb-1">
                     Event Description
@@ -165,6 +175,7 @@ export const CreateEvent = () => {
                   ></textarea>
                 </div>
 
+                {/* Event Image */}
                 <div>
                   <label className="block text-gray-700 font-medium mb-1">
                     Event Image
@@ -191,7 +202,9 @@ export const CreateEvent = () => {
                 </div>
               </div>
 
+              {/* Right Column */}
               <div className="space-y-6">
+                {/* Event Details Section */}
                 <div className="p-4 bg-red-50 rounded-xl border border-red-100">
                   <h3 className="text-gray-700 font-semibold mb-4 flex items-center">
                     <svg className="h-5 w-5 mr-2 text-[#ED4A43]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,7 +213,9 @@ export const CreateEvent = () => {
                     Event Details
                   </h3>
 
+                  {/* Two Column Grid */}
                   <div className="grid grid-cols-2 gap-4">
+                    {/* Event Date */}
                     <div>
                       <label htmlFor="date" className="block text-gray-700 font-medium mb-1 text-sm">
                         Date
@@ -216,6 +231,7 @@ export const CreateEvent = () => {
                       />
                     </div>
 
+                    {/* Ticket Price */}
                     <div>
                       <label htmlFor="price" className="block text-gray-700 font-medium mb-1 text-sm">
                         Price (Rs.)
@@ -234,6 +250,7 @@ export const CreateEvent = () => {
                   </div>
                 </div>
 
+                {/* Category */}
                 <div>
                   <label htmlFor="category" className="block text-gray-700 font-medium mb-1">
                     Event Category
@@ -262,6 +279,7 @@ export const CreateEvent = () => {
                   </div>
                 </div>
 
+                {/* Artist */}
                 <div>
                   <label htmlFor="artist" className="block text-gray-700 font-medium mb-1">
                     Artist/Performer
@@ -278,6 +296,7 @@ export const CreateEvent = () => {
                   />
                 </div>
 
+                {/* Venue */}
                 <div>
                   <label htmlFor="venue" className="block text-gray-700 font-medium mb-1">
                     Venue
@@ -308,6 +327,7 @@ export const CreateEvent = () => {
               </div>
             </div>
 
+            {/* Submit Button */}
             <div className="mt-10 text-center">
               <button
                 type="submit"

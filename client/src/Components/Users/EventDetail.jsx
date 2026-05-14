@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import api from "../../api/api";
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaArrowLeft, FaInfoCircle, FaFileAlt } from 'react-icons/fa';
+import axios from 'axios';
 import VenueLocationMap from '../VenueLocationMap';
 
 export const EventDetail = () => {
@@ -13,7 +13,7 @@ export const EventDetail = () => {
   useEffect(() => {
     async function fetchEvent() {
       try {
-        const response = await api.get(`/api/event/${id}`);
+        const response = await axios.get(`http://localhost:3000/api/event/${id}`);
         setEvent(response.data.event);
       } catch (error) {
         console.log(error);
@@ -37,9 +37,10 @@ export const EventDetail = () => {
       {/* Hero Section */}
       <div className="relative h-96 bg-gray-800">
         <img
-          src={`${api.defaults.baseURL}/${event.image}`}
+          src={event.image ? `http://localhost:3000/${event.image.replace(/\\/g, '/')}` : '/images/event1.png'}
           alt={event.title}
           className="w-full h-full object-cover opacity-70"
+          onError={(e) => { e.target.onerror = null; e.target.src = '/images/event1.png'; }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80"></div>
 
@@ -85,14 +86,14 @@ export const EventDetail = () => {
               <div className="p-6">
                 {activeTab === 'description' && (
                   <div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-800 mb-4">About This Event</h2>
-                      <p className="text-gray-700 leading-relaxed">{event.description}</p>
-                    </div>
-                    <div>
-                      {console.log(event)};
-                      <VenueLocationMap existingCoordinates={event.venue.locationCoordinates} />
-                    </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">About This Event</h2>
+                    <p className="text-gray-700 leading-relaxed">{event.description}</p>
+                  </div>
+                  <div>
+                    {console.log(event)};
+                  <VenueLocationMap existingCoordinates={event.venue.locationCoordinates}/>
+                  </div>
                   </div>
                 )}
                 {activeTab === 'details' && (

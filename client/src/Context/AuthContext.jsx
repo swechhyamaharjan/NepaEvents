@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState, useContext } from "react";
-import api from "../api/api";
+import axios from "axios";
 
 const AuthContext = createContext();
 
@@ -25,7 +25,9 @@ export const AuthProvider = ({ children }) => {
 
   const getUser = async () => {
     try {
-      const response = await api.get(`/getProfile`);
+      const response = await axios.get(`http://localhost:3000/getProfile`, {
+        withCredentials: true, // Required for cookies-based auth
+      });
       if (response.data) {
         setUser(response.data.user);
         setRole(response.data.user.role);

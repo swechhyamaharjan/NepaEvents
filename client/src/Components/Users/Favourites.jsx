@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FiHeart, FiCalendar, FiMapPin, FiClock, FiTrash2 } from "react-icons/fi";
 import { FaBuilding } from "react-icons/fa";
 import { useAuth } from "../../Context/AuthContext";
-import api from '../../api/api';
+import axios from "axios";
 import { toast } from "react-hot-toast";
 
 const Favourites = () => {
@@ -16,6 +16,7 @@ const Favourites = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeCardId, setActiveCardId] = useState(null);
 
+  // Check URL params for active tab on component mount
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
@@ -24,6 +25,7 @@ const Favourites = () => {
     }
   }, [location]);
 
+  // Fetch favorites based on active tab
   useEffect(() => {
     const fetchFavorites = async () => {
       if (!isLoggedIn) {
@@ -34,10 +36,14 @@ const Favourites = () => {
       setIsLoading(true);
       try {
         if (activeTab === "events") {
-          const response = await api.get('/api/event/user/favorites');
+          const response = await axios.get('http://localhost:3000/api/event/user/favorites', {
+            withCredentials: true
+          });
           setFavouriteEvents(response.data);
         } else {
-          const response = await api.get('/api/venue/user/favorites');
+          const response = await axios.get('http://localhost:3000/api/venue/user/favorites', {
+            withCredentials: true
+          });
           setFavouriteVenues(response.data);
         }
       } catch (error) {
@@ -53,7 +59,9 @@ const Favourites = () => {
 
   const removeFavouriteEvent = async (id) => {
     try {
-      await api.delete(`/api/event/${id}/favorite`);
+      await axios.delete(`http://localhost:3000/api/event/${id}/favorite`, {
+        withCredentials: true
+      });
       setFavouriteEvents(favouriteEvents.filter(event => event._id !== id));
       toast.success("Removed from favorites");
     } catch (error) {
@@ -64,7 +72,9 @@ const Favourites = () => {
 
   const removeFavouriteVenue = async (id) => {
     try {
-      await api.delete(`/api/venue/${id}/favorite`);
+      await axios.delete(`http://localhost:3000/api/venue/${id}/favorite`, {
+        withCredentials: true
+      });
       setFavouriteVenues(favouriteVenues.filter(venue => venue._id !== id));
       toast.success("Removed from favorites");
     } catch (error) {
@@ -75,6 +85,7 @@ const Favourites = () => {
 
   const handleCardClick = (id) => {
     setActiveCardId(id);
+    // Reset active card after 200ms (for visual feedback)
     setTimeout(() => {
       setActiveCardId(null);
     }, 200);
@@ -82,6 +93,7 @@ const Favourites = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    // Update URL to reflect active tab
     navigate(`/favourites?tab=${tab}`);
   };
 
@@ -121,19 +133,21 @@ const Favourites = () => {
         <h1 className="text-3xl font-extrabold text-[#ED4A43] mb-8 text-center relative">My Favourites</h1>
         <div className="bg-gray-100 rounded-lg p-1">
           <button
-            className={`px-6 py-2 rounded-md font-medium ${activeTab === "events"
-              ? "bg-white text-[#ED4A43] shadow-sm"
-              : "text-gray-600 hover:text-[#ED4A43]"
-              }`}
+            className={`px-6 py-2 rounded-md font-medium ${
+              activeTab === "events" 
+                ? "bg-white text-[#ED4A43] shadow-sm" 
+                : "text-gray-600 hover:text-[#ED4A43]"
+            }`}
             onClick={() => handleTabChange("events")}
           >
             Events
           </button>
           <button
-            className={`px-6 py-2 rounded-md font-medium ${activeTab === "venues"
-              ? "bg-white text-[#ED4A43] shadow-sm"
-              : "text-gray-600 hover:text-[#ED4A43]"
-              }`}
+            className={`px-6 py-2 rounded-md font-medium ${
+              activeTab === "venues" 
+                ? "bg-white text-[#ED4A43] shadow-sm" 
+                : "text-gray-600 hover:text-[#ED4A43]"
+            }`}
             onClick={() => handleTabChange("venues")}
           >
             Venues
@@ -158,26 +172,28 @@ const Favourites = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {favouriteEvents.map((event) => (
-                <div
-                  key={event._id}
-                  className={`bg-white rounded-lg overflow-hidden shadow-md transition-all duration-200 ${activeCardId === event._id
-                    ? 'scale-98 shadow-inner bg-gray-50'
-                    : 'hover:shadow-lg'
-                    }`}
+                <div 
+                  key={event._id} 
+                  className={`bg-white rounded-lg overflow-hidden shadow-md transition-all duration-200 ${
+                    activeCardId === event._id 
+                      ? 'scale-98 shadow-inner bg-gray-50' 
+                      : 'hover:shadow-lg'
+                  }`}
                   onClick={() => handleCardClick(event._id)}
                 >
                   <div className="relative">
-                    <img
-                      src={`${api.defaults.baseURL}/${event.image}`}
-                      alt={event.title}
+                    <img 
+                      src={event.image ? `http://localhost:3000/${event.image.replace(/\\/g, '/')}` : '/images/event1.png'} 
+                      alt={event.title} 
                       className="w-full h-48 object-cover"
+                      onError={(e) => { e.target.onerror = null; e.target.src = '/images/event1.png'; }}
                     />
                     {event.category && (
                       <span className="absolute top-3 right-3 bg-white py-1 px-3 rounded-full text-sm font-medium text-gray-700">
                         {event.category}
                       </span>
                     )}
-                    <button
+                    <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         removeFavouriteEvent(event._id);
@@ -209,7 +225,7 @@ const Favourites = () => {
                       ) : (
                         <span className="text-[#ED4A43] font-bold">Free</span>
                       )}
-                      <button
+                      <button 
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/event/${event._id}`);
@@ -244,26 +260,28 @@ const Favourites = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {favouriteVenues.map((venue) => (
-                <div
-                  key={venue._id}
-                  className={`bg-white rounded-lg overflow-hidden shadow-md transition-all duration-200 ${activeCardId === venue._id
-                    ? 'scale-98 shadow-inner bg-gray-50'
-                    : 'hover:shadow-lg'
-                    }`}
+                <div 
+                  key={venue._id} 
+                  className={`bg-white rounded-lg overflow-hidden shadow-md transition-all duration-200 ${
+                    activeCardId === venue._id 
+                      ? 'scale-98 shadow-inner bg-gray-50' 
+                      : 'hover:shadow-lg'
+                  }`}
                   onClick={() => handleCardClick(venue._id)}
                 >
                   <div className="relative">
-                    <img
-                      src={`${api.defaults.baseURL}/${venue.image}`}
-                      alt={venue.name}
+                    <img 
+                      src={venue.image ? `http://localhost:3000/${venue.image.replace(/\\/g, '/')}` : '/images/event1.png'} 
+                      alt={venue.name} 
                       className="w-full h-48 object-cover"
+                      onError={(e) => { e.target.onerror = null; e.target.src = '/images/event1.png'; }}
                     />
                     {venue.type && (
                       <span className="absolute top-3 right-3 bg-white py-1 px-3 rounded-full text-sm font-medium text-gray-700">
                         {venue.type}
                       </span>
                     )}
-                    <button
+                    <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         removeFavouriteVenue(venue._id);
@@ -285,7 +303,7 @@ const Favourites = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[#ED4A43] font-bold">Rs. {venue.price}</span>
-                      <button
+                      <button 
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/venue/${venue._id}`);
