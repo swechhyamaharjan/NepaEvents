@@ -1,6 +1,6 @@
-# NepaEvents 🎉
+# NepaEvents 
 
-A full-stack event management platform for Nepal — browse and book events, reserve venues, purchase tickets, and manage everything through a clean admin panel.
+A full-stack event management platform — browse and book events, reserve venues, purchase tickets, and manage everything through a clean admin panel.
 
 ---
 
