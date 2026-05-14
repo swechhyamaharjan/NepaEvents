@@ -124,17 +124,17 @@ VITE_GOOGLE_CLIENT_ID=  # Google OAuth client ID
 
 ## API Overview
 
-| Prefix | Description |
-|---|---|
-| `POST /register`, `POST /login` | Auth (local + Google OAuth) |
-| `GET/POST /api/event` | Event CRUD, ticket purchase, favorites |
-| `GET /api/event/recommendations` | Personalized event recommendations |
-| `GET/POST /api/venue` | Venue CRUD, availability check, favorites |
-| `POST /api/venue-bookings` | Venue booking requests + Stripe payment |
-| `GET /api/notifications` | In-app notifications |
-| `GET /api/admin/payment-revenue` | Admin revenue aggregation |
-| `GET /api/tickets` | Ticket lookup by event or ID |
-| `POST /api/contact` | Contact form email |
+| Prefix                           | Description                               |
+| -------------------------------- | ----------------------------------------- |
+| `POST /register`, `POST /login`  | Auth (local + Google OAuth)               |
+| `GET/POST /api/event`            | Event CRUD, ticket purchase, favorites    |
+| `GET /api/event/recommendations` | Personalized event recommendations        |
+| `GET/POST /api/venue`            | Venue CRUD, availability check, favorites |
+| `POST /api/venue-bookings`       | Venue booking requests + Stripe payment   |
+| `GET /api/notifications`         | In-app notifications                      |
+| `GET /api/admin/payment-revenue` | Admin revenue aggregation                 |
+| `GET /api/tickets`               | Ticket lookup by event or ID              |
+| `POST /api/contact`              | Contact form email                        |
 
 ---
 
@@ -156,15 +156,15 @@ VITE_GOOGLE_CLIENT_ID=  # Google OAuth client ID
 
 ## Models
 
-| Model | Key Fields |
-|---|---|
-| **User** | `fullName`, `email`, `password`, `role`, `provider`, `favoriteEvents[]`, `purchasedTickets[]`, `interests[]` |
-| **Event** | `title`, `date`, `price`, `image`, `venue`, `organizer`, `category`, `totalSold`, `totalRevenue` |
-| **Venue** | `name`, `location`, `locationCoordinates`, `capacity`, `price`, `amenities[]`, `isBooked` |
-| **VenueBooking** | `venue`, `organizer`, `eventDetails`, `status`, `paymentStatus`, `stripeSessionId` |
-| **Ticket** | `event`, `user`, `quantity`, `ticketCodes[]`, `stripeSessionId` |
-| **Category** | `name`, `image` |
-| **Notification** | `user`, `title`, `message`, `type`, `isRead` |
+| Model            | Key Fields                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| **User**         | `fullName`, `email`, `password`, `role`, `provider`, `favoriteEvents[]`, `purchasedTickets[]`, `interests[]` |
+| **Event**        | `title`, `date`, `price`, `image`, `venue`, `organizer`, `category`, `totalSold`, `totalRevenue`             |
+| **Venue**        | `name`, `location`, `locationCoordinates`, `capacity`, `price`, `amenities[]`, `isBooked`                    |
+| **VenueBooking** | `venue`, `organizer`, `eventDetails`, `status`, `paymentStatus`, `stripeSessionId`                           |
+| **Ticket**       | `event`, `user`, `quantity`, `ticketCodes[]`, `stripeSessionId`                                              |
+| **Category**     | `name`, `image`                                                                                              |
+| **Notification** | `user`, `title`, `message`, `type`, `isRead`                                                                 |
 
 ---
 
