@@ -4,7 +4,7 @@ const Category = require("../models/category-model");
 const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
-    const image = req.file ? req.file.path : null; 
+    const image = req.file ? req.file.path.replace(/\\/g, "/") : null; 
     if (!image) {
       return res.status(400).json({ message: 'Image is required' });
   }
@@ -31,21 +31,31 @@ const getAllCategory = async (req, res) => {
 
 const updateCategory = async (req, res) => {
   try {
-    const newCategoryData = req.body;
-    console.log(req.body);
+    const { name } = req.body;
+    const updateData = { name };
+    
+    if (req.file) {
+      updateData.image = req.file.path.replace(/\\/g, "/");
+    }
+
     const updatedCategory = await Category.findByIdAndUpdate(
       req.params.id,
-      newCategoryData,
+      updateData,
+      { new: true }
     );
 
     if (!updatedCategory) {
       return res.status(404).json({ message: "Category not found" });
-    };
+    }
 
-    res.status(200).json({ success: true, message: "Category updated successfully" });
+    res.status(200).json({ 
+      success: true, 
+      message: "Category updated successfully",
+      category: updatedCategory 
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: "Server error" });
+    console.error('Error updating category:', error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 }
 

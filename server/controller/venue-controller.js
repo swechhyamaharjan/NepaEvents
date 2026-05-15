@@ -7,7 +7,7 @@ const createVenue = async (req, res) => {
     try {
         const { name, location, capacity, price, locationCoordinates} = req.body;
         const priceNumber = parseFloat(price);
-        const image = req.file ? req.file.path : null; // Ensure image is stored
+        const image = req.file ? req.file.path.replace(/\\/g, "/") : null; // Ensure image is stored
         if (!image) {
             return res.status(400).json({ message: 'Image is required' });
         }
@@ -70,7 +70,7 @@ const getAllVenues = async (req, res) => {
 const updateVenue = async (req, res) => {
     try {
         const { name, location, capacity } = req.body;
-        const image = req.file ? req.file.path : null;
+        const image = req.file ? req.file.path.replace(/\\/g, "/") : null;
         const newVenueData = {
             name,
             location,

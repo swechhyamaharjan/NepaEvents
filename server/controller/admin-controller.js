@@ -20,47 +20,35 @@ const getAdminPaymentRevenue = async (req, res) => {
     const userEvents = await Event.find({ organizer: adminId }).populate('venue');
     console.log(`Found ${userEvents.length} events created by admin ${adminId}`);
 
-    if (!userEvents || userEvents.length === 0) {
-      return res.status(200).json({
-        eventRevenue: {
-          events: [],
-          totalSold: 0,
-          totalRevenue: 0
-        },
-        venueRevenue: {
-          venues: [],
-          totalBookings: 0,
-          totalRevenue: 0
-        }
-      });
-    }
-
     const eventIds = userEvents.map(event => event._id);
 
     // Aggregate ticket data for these events
-    const ticketStats = await Ticket.aggregate([
-      {
-        $match: {
-          event: { $in: eventIds }
-        }
-      },
-      {
-        $group: {
-          _id: "$event",
-          totalSold: {
-            $sum: { $ifNull: ["$quantity", 0] }
-          },
-          totalRevenue: {
-            $sum: {
-              $multiply: [
-                { $ifNull: ["$quantity", 0] },
-                "$price"
-              ]
+    let ticketStats = [];
+    if (eventIds.length > 0) {
+      ticketStats = await Ticket.aggregate([
+        {
+          $match: {
+            event: { $in: eventIds }
+          }
+        },
+        {
+          $group: {
+            _id: "$event",
+            totalSold: {
+              $sum: { $ifNull: ["$quantity", 0] }
+            },
+            totalRevenue: {
+              $sum: {
+                $multiply: [
+                  { $ifNull: ["$quantity", 0] },
+                  "$price"
+                ]
+              }
             }
           }
         }
-      }
-    ]);
+      ]);
+    }
     console.log(`Found ticket stats for ${ticketStats.length} events`);
 
     // Create a map for quick lookup of ticket stats

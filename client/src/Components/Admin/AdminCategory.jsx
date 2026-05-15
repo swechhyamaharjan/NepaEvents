@@ -95,7 +95,7 @@ const AdminCategory = () => {
       const response = await axios.get(`http://localhost:3000/api/category/${id}`)
       console.log(response.data);
       setCategoryDetail(response.data.data);
-      setEditImagePreview(response.data.data.image ? `http://localhost:3000/${response.data.data.image}` : null);
+      setEditImagePreview(response.data.data.image ? `http://localhost:3000/${response.data.data.image.replace(/\\/g, "/")}` : null);
     } catch (error) {
       console.log(error);
       toast.error("Failed to get category");
@@ -171,7 +171,7 @@ const AdminCategory = () => {
       <div className="h-56 bg-gray-100 overflow-hidden">
         {cat.image ? (
           <img
-            src={`http://localhost:3000/${cat.image}`}
+            src={`http://localhost:3000/${cat.image.replace(/\\/g, "/")}`}
             alt={cat.name}
             className="w-full h-full object-cover transform hover:scale-105 transition-all duration-500"
           />

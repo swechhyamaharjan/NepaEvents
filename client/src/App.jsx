@@ -17,6 +17,7 @@ import PaymentFailure from "./Components/Users/PaymentFailure";
 import Favourites from "./Components/Users/Favourites";
 import Notifications from "./Components/Users/Notifications";
 import EditProfile from "./Components/Users/EditProfile";
+import MyTickets from "./Components/Users/MyTickets";
 
 import { AdminEventPage } from "./Components/Admin/AdminEventPage";
 import { AdminHome } from "./Components/Admin/AdminHome";
@@ -68,6 +69,7 @@ function App() {
           <Route path="/favourites" element={<UserLayout><Favourites /></UserLayout>} />
           <Route path="/editprofile" element={<UserLayout><EditProfile /></UserLayout>} />
           <Route path="/notifications" element={<UserLayout><Notifications /></UserLayout>} />
+          <Route path="/mytickets" element={<UserLayout><MyTickets /></UserLayout>} />
           <Route path="/eventRevenue/:title" element={<UserLayout><EventRevenue /></UserLayout>} />
           <Route path="/payment-success" element={<UserLayout><PaymentSuccess /></UserLayout>} />
           <Route path="/payment-failure" element={<UserLayout><PaymentFailure /></UserLayout>} />

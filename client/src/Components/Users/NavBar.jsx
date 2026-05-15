@@ -169,6 +169,17 @@ export const NavBar = () => {
                       Edit Profile
                     </button>
 
+                    <button
+                      className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate("/mytickets");
+                      }}
+                    >
+                      <FaTicketAlt className="mr-2 text-blue-600" />
+                      My Tickets
+                    </button>
+
 
                     <button
                       className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-gray-100"

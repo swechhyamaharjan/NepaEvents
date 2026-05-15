@@ -12,7 +12,7 @@ const QRCode = require('qrcode');
 const createEvent = async (req, res) => {
     try {
         const { title, description, date, venue, price, artist, category } = req.body;
-        const image = req.file ? req.file.path : null;
+        const image = req.file ? req.file.path.replace(/\\/g, "/") : null;
         const organizer = req.user.user._id;
         const event = await Event.create({ title, description, date, venue, price, image, artist, organizer, category, createdAt: new Date(), });
         res.status(201).json({
@@ -184,27 +184,33 @@ const sendEventTicketEmail = async (email, ticket) => {
         // Generate the QR code as an image
         const qrCodeBuffer = await QRCode.toBuffer(qrData, qrCodeOptions);
 
-        // Create a canvas to overlay NepaEvents initials on the QR code
-        const { createCanvas, loadImage } = require('canvas');
-        const canvas = createCanvas(300, 300); // Size of the canvas
-        const ctx = canvas.getContext('2d');
+        let brandedQRBuffer;
+        try {
+            // Create a canvas to overlay NepaEvents initials on the QR code
+            const { createCanvas, loadImage } = require('canvas');
+            const canvas = createCanvas(300, 300); // Size of the canvas
+            const ctx = canvas.getContext('2d');
 
-        // Draw the QR code on the canvas
-        const qrImage = await loadImage(qrCodeBuffer);
-        ctx.drawImage(qrImage, 0, 0, 300, 300);
+            // Draw the QR code on the canvas
+            const qrImage = await loadImage(qrCodeBuffer);
+            ctx.drawImage(qrImage, 0, 0, 300, 300);
 
-        // Add NepaEvents initials in the center
-        ctx.fillStyle = '#FFFFFF'; // White background for the text area
-        ctx.fillRect(115, 130, 70, 40); // Create a white rectangle in the middle
+            // Add NepaEvents initials in the center
+            ctx.fillStyle = '#FFFFFF'; // White background for the text area
+            ctx.fillRect(115, 130, 70, 40); // Create a white rectangle in the middle
 
-        ctx.font = 'bold 20px Arial';
-        ctx.fillStyle = '#000000';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('NE', 150, 150); // NE for NepaEvents initials
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('NE', 150, 150); // NE for NepaEvents initials
 
-        // Convert canvas to buffer
-        const brandedQRBuffer = canvas.toBuffer('image/png');
+            // Convert canvas to buffer
+            brandedQRBuffer = canvas.toBuffer('image/png');
+        } catch (canvasError) {
+            console.warn("Canvas module failed to load or execute, falling back to standard QR code:", canvasError.message);
+            brandedQRBuffer = qrCodeBuffer; // Fallback to standard QR code
+        }
 
         const doc = new PDFDocument({
             size: 'A4',
